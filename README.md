@@ -52,24 +52,40 @@ Like the alchemists of old who sought to transform base metals into gold, AIchem
 
 ## Configuration
 
-Some agents use placeholders that must be replaced with your own values before use.
+Some agents and skills use placeholders that must be replaced with your own values before use.
 
-### Jira Agent Placeholders
+### Jira Placeholders
 
-Copy `agents/jira.agent.md` and replace the following placeholders:
+The following placeholders are used by Jira-related components:
 
-| Placeholder | Description | Example |
-| ----------- | ----------- | ------- |
-| `{{USER_NAME}}` | Your full name | `Jane Smith` |
-| `{{USER_NICKNAME}}` | Your display name | `Jane` |
-| `{{USER_EMAIL}}` | Your Atlassian email | `jane.smith@company.com` |
-| `{{ATLASSIAN_ACCOUNT_ID}}` | Your Atlassian account ID | `712020:abc123...` |
-| `{{USER_LOCALE}}` | Your locale | `en-US` |
-| `{{USER_JOB_TITLE}}` | Your job title | `Software Engineer` |
-| `{{USER_TEAM_TYPE}}` | Your team type | `Software development` |
-| `{{DEFAULT_PROJECT_KEY}}` | Default Jira project key | `MYPROJECT` |
+| Placeholder | Used By | Description | Example |
+| ----------- | ------- | ----------- | ------- |
+| `{{USER_NAME}}` | Agent | Your full name | `Jane Smith` |
+| `{{USER_NICKNAME}}` | Agent | Your display name | `Jane` |
+| `{{USER_EMAIL}}` | Agent | Your Atlassian email | `jane.smith@company.com` |
+| `{{ATLASSIAN_ACCOUNT_ID}}` | Agent, Skill | Your Atlassian account ID | `712020:abc123...` |
+| `{{USER_LOCALE}}` | Agent | Your locale | `en-US` |
+| `{{USER_JOB_TITLE}}` | Agent | Your job title | `Software Engineer` |
+| `{{USER_TEAM_TYPE}}` | Agent | Your team type | `Software development` |
+| `{{DEFAULT_PROJECT_KEY}}` | Agent | Default Jira project key | `MYPROJECT` |
+
+**Components:**
+
+- `agents/jira.agent.md` - Requires all placeholders above
+- `skills/jira-my-tickets.md` - Requires only `{{ATLASSIAN_ACCOUNT_ID}}`
 
 To find your Atlassian account ID, visit your Atlassian profile or use the Atlassian API.
+
+## Skills
+
+### `/jira-my-tickets [date]`
+
+Show all Jira tickets where you are the assignee or creator since a specified date.
+
+```text
+/jira-my-tickets 2025-01-01
+/jira-my-tickets last week
+```
 
 ## License
 
