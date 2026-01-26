@@ -52,7 +52,7 @@ LSP (Language Server Protocol) configurations that provide code intelligence fea
 
 ### `.mcp.json`
 
-MCP (Model Context Protocol) server configurations that expose new capabilities and integrations to AI agents. Currently empty, reserved for future configurations.
+MCP (Model Context Protocol) server configurations that expose new capabilities and integrations to AI agents. See [MCP Server Configuration](#mcp-server-configuration) for setup details.
 
 ### `examples/`
 
@@ -102,6 +102,27 @@ The following placeholders are used by Jira-related components:
 - `commands/jira-my-tickets.md` - Requires only `{{ATLASSIAN_ACCOUNT_ID}}`
 
 To find your Atlassian account ID, visit your Atlassian profile or use the Atlassian API.
+
+### MCP Server Configuration
+
+The `.mcp.json` file configures external MCP servers that provide additional capabilities to agents. All servers use hosted HTTP endpoints.
+
+| Server | Description | Auth Required |
+| ------ | ----------- | ------------- |
+| `github` | GitHub Copilot MCP integration | GitHub Copilot subscription |
+| `atlassian` | Jira and Confluence access | Atlassian account (OAuth via browser) |
+| `microsoft-docs` | Microsoft Learn documentation (.NET, Azure, C#) | None |
+| `context7` | Up-to-date library documentation | API key |
+
+#### Context7 API Key
+
+Context7 requires an API key set as an environment variable:
+
+```bash
+export CONTEXT7_API_KEY="your-api-key-here"
+```
+
+Get your API key from [Context7](https://context7.com).
 
 ## Commands
 
