@@ -1,0 +1,8 @@
+{
+  "name": "aichemist",
+  "description": "Custom agents, commands, and skills for AI-assisted development",
+  "version": "0.1.0",
+  "author": {
+    "name": "Anders Bo Rasmussen"
+  }
+}
