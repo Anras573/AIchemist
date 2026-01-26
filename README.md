@@ -13,6 +13,7 @@ AIchemist/
 ├── .mcp.json        # MCP server configurations
 ├── agents/          # Custom AI agents with specialized behaviors
 ├── commands/        # Executable commands (slash commands)
+├── hooks/           # Event hooks (e.g., notifications)
 ├── skills/          # Reusable skills and workflows
 ├── prompts/         # Prompt templates and system prompts
 ├── tools/           # Custom tools and utilities
@@ -41,6 +42,10 @@ Curated prompt templates, system prompts, and prompt engineering patterns for va
 
 Custom tools, scripts, and utilities that enhance AI workflows.
 
+### `hooks/`
+
+Event hooks that trigger actions based on Claude Code events. For example, the notification hook sends a desktop notification when Claude is awaiting user input. See `hooks/hooks.json` for configuration.
+
 ### `.lsp.json`
 
 LSP (Language Server Protocol) configurations that provide code intelligence features like diagnostics, completions, and go-to-definition. Currently empty, reserved for future configurations.
@@ -52,6 +57,17 @@ MCP (Model Context Protocol) server configurations that expose new capabilities 
 ### `examples/`
 
 Practical examples demonstrating how to use and combine the components in this repository.
+
+## Installation
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/Anras573/AIchemist.git
+   ```
+
+2. Add the plugin to Claude Code by navigating to **Settings > Plugins** and adding the path to the `.claude-plugin` directory.
+
+3. Configure the placeholders as described in the [Configuration](#configuration) section below.
 
 ## Philosophy
 
