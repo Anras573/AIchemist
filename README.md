@@ -9,6 +9,7 @@ A personal collection of custom agents, skills, prompts, tools, and MCP servers 
 ```text
 AIchemist/
 ├── agents/          # Custom AI agents with specialized behaviors
+├── commands/        # Executable commands (slash commands)
 ├── skills/          # Claude Code skills and workflows
 ├── prompts/         # Prompt templates and system prompts
 ├── tools/           # Custom tools and utilities
@@ -21,6 +22,10 @@ AIchemist/
 ### `agents/`
 
 Custom agents configured for specific tasks - code review, exploration, planning, and domain-specific workflows.
+
+### `commands/`
+
+Executable commands invoked via slash syntax (e.g., `/jira-my-tickets`). Commands are action-oriented and perform specific operations.
 
 ### `skills/`
 
@@ -72,11 +77,11 @@ The following placeholders are used by Jira-related components:
 **Components:**
 
 - `agents/jira.agent.md` - Requires all placeholders above
-- `skills/jira-my-tickets.md` - Requires only `{{ATLASSIAN_ACCOUNT_ID}}`
+- `commands/jira-my-tickets.md` - Requires only `{{ATLASSIAN_ACCOUNT_ID}}`
 
 To find your Atlassian account ID, visit your Atlassian profile or use the Atlassian API.
 
-## Skills
+## Commands
 
 ### `/jira-my-tickets [date]`
 
