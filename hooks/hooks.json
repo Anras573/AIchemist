@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./tools/notify.sh 'Claude Code' 'Awaiting your input'"
+            "command": "\"${CLAUDE_PLUGIN_DIR}/tools/notify.sh\" 'Claude Code' 'Awaiting your input'"
           }
         ]
       }
