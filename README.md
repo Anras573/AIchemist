@@ -8,12 +8,14 @@ A personal collection of custom agents, skills, prompts, tools, and MCP servers 
 
 ```text
 AIchemist/
+├── .claude-plugin/  # Plugin manifest (plugin.json)
+├── .lsp.json        # LSP server configurations
+├── .mcp.json        # MCP server configurations
 ├── agents/          # Custom AI agents with specialized behaviors
 ├── commands/        # Executable commands (slash commands)
-├── skills/          # Claude Code skills and workflows
+├── skills/          # Reusable skills and workflows
 ├── prompts/         # Prompt templates and system prompts
 ├── tools/           # Custom tools and utilities
-├── mcp-servers/     # Model Context Protocol servers
 └── examples/        # Usage examples and demonstrations
 ```
 
@@ -29,7 +31,7 @@ Executable commands invoked via slash syntax (e.g., `/jira-my-tickets`). Command
 
 ### `skills/`
 
-Reusable skills for Claude Code that extend its capabilities with specialized knowledge and tool integrations.
+Reusable skills that extend AI agent capabilities with specialized knowledge and tool integrations.
 
 ### `prompts/`
 
@@ -39,9 +41,13 @@ Curated prompt templates, system prompts, and prompt engineering patterns for va
 
 Custom tools, scripts, and utilities that enhance AI workflows.
 
-### `mcp-servers/`
+### `.lsp.json`
 
-Model Context Protocol servers that expose new capabilities and integrations to AI assistants.
+LSP (Language Server Protocol) configurations that provide code intelligence features like diagnostics, completions, and go-to-definition.
+
+### `.mcp.json`
+
+MCP (Model Context Protocol) server configurations that expose new capabilities and integrations to AI agents.
 
 ### `examples/`
 
