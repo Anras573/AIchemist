@@ -4,5 +4,8 @@
   "version": "0.1.0",
   "author": {
     "name": "Anders Bo Rasmussen"
-  }
+  },
+  "license": "MIT",
+  "repository": "https://github.com/Anras573/AIchemist",
+  "keywords": ["jira", "dotnet", "agents", "productivity"]
 }

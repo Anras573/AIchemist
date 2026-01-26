@@ -3,9 +3,9 @@ name: jira-my-tickets
 description: Show all Jira tickets you've been involved with (as assignee or creator) since a specified date.
 ---
 
-# My Jira Tickets Skill
+# My Jira Tickets Command
 
-This skill retrieves all Jira issues where you are either the assignee or the reporter (creator) since a specified date.
+This command retrieves all Jira issues where you are either the assignee or the reporter (creator) since a specified date.
 
 ## Usage
 
@@ -18,7 +18,7 @@ Examples:
 
 ## Configuration
 
-This skill requires your Atlassian account ID. Replace the placeholder below with your actual account ID:
+This command requires your Atlassian account ID. Replace the placeholder below with your actual account ID:
 
 ```
 Account ID: {{ATLASSIAN_ACCOUNT_ID}}
@@ -28,7 +28,7 @@ To find your account ID, visit your Atlassian profile or use the `atlassianUserI
 
 ## Execution Steps
 
-When this skill is invoked:
+When this command is invoked:
 
 1. **Parse the date**: Extract the date from the user's input. Accept formats like:
    - ISO format: `2025-01-01`

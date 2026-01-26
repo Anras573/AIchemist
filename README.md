@@ -43,11 +43,11 @@ Custom tools, scripts, and utilities that enhance AI workflows.
 
 ### `.lsp.json`
 
-LSP (Language Server Protocol) configurations that provide code intelligence features like diagnostics, completions, and go-to-definition.
+LSP (Language Server Protocol) configurations that provide code intelligence features like diagnostics, completions, and go-to-definition. Currently empty, reserved for future configurations.
 
 ### `.mcp.json`
 
-MCP (Model Context Protocol) server configurations that expose new capabilities and integrations to AI agents.
+MCP (Model Context Protocol) server configurations that expose new capabilities and integrations to AI agents. Currently empty, reserved for future configurations.
 
 ### `examples/`
 
