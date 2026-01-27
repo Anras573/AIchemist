@@ -32,13 +32,14 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/) a
 | ---- | ----------- | ------------ |
 | `feat` | A new feature | Minor |
 | `fix` | A bug fix | Patch |
-| `docs` | Documentation only changes | Patch |
-| `style` | Formatting, missing semicolons, etc. (no code change) | Patch |
-| `refactor` | Code change that neither fixes a bug nor adds a feature | Patch |
-| `perf` | Performance improvement | Patch |
-| `test` | Adding or correcting tests | Patch |
-| `chore` | Maintenance tasks (build, CI, dependencies) | Patch |
+| `docs` | Documentation only changes | None (included in changelog) |
+| `style` | Formatting, missing semicolons, etc. (no code change) | None (included in changelog) |
+| `refactor` | Code change that neither fixes a bug nor adds a feature | None (included in changelog) |
+| `perf` | Performance improvement | None (included in changelog) |
+| `test` | Adding or correcting tests | None (included in changelog) |
+| `chore` | Maintenance tasks (build, CI, dependencies) | None (included in changelog) |
 
+In the `simple` release-please strategy, only `feat` and `fix` commits trigger releases; other types are included in the changelog and bundled with the next such release.
 ### Breaking Changes
 
 For breaking changes, either:
