@@ -9,7 +9,7 @@
       "prerelease": false
     }
   },
-    "extra-files": [
+  "extra-files": [
     {
       "path": ".claude-plugin/plugin.json",
       "type": "json",
