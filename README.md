@@ -135,6 +135,28 @@ Show all Jira tickets where you are the assignee or creator since a specified da
 /jira-my-tickets last week
 ```
 
+## Skills
+
+### `/worktree-pr <pr-number>`
+
+Create a git worktree for reviewing a pull request and launch a code review agent in a new terminal. This enables parallel workflows where a code review runs in isolation while you continue development.
+
+```text
+/worktree-pr 42
+```
+
+**Requirements:** `gh` CLI (authenticated), Git 2.5+
+
+### `/worktree-cleanup`
+
+Clean up git worktrees created for PR reviews. Identifies worktrees for merged or closed PRs and removes them.
+
+```text
+/worktree-cleanup
+/worktree-cleanup --merged
+/worktree-cleanup --all
+```
+
 ## License
 
 See [LICENSE](LICENSE) for details.
