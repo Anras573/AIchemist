@@ -25,7 +25,7 @@ When this command is invoked:
    - Extract the PR number from the directory name
 
 3. **Check PR status for each**:
-   - Use `gh pr view <pr-number> --json state,mergedAt,closedAt` to get status
+   - Use `gh pr view <pr-number> --json state,mergedAt,closedAt` to get status (add `--repo <owner>/<repo>` if the PR belongs to a different repository than the current directory)
    - Categorize as:
      - **Merged**: PR was merged (safe to remove)
      - **Closed**: PR was closed without merge (safe to remove)
@@ -51,9 +51,11 @@ When this command is invoked:
    ```
 
    - Use `--force` if there are untracked files (after warning user)
-   - Also clean up the local branch if it exists:
+   - Also clean up the local branch if it exists (and the PR is known to be merged/closed):
      ```bash
-     git branch -d <branch-name>
+     if git show-ref --verify --quiet "refs/heads/<branch-name>"; then
+       git branch -d <branch-name> || git branch -D <branch-name>
+     fi
      ```
 
 6. **Prune stale worktree references**:
@@ -81,7 +83,7 @@ The user can specify behavior inline:
 ## Error Handling
 
 - If no PR worktrees found, inform user: "No PR worktrees found to clean up"
-- If worktree has uncommitted changes, warn and skip unless `--force` specified
+- If a worktree has uncommitted changes, warn and skip by default; only proceed with forced removal after explicit user confirmation
 - If `gh` CLI fails, fall back to just listing worktrees without PR status
 - If worktree removal fails, show error and continue with others
 

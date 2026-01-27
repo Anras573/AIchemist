@@ -32,7 +32,7 @@ When this command is invoked:
 2. **Determine worktree path**:
    - Get the current repository name from the directory
    - Create sibling directory path: `../<repo-name>-pr-<pr-number>`
-   - Example: `../AIchemist-pr-42`
+   - Example: `../my-repo-pr-42`
 
 3. **Check for existing worktree**:
    - Run `git worktree list` to check if a worktree already exists at that path
@@ -40,27 +40,25 @@ When this command is invoked:
 
 4. **Fetch and create worktree**:
    ```bash
-   # Fetch the PR branch
-   gh pr checkout <pr-number> --detach
-   git checkout -  # Go back to previous branch
-
-   # Create the worktree
-   git worktree add <worktree-path> <branch-name>
-   ```
-
-   Alternative approach if the above fails:
-   ```bash
+   # Fetch the PR branch into a local branch
    git fetch origin pull/<pr-number>/head:<branch-name>
-   git worktree add <worktree-path> <branch-name>
-   ```
 
+   # Create the worktree from the fetched branch
+   git worktree add <worktree-path> <branch-name>
 5. **Launch review session**:
    - Detect the user's terminal/OS:
-     - **macOS**: Use `open -a Terminal <path>` or check for iTerm2, Warp, etc.
-     - **Linux**: Try `gnome-terminal`, `konsole`, or `xterm`
-     - **Windows/WSL**: Try `wt.exe` (Windows Terminal) or `cmd.exe`
+     - **macOS**: Use AppleScript via `osascript`, for example: `osascript -e 'tell application "Terminal" to do script "cd <worktree-path> && claude \"/review-pr\""'`, or check for iTerm2, Warp, etc.
+     - **Linux**: Use one of:
+       - `gnome-terminal -- bash -c "cd <worktree-path> && claude '/review-pr'"`
+       - `konsole --workdir <worktree-path> -e bash -c "claude '/review-pr'"`
+       - `xterm -e bash -c "cd <worktree-path> && claude '/review-pr'"`
+     - **Windows**:
+       - Windows Terminal (Command Prompt): `wt.exe -d <worktree-path> cmd /k "claude /review-pr"`
+       - Windows Terminal (PowerShell): `wt.exe -d <worktree-path> pwsh -c "claude /review-pr"`
+       - Classic Command Prompt: `cmd.exe /k "cd /d <worktree-path> && claude /review-pr"`
+     - **WSL**: From within a WSL shell, you can run the same command as on Linux (see below).
 
-   - Open a new terminal window and execute:
+   - On macOS/Linux/WSL, open a new terminal window and execute:
      ```bash
      cd <worktree-path> && claude "/review-pr"
      ```
