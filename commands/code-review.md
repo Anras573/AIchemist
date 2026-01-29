@@ -22,7 +22,7 @@ A comprehensive code review command that combines project guidelines, specialize
 | Flag | Description | Default |
 |------|-------------|---------|
 | `--comment` | Post findings as GitHub PR comment | Off (local output only) |
-| `--base <branch>` | Base branch for comparison | `main` |
+| `--base <branch>` | Base branch for comparison (ignored when PR exists) | `main` |
 | `--ticket <KEY>` | Manually specify Jira ticket | Auto-detect |
 
 ## False Positive Exclusions
@@ -46,9 +46,9 @@ Every issue found must be assigned a confidence score from 0-100:
 |-------|---------|--------|
 | 0-25 | Not confident, likely false positive | Do not report |
 | 26-50 | Somewhat confident, might be real | Do not report |
-| 51-75 | Moderately confident, probably real | Do not report |
-| 76-89 | Highly confident, real and important | Report as suggestion |
-| 90-100 | Certain, definitely a real issue | Report as warning/blocker |
+| 51-79 | Moderately confident, probably real | Do not report |
+| 80-89 | Highly confident, real and important | Report as warning |
+| 90-100 | Certain, definitely a real issue | Report as blocker |
 
 **Default threshold: 80** - Only issues scoring 80+ are reported.
 
