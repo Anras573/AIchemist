@@ -153,8 +153,14 @@ Launch multiple specialized agents **in parallel** to review the changes from di
 
 #### Core Agents (always run)
 
-| Agent | Model | Focus | Instructions |
-|-------|-------|-------|--------------|
+All review agents inherit behavior from the **Code Review Agent** (`agents/code-review.agent.md`), which defines:
+- Core review principles (correctness, security, maintainability, performance, testing)
+- Documentation lookup via Context7 and Microsoft Learn
+- Review checklist and feedback categories
+- Communication style guidelines
+
+| Agent | Model | Focus | Additional Instructions |
+|-------|-------|-------|------------------------|
 | Guidelines Agent 1 | sonnet | Project conventions | Check diff against CLAUDE.md, AGENTS.md, and .github/copilot-instructions.md. Flag violations where you can quote the exact rule being broken. |
 | Guidelines Agent 2 | sonnet | Project conventions | Same as Agent 1 - redundancy to catch different violations. Review independently without seeing Agent 1's findings. |
 | Bug Detection Agent | opus | Logic errors | Scan for obvious bugs: syntax errors, type errors, null references, off-by-one errors, logic flaws. Focus only on the diff itself. Flag only issues you're certain about. |
@@ -192,16 +198,30 @@ To add an always-run agent: add a row to this table. Examples:
 #### Agent Launch Instructions
 
 Provide each agent with:
-1. The diff to review
-2. The project guidelines (combined instruction files)
-3. The PR title and description (for context on author's intent)
-4. The False Positive Exclusions list
-5. The Confidence Scoring guidance
-6. Jira context (if available, for conditional/relevant agents)
+1. The **Code Review Agent** base instructions from `agents/code-review.agent.md`:
+   - Core Review Principles
+   - Documentation Lookup guidance
+   - Review Process
+   - Feedback Categories
+   - Review Checklist
+   - Communication Style
+   - (Skip the Jira Integration section and step 1 "Check Branch & Fetch Jira" in Review Process - this command handles Jira)
+2. The diff to review
+3. The project guidelines (combined instruction files)
+4. The PR title and description (for context on author's intent)
+5. The False Positive Exclusions list (from this command)
+6. The Confidence Scoring guidance (from this command)
+7. Jira context (if available - already fetched by this command)
+
+Each agent should:
+- Follow the Code Review Agent's review process and checklist
+- Use Context7 and Microsoft Learn to verify API usage when uncertain
 
 Each agent must return:
 - List of issues found
 - For each issue: description, file:line location, confidence score (0-100), reason flagged
+
+> **Note**: The command determines feedback categories from confidence scores (90+ = Blocker, 80-89 = Warning). Agents don't need to provide categories.
 
 ### 7. Validate Findings
 
@@ -317,6 +337,11 @@ Also display the full report locally for immediate feedback.
 **Otherwise (no `--comment` flag or no PR):**
 - Display the full report locally only
 - If `--comment` was set but no PR exists, warn: "No PR found for current branch. Skipping GitHub comment."
+
+## Review Checklist
+
+> This command uses the same review checklist and feedback categories as the Code Review Agent.
+> For the authoritative and up-to-date checklist, see the "Review Checklist" section in `agents/code-review.agent.md`.
 
 ## Error Handling
 
