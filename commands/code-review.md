@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: Comprehensive code review with specialized agents, Jira integration, and flexible scope (PR or branch diff).
-allowed-tools: Bash(gh pr comment:*), Bash(gh pr diff:*), Bash(gh pr view:*), Bash(gh pr list:*), mcp__github_inline_comment__create_inline_comment
+allowed-tools: Bash(gh pr comment:*), Bash(gh pr diff:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(git diff:*), mcp__atlassian__getJiraIssue, mcp__github_inline_comment__create_inline_comment
 ---
 
 # Code Review Command
@@ -134,6 +134,13 @@ git diff origin/<base>...HEAD
 ```
 
 Also get list of changed files for agent routing:
+
+**PR mode:**
+```bash
+gh pr view --json files --jq '.files[].path'
+```
+
+**Branch mode:**
 ```bash
 git diff --name-only origin/<base>...HEAD
 ```
@@ -148,7 +155,7 @@ Launch multiple specialized agents **in parallel** to review the changes from di
 
 | Agent | Model | Focus | Instructions |
 |-------|-------|-------|--------------|
-| Guidelines Agent 1 | sonnet | Project conventions | Check diff against CLAUDE.md, AGENTS.md, and copilot-instructions.md. Flag violations where you can quote the exact rule being broken. |
+| Guidelines Agent 1 | sonnet | Project conventions | Check diff against CLAUDE.md, AGENTS.md, and .github/copilot-instructions.md. Flag violations where you can quote the exact rule being broken. |
 | Guidelines Agent 2 | sonnet | Project conventions | Same as Agent 1 - redundancy to catch different violations. Review independently without seeing Agent 1's findings. |
 | Bug Detection Agent | opus | Logic errors | Scan for obvious bugs: syntax errors, type errors, null references, off-by-one errors, logic flaws. Focus only on the diff itself. Flag only issues you're certain about. |
 | Security Agent | opus | Vulnerabilities | Check for OWASP Top 10, injection vulnerabilities, auth/authz issues, hardcoded secrets, insecure data handling. Only flag clear vulnerabilities with exploitable paths. |
