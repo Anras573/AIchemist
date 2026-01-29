@@ -62,21 +62,12 @@ Every issue found must be assigned a confidence score from 0-100:
 
 ## Documentation Lookup
 
-Review agents should use MCP servers to verify API usage and best practices:
+Review agents should use MCP servers to verify API usage and best practices. See the **Code Review Agent** (`agents/code-review.agent.md`) for detailed guidance on:
 
-### Context7 (Library Documentation)
-Use `context7/*` tools for third-party library documentation:
-1. `resolve-library-id` - Find the library ID
-2. `query-docs` - Query specific documentation
+- **Context7** (`context7/*`) - Third-party library documentation
+- **Microsoft Learn** (`microsoft-docs/*`) - .NET, Azure, and Microsoft framework documentation
 
-### Microsoft Learn (.NET Documentation)
-Use `microsoft-docs/*` tools for .NET, Azure, and Microsoft framework documentation.
-
-**When to look up documentation:**
-- Unsure about correct API usage
-- Code uses an unfamiliar library
-- Suggesting alternatives (verify they exist first)
-- Code contradicts believed best practice (confirm before commenting)
+**Key principle**: Do not guess or rely on potentially outdated knowledge. Look it up.
 
 ## Execution Steps
 
@@ -216,13 +207,20 @@ To add an always-run agent: add a row to this table. Examples:
 #### Agent Launch Instructions
 
 Provide each agent with:
-1. The **Code Review Agent** instructions from `agents/code-review.agent.md`
+1. The **Code Review Agent** base instructions from `agents/code-review.agent.md`:
+   - Core Review Principles
+   - Documentation Lookup guidance
+   - Review Process
+   - Feedback Categories
+   - Review Checklist
+   - Communication Style
+   - (Skip the Jira Integration section - the command handles this)
 2. The diff to review
 3. The project guidelines (combined instruction files)
 4. The PR title and description (for context on author's intent)
 5. The False Positive Exclusions list (from this command)
 6. The Confidence Scoring guidance (from this command)
-7. Jira context (if available, for conditional/relevant agents)
+7. Jira context (if available - already fetched by this command)
 
 Each agent should:
 - Follow the Code Review Agent's review process and checklist

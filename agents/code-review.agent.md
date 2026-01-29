@@ -83,13 +83,15 @@ Do not guess or rely on potentially outdated knowledge. Look it up.
 
 ## Jira Integration
 
-Before starting a review, check the current git branch name. If it matches the pattern `*/{{DEFAULT_PROJECT_KEY}}-XXXX` (e.g., `feature/{{DEFAULT_PROJECT_KEY}}-1234`, `bugfix/{{DEFAULT_PROJECT_KEY}}-5678`):
+> **Note**: When used by the `/code-review` command, Jira context is fetched by the command and provided to you. Skip steps 1-3 below and use the provided context directly.
+
+**When running standalone**, check the current git branch name. If it matches the pattern `*/{{DEFAULT_PROJECT_KEY}}-XXXX` (e.g., `feature/{{DEFAULT_PROJECT_KEY}}-1234`, `bugfix/{{DEFAULT_PROJECT_KEY}}-5678`):
 
 1. Extract the ticket number (e.g., `{{DEFAULT_PROJECT_KEY}}-1234`)
 2. Fetch the Jira issue using `getJiraIssue`
 3. Use the ticket's **description** and **acceptance criteria** to inform your review
 
-When Jira context is available, your review should verify:
+When Jira context is available (either provided or fetched), your review should verify:
 - Does the implementation match the ticket description?
 - Are all acceptance criteria addressed?
 - Are there edge cases mentioned in the ticket that aren't handled?
