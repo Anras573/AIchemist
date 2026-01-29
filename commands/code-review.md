@@ -33,7 +33,7 @@ Do NOT flag the following - these are considered false positives:
 - **Correct code that looks wrong**: Code that appears buggy but is actually correct
 - **Pedantic nitpicks**: Minor issues a senior engineer would not flag
 - **Linter-catchable issues**: Problems that automated linting will catch (do not run linter to verify)
-- **General quality concerns**: Lack of test coverage, general security issues - unless explicitly required in project guidelines
+- **General, non-actionable quality concerns**: Broad comments like "add more tests" or "improve security in general" - still report specific, exploitable vulnerabilities or clearly missing tests directly related to the diff
 - **Silenced issues**: Problems mentioned in guidelines but explicitly silenced in code (e.g., via lint ignore comments, `// NOSONAR`, `#pragma warning disable`)
 - **Subjective improvements**: Style preferences or "nice to have" refactors without clear benefit
 - **Issues outside the diff**: Problems in unchanged code that the PR author didn't touch
@@ -297,8 +297,16 @@ No issues found (confidence threshold: 80). Checked for:
 ```
 
 **Code link format** (required for proper GitHub rendering):
+
+First, retrieve the repository info and commit SHA:
+```bash
+gh repo view --json nameWithOwner --jq '.nameWithOwner'  # e.g., "owner/repo"
+gh pr view --json headRefOid --jq '.headRefOid'          # full SHA of PR head
 ```
-https://github.com/owner/repo/blob/[full-sha]/path/file.ext#L[start]-L[end]
+
+Then format links as:
+```
+https://github.com/[owner/repo]/blob/[full-sha]/path/file.ext#L[start]-L[end]
 ```
 - Must use full git SHA (not abbreviated)
 - Use `#L` notation for line numbers
