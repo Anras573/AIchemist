@@ -135,6 +135,23 @@ Show all Jira tickets where you are the assignee or creator since a specified da
 /jira-my-tickets last week
 ```
 
+### `/code-review [options]`
+
+Comprehensive code review with parallel agents, Jira integration, and confidence-based filtering.
+
+```text
+/code-review                     # Review current branch vs origin/main
+/code-review --base develop      # Review against different base branch
+/code-review --comment           # Post findings as inline PR comments
+/code-review --ticket PROJ-123   # Override Jira ticket detection
+```
+
+**Features:**
+- Launches 4+ parallel review agents (guidelines, bugs, security)
+- Confidence scoring (0-100) with 80 threshold to filter false positives
+- Auto-detects Jira tickets from branch name or PR description
+- Inline PR comments with committable suggestions
+
 ## License
 
 See [LICENSE](LICENSE) for details.
