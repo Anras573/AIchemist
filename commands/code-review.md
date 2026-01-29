@@ -1,6 +1,7 @@
 ---
 name: code-review
 description: Comprehensive code review with specialized agents, Jira integration, and flexible scope (PR or branch diff).
+allowed-tools: Bash(gh pr comment:*), Bash(gh pr diff:*), Bash(gh pr view:*), Bash(gh pr list:*), mcp__github_inline_comment__create_inline_comment
 ---
 
 # Code Review Command
@@ -23,6 +24,41 @@ A comprehensive code review command that combines project guidelines, specialize
 | `--comment` | Post findings as GitHub PR comment | Off (local output only) |
 | `--base <branch>` | Base branch for comparison | `main` |
 | `--ticket <KEY>` | Manually specify Jira ticket | Auto-detect |
+
+## False Positive Exclusions
+
+Do NOT flag the following - these are considered false positives:
+
+- **Pre-existing issues**: Problems that existed before this PR/branch
+- **Correct code that looks wrong**: Code that appears buggy but is actually correct
+- **Pedantic nitpicks**: Minor issues a senior engineer would not flag
+- **Linter-catchable issues**: Problems that automated linting will catch (do not run linter to verify)
+- **General quality concerns**: Lack of test coverage, general security issues - unless explicitly required in project guidelines
+- **Silenced issues**: Problems mentioned in guidelines but explicitly silenced in code (e.g., via lint ignore comments, `// NOSONAR`, `#pragma warning disable`)
+- **Subjective improvements**: Style preferences or "nice to have" refactors without clear benefit
+- **Issues outside the diff**: Problems in unchanged code that the PR author didn't touch
+
+## Confidence Scoring
+
+Every issue found must be assigned a confidence score from 0-100:
+
+| Score | Meaning | Action |
+|-------|---------|--------|
+| 0-25 | Not confident, likely false positive | Do not report |
+| 26-50 | Somewhat confident, might be real | Do not report |
+| 51-75 | Moderately confident, probably real | Do not report |
+| 76-89 | Highly confident, real and important | Report as suggestion |
+| 90-100 | Certain, definitely a real issue | Report as warning/blocker |
+
+**Default threshold: 80** - Only issues scoring 80+ are reported.
+
+**Scoring guidance:**
+- Syntax/type errors that will fail compilation → 100
+- Clear logic errors producing wrong results → 95
+- Unambiguous guideline violations (can quote exact rule) → 90
+- Security vulnerabilities with clear exploit path → 95
+- Performance issues with measurable impact → 85
+- Potential issues depending on specific inputs/state → 50 (do not report)
 
 ## Execution Steps
 
@@ -118,6 +154,11 @@ If Jira context is available, also verify:
 - Acceptance criteria are addressed
 - Edge cases from the ticket are handled
 
+**For each potential issue found:**
+1. Check against the False Positive Exclusions list - skip if it matches
+2. Assign a confidence score (0-100) based on the Confidence Scoring guidance
+3. Only keep issues scoring 80 or above
+
 ### 7. Route to Specialized Agents
 
 Based on the changed files, invoke relevant specialized agents:
@@ -150,9 +191,19 @@ For each triggered agent:
 2. Include project guidelines context
 3. Collect their findings
 
-### 8. Aggregate Findings
+### 8. Aggregate and Validate Findings
 
-Combine all feedback into a structured report:
+Combine all feedback from base review and specialized agents, then validate:
+
+**For each issue:**
+1. Verify it doesn't match any False Positive Exclusion
+2. Confirm confidence score is 80+
+3. Validate the issue is real (e.g., if "variable undefined" - verify it's actually undefined)
+4. Categorize by severity based on confidence:
+   - **90-100**: Blocker (must fix)
+   - **80-89**: Warning/Suggestion (should fix)
+
+**Local report structure:**
 
 ```markdown
 ## Code Review Summary
@@ -164,19 +215,13 @@ Combine all feedback into a structured report:
 - ⚠️ Criterion 2 - Partial
 - ❌ Criterion 3 - Missing
 
-### Findings
+### Findings (X issues, threshold: 80)
 
-#### 🚫 Blockers (must fix)
-- [Issue description with file:line reference]
+#### 🚫 Blockers (confidence 90+)
+- [Issue] - file.cs:42 (confidence: 95)
 
-#### ⚠️ Warnings (should fix)
-- [Issue description with file:line reference]
-
-#### 💡 Suggestions (nice to have)
-- [Issue description with file:line reference]
-
-#### ✅ Good Patterns
-- [Positive feedback on well-written code]
+#### ⚠️ Warnings (confidence 80-89)
+- [Issue] - file.cs:87 (confidence: 82)
 
 ### Specialized Agent Feedback
 
@@ -184,61 +229,52 @@ Combine all feedback into a structured report:
 [Findings from .NET agent if invoked]
 
 ### Summary
-- X blocker(s), Y warning(s), Z suggestion(s)
-- [Overall assessment]
+- X blocker(s), Y warning(s)
+- Y issues filtered (below threshold)
 ```
 
 ### 9. Output Results
 
 **If `--comment` flag is set AND PR exists:**
 
-Post findings as a PR comment using `gh pr comment` with collapsible sections:
+Post findings as **inline comments** on the PR using `mcp__github_inline_comment__create_inline_comment`. For each issue:
 
+1. **Location**: Comment directly on the file and line(s) where the issue exists
+2. **Description**: Brief explanation of the issue and why it was flagged
+3. **Suggestion**: For small, self-contained fixes (< 6 lines), include a committable suggestion block:
+   ```suggestion
+   // corrected code here
+   ```
+4. **Larger fixes**: For changes spanning 6+ lines or multiple locations, describe the fix without a suggestion block
+
+**Important guidelines for inline comments:**
+- Post only ONE comment per unique issue (no duplicates)
+- Only include a suggestion block if committing it completely fixes the issue
+- Include confidence score in the comment (e.g., "Confidence: 92")
+- Link to relevant guideline if it's a compliance issue
+
+**If NO issues were found**, post a single summary comment using `gh pr comment`:
 ```markdown
 ## Code Review
 
-### Jira Context
-**{{DEFAULT_PROJECT_KEY}}-123**: [Ticket summary]
-
-### 🚫 X Blocker(s)
-<!-- Always expanded - these must be addressed -->
-- [Blocker 1 with file:line reference]
-- [Blocker 2 with file:line reference]
-
-<details>
-<summary>⚠️ X Warning(s)</summary>
-
-- [Warning 1 with file:line reference]
-- [Warning 2 with file:line reference]
-
-</details>
-
-<details>
-<summary>💡 X Suggestion(s)</summary>
-
-- [Suggestion 1 with file:line reference]
-
-</details>
-
-<details>
-<summary>✅ Good Patterns</summary>
-
-- [Positive feedback]
-
-</details>
-
-<details>
-<summary>🤖 Specialized Agent Feedback</summary>
-
-#### .NET Agent
-[Findings if invoked]
-
-</details>
+No issues found (confidence threshold: 80). Checked for:
+- Bugs and logic errors
+- Security vulnerabilities
+- Project guideline compliance
+- Jira acceptance criteria (if applicable)
 ```
+
+**Code link format** (required for proper GitHub rendering):
+```
+https://github.com/owner/repo/blob/[full-sha]/path/file.ext#L[start]-L[end]
+```
+- Must use full git SHA (not abbreviated)
+- Use `#L` notation for line numbers
+- Include at least 1 line of context before and after
 
 Also display the full report locally for immediate feedback.
 
-**Otherwise:**
+**Otherwise (no `--comment` flag or no PR):**
 - Display the full report locally only
 - If `--comment` was set but no PR exists, warn: "No PR found for current branch. Skipping GitHub comment."
 
