@@ -60,6 +60,24 @@ Every issue found must be assigned a confidence score from 0-100:
 - Performance issues with measurable impact → 85
 - Potential issues depending on specific inputs/state → 50 (do not report)
 
+## Documentation Lookup
+
+Review agents should use MCP servers to verify API usage and best practices:
+
+### Context7 (Library Documentation)
+Use `context7/*` tools for third-party library documentation:
+1. `resolve-library-id` - Find the library ID
+2. `query-docs` - Query specific documentation
+
+### Microsoft Learn (.NET Documentation)
+Use `microsoft-docs/*` tools for .NET, Azure, and Microsoft framework documentation.
+
+**When to look up documentation:**
+- Unsure about correct API usage
+- Code uses an unfamiliar library
+- Suggesting alternatives (verify they exist first)
+- Code contradicts believed best practice (confirm before commenting)
+
 ## Execution Steps
 
 When this command is invoked, follow these steps in order:
@@ -153,8 +171,14 @@ Launch multiple specialized agents **in parallel** to review the changes from di
 
 #### Core Agents (always run)
 
-| Agent | Model | Focus | Instructions |
-|-------|-------|-------|--------------|
+All review agents inherit behavior from the **Code Review Agent** (`agents/code-review.agent.md`), which defines:
+- Core review principles (correctness, security, maintainability, performance, testing)
+- Documentation lookup via Context7 and Microsoft Learn
+- Review checklist and feedback categories
+- Communication style guidelines
+
+| Agent | Model | Focus | Additional Instructions |
+|-------|-------|-------|------------------------|
 | Guidelines Agent 1 | sonnet | Project conventions | Check diff against CLAUDE.md, AGENTS.md, and .github/copilot-instructions.md. Flag violations where you can quote the exact rule being broken. |
 | Guidelines Agent 2 | sonnet | Project conventions | Same as Agent 1 - redundancy to catch different violations. Review independently without seeing Agent 1's findings. |
 | Bug Detection Agent | opus | Logic errors | Scan for obvious bugs: syntax errors, type errors, null references, off-by-one errors, logic flaws. Focus only on the diff itself. Flag only issues you're certain about. |
@@ -192,16 +216,22 @@ To add an always-run agent: add a row to this table. Examples:
 #### Agent Launch Instructions
 
 Provide each agent with:
-1. The diff to review
-2. The project guidelines (combined instruction files)
-3. The PR title and description (for context on author's intent)
-4. The False Positive Exclusions list
-5. The Confidence Scoring guidance
-6. Jira context (if available, for conditional/relevant agents)
+1. The **Code Review Agent** instructions from `agents/code-review.agent.md`
+2. The diff to review
+3. The project guidelines (combined instruction files)
+4. The PR title and description (for context on author's intent)
+5. The False Positive Exclusions list (from this command)
+6. The Confidence Scoring guidance (from this command)
+7. Jira context (if available, for conditional/relevant agents)
+
+Each agent should:
+- Follow the Code Review Agent's review process and checklist
+- Use Context7 and Microsoft Learn to verify API usage when uncertain
+- Apply the feedback categories (🚫 Blocker, ⚠️ Warning, 💡 Suggestion)
 
 Each agent must return:
 - List of issues found
-- For each issue: description, file:line location, confidence score (0-100), reason flagged
+- For each issue: description, file:line location, confidence score (0-100), reason flagged, feedback category
 
 ### 7. Validate Findings
 
@@ -317,6 +347,33 @@ Also display the full report locally for immediate feedback.
 **Otherwise (no `--comment` flag or no PR):**
 - Display the full report locally only
 - If `--comment` was set but no PR exists, warn: "No PR found for current branch. Skipping GitHub comment."
+
+## Review Checklist
+
+Each review agent should verify the following (from Code Review Agent):
+
+### General
+- [ ] Code follows project conventions and style guides
+- [ ] No unnecessary complexity or over-engineering
+- [ ] Error handling is appropriate and consistent
+- [ ] No hardcoded secrets or sensitive data
+
+### Security
+- [ ] Input validation on user-supplied data
+- [ ] Proper authentication and authorization checks
+- [ ] No SQL injection, XSS, or command injection vulnerabilities
+- [ ] Secure handling of sensitive data
+
+### Quality
+- [ ] Functions/methods have single responsibility
+- [ ] Naming is clear and descriptive
+- [ ] No code duplication (DRY principle)
+- [ ] Edge cases are handled
+
+### Testing
+- [ ] New code has appropriate test coverage
+- [ ] Tests are meaningful (not just for coverage)
+- [ ] Tests are independent and repeatable
 
 ## Error Handling
 
