@@ -138,68 +138,88 @@ Also get list of changed files for agent routing:
 git diff --name-only origin/<base>...HEAD
 ```
 
-### 6. Run Base Code Review
+### 6. Launch Parallel Review Agents
 
-Using the gathered context (guidelines + Jira requirements), perform a comprehensive code review covering:
+Launch multiple specialized agents **in parallel** to review the changes from different perspectives. Each agent independently analyzes the diff and returns a list of issues with confidence scores.
 
-- **Correctness**: Does the code do what it's supposed to do?
-- **Security**: OWASP Top 10, injection vulnerabilities, auth issues
-- **Maintainability**: Readability, structure, ease of change
-- **Performance**: Obvious inefficiencies or anti-patterns
-- **Testing**: Test coverage and quality
-- **Guidelines compliance**: Does it follow project conventions?
+**IMPORTANT:** All agents must be launched in a single message to ensure parallel execution.
 
-If Jira context is available, also verify:
-- Implementation matches ticket description
-- Acceptance criteria are addressed
-- Edge cases from the ticket are handled
+#### Core Agents (always run)
 
-**For each potential issue found:**
-1. Check against the False Positive Exclusions list - skip if it matches
-2. Assign a confidence score (0-100) based on the Confidence Scoring guidance
-3. Only keep issues scoring 80 or above
+| Agent | Model | Focus | Instructions |
+|-------|-------|-------|--------------|
+| Guidelines Agent 1 | sonnet | Project conventions | Check diff against CLAUDE.md, AGENTS.md, and copilot-instructions.md. Flag violations where you can quote the exact rule being broken. |
+| Guidelines Agent 2 | sonnet | Project conventions | Same as Agent 1 - redundancy to catch different violations. Review independently without seeing Agent 1's findings. |
+| Bug Detection Agent | opus | Logic errors | Scan for obvious bugs: syntax errors, type errors, null references, off-by-one errors, logic flaws. Focus only on the diff itself. Flag only issues you're certain about. |
+| Security Agent | opus | Vulnerabilities | Check for OWASP Top 10, injection vulnerabilities, auth/authz issues, hardcoded secrets, insecure data handling. Only flag clear vulnerabilities with exploitable paths. |
 
-### 7. Route to Specialized Agents
+#### Conditional Agents (run when applicable)
 
-Based on the changed files, invoke relevant specialized agents:
+| Agent | Model | Condition | Focus |
+|-------|-------|-----------|-------|
+| Jira Validation Agent | sonnet | Jira ticket found | Verify implementation matches ticket description, acceptance criteria are addressed, edge cases from ticket are handled. |
 
-#### File-Triggered Agents
+#### File-Triggered Agents (run when file patterns match)
 
-Check the list of changed files and invoke agents when matching patterns are found:
+Check the list of changed files and include these agents in the parallel launch when patterns match:
 
-| File Patterns | Agent | Description |
-|---------------|-------|-------------|
-| `*.cs`, `*.csproj`, `*.sln`, `*.fsproj` | .NET Coding Agent | C#/F# and .NET project files |
+| File Patterns | Agent | Model | Description |
+|---------------|-------|-------|-------------|
+| `*.cs`, `*.csproj`, `*.sln`, `*.fsproj` | .NET Coding Agent | opus | C#/F# best practices, async patterns, SOLID principles, .NET conventions |
 
-To add a new agent: simply add a row to this table with the file patterns and agent name.
+To add a new file-triggered agent: add a row to this table.
 
-#### Always-Run Agents
+#### Always-Run Agents (additional)
 
-These agents run on every review regardless of file types in the diff:
+These agents run on every review in addition to the core agents:
 
-| Agent | Description |
-|-------|-------------|
-| <!-- Add agents here --> | <!-- Description --> |
+| Agent | Model | Description |
+|-------|-------|-------------|
+| <!-- Add agents here --> | <!-- Model --> | <!-- Description --> |
 
-To add an always-run agent: add a row to this table. Examples of candidates:
-- Security scanner
+To add an always-run agent: add a row to this table. Examples:
+- Security scanner (if you want more depth than the core Security Agent)
 - Dependency checker
 - Documentation validator
 
-For each triggered agent:
-1. Provide the relevant subset of the diff
-2. Include project guidelines context
-3. Collect their findings
+#### Agent Launch Instructions
 
-### 8. Aggregate and Validate Findings
+Provide each agent with:
+1. The diff to review
+2. The project guidelines (combined instruction files)
+3. The PR title and description (for context on author's intent)
+4. The False Positive Exclusions list
+5. The Confidence Scoring guidance
+6. Jira context (if available, for conditional/relevant agents)
 
-Combine all feedback from base review and specialized agents, then validate:
+Each agent must return:
+- List of issues found
+- For each issue: description, file:line location, confidence score (0-100), reason flagged
 
-**For each issue:**
-1. Verify it doesn't match any False Positive Exclusion
-2. Confirm confidence score is 80+
-3. Validate the issue is real (e.g., if "variable undefined" - verify it's actually undefined)
-4. Categorize by severity based on confidence:
+### 7. Validate Findings
+
+For each issue returned by the parallel agents, launch a **validation subagent** to verify it's real:
+
+| Issue Type | Validator Model | Validation Task |
+|------------|-----------------|-----------------|
+| Bug/Logic errors | opus | Verify the bug exists - check if the flagged condition is actually true in the code |
+| Guideline violations | sonnet | Verify the rule exists in guidelines and applies to this file path |
+| Security issues | opus | Verify the vulnerability is exploitable and not a false positive |
+
+**Validation process:**
+1. Provide the validator with: issue description, relevant code context, PR title/description
+2. Validator confirms or rejects the issue
+3. Rejected issues are filtered out
+
+### 8. Aggregate Validated Findings
+
+Combine validated findings from all parallel agents:
+
+**Aggregation steps:**
+1. Collect all validated issues (rejected issues already filtered in step 7)
+2. Deduplicate - multiple agents may flag the same issue
+3. Filter out any issues with confidence < 80
+4. Categorize by severity:
    - **90-100**: Blocker (must fix)
    - **80-89**: Warning/Suggestion (should fix)
 
@@ -207,6 +227,12 @@ Combine all feedback from base review and specialized agents, then validate:
 
 ```markdown
 ## Code Review Summary
+
+### Review Stats
+- Agents launched: X (Y core + Z specialized)
+- Issues found: X
+- Issues validated: X
+- Issues filtered (< 80 confidence): X
 
 ### Jira Context (if available)
 **Ticket**: PROJ-123 - [Summary]
@@ -218,19 +244,18 @@ Combine all feedback from base review and specialized agents, then validate:
 ### Findings (X issues, threshold: 80)
 
 #### 🚫 Blockers (confidence 90+)
-- [Issue] - file.cs:42 (confidence: 95)
+| Issue | Location | Source | Confidence |
+|-------|----------|--------|------------|
+| [Description] | file.cs:42 | Bug Agent | 95 |
 
 #### ⚠️ Warnings (confidence 80-89)
-- [Issue] - file.cs:87 (confidence: 82)
-
-### Specialized Agent Feedback
-
-#### .NET Agent
-[Findings from .NET agent if invoked]
+| Issue | Location | Source | Confidence |
+|-------|----------|--------|------------|
+| [Description] | file.cs:87 | Guidelines Agent 1 | 82 |
 
 ### Summary
 - X blocker(s), Y warning(s)
-- Y issues filtered (below threshold)
+- Z issues filtered (below threshold or failed validation)
 ```
 
 ### 9. Output Results
