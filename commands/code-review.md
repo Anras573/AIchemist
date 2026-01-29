@@ -205,7 +205,7 @@ Provide each agent with:
    - Feedback Categories
    - Review Checklist
    - Communication Style
-   - (Skip the Jira Integration section - the command handles this)
+   - (Skip the Jira Integration section and step 1 "Check Branch & Fetch Jira" in Review Process - this command handles Jira)
 2. The diff to review
 3. The project guidelines (combined instruction files)
 4. The PR title and description (for context on author's intent)
@@ -216,11 +216,12 @@ Provide each agent with:
 Each agent should:
 - Follow the Code Review Agent's review process and checklist
 - Use Context7 and Microsoft Learn to verify API usage when uncertain
-- Apply the feedback categories (🚫 Blocker, ⚠️ Warning, 💡 Suggestion)
 
 Each agent must return:
 - List of issues found
-- For each issue: description, file:line location, confidence score (0-100), reason flagged, feedback category
+- For each issue: description, file:line location, confidence score (0-100), reason flagged
+
+> **Note**: The command determines feedback categories from confidence scores (90+ = Blocker, 80-89 = Warning). Agents don't need to provide categories.
 
 ### 7. Validate Findings
 
