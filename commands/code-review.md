@@ -60,15 +60,6 @@ Every issue found must be assigned a confidence score from 0-100:
 - Performance issues with measurable impact → 85
 - Potential issues depending on specific inputs/state → 50 (do not report)
 
-## Documentation Lookup
-
-Review agents should use MCP servers to verify API usage and best practices. See the **Code Review Agent** (`agents/code-review.agent.md`) for detailed guidance on:
-
-- **Context7** (`context7/*`) - Third-party library documentation
-- **Microsoft Learn** (`microsoft-docs/*`) - .NET, Azure, and Microsoft framework documentation
-
-**Key principle**: Do not guess or rely on potentially outdated knowledge. Look it up.
-
 ## Execution Steps
 
 When this command is invoked, follow these steps in order:
@@ -348,30 +339,8 @@ Also display the full report locally for immediate feedback.
 
 ## Review Checklist
 
-Each review agent should verify the following (from Code Review Agent):
-
-### General
-- [ ] Code follows project conventions and style guides
-- [ ] No unnecessary complexity or over-engineering
-- [ ] Error handling is appropriate and consistent
-- [ ] No hardcoded secrets or sensitive data
-
-### Security
-- [ ] Input validation on user-supplied data
-- [ ] Proper authentication and authorization checks
-- [ ] No SQL injection, XSS, or command injection vulnerabilities
-- [ ] Secure handling of sensitive data
-
-### Quality
-- [ ] Functions/methods have single responsibility
-- [ ] Naming is clear and descriptive
-- [ ] No code duplication (DRY principle)
-- [ ] Edge cases are handled
-
-### Testing
-- [ ] New code has appropriate test coverage
-- [ ] Tests are meaningful (not just for coverage)
-- [ ] Tests are independent and repeatable
+> This command uses the same review checklist and feedback categories as the Code Review Agent.
+> For the authoritative and up-to-date checklist, see the "Review Checklist" section in `agents/code-review.agent.md`.
 
 ## Error Handling
 
