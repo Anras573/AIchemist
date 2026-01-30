@@ -9,7 +9,10 @@
   "plugins": [
     {
       "name": "aichemist",
-      "source": "./"
+      "source": {
+        "source": "github",
+        "repo": "anras573/aichemist"
+      }
     }
   ]
 }
