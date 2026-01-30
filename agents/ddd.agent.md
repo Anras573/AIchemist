@@ -1,5 +1,5 @@
 ---
-name: DDD Agent
+name: ddd-agent
 description: |
   Domain-Driven Design expert for strategic modeling guidance, tactical pattern review, and design discussions. Use this agent PROACTIVELY when you encounter domain modeling questions, aggregate design, or code that deals with entities, value objects, and bounded contexts.
 

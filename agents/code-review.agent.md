@@ -1,5 +1,5 @@
 ---
-name: Code Review Agent
+name: code-review-agent
 description: |
   Expert code reviewer providing thorough, constructive feedback on code quality, security, and best practices. Use this agent PROACTIVELY when the user asks for feedback on code, wants a second opinion, or when reviewing changes before committing.
 

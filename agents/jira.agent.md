@@ -1,5 +1,5 @@
 ---
-name: Jira Agent
+name: jira-agent
 description: |
   Jira issue and project management agent. Use this agent PROACTIVELY when the user mentions tickets, tasks, sprints, backlogs, or needs to track work items. Also use when you need context about what the user is working on.
 
