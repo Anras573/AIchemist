@@ -72,7 +72,7 @@ Comprehensive code review with parallel agents, Jira integration, and confidence
 ```
 
 **Features:**
-- Launches 4+ parallel review agents (guidelines, bugs, security, DDD)
+- Launches parallel review agents (guidelines, bugs, security), plus file-triggered agents (e.g., DDD, .NET) when relevant
 - Confidence scoring (0-100) with 80 threshold to filter false positives
 - Auto-detects Jira tickets from branch name or PR description
 - Inline PR comments with committable suggestions
