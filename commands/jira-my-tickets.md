@@ -18,13 +18,13 @@ Examples:
 
 ## Configuration
 
-This command uses your Atlassian account ID from `~/.aichemist/config.json`.
+This command uses your Atlassian account ID from `${CLAUDE_PLUGIN_ROOT}/config.json`.
 
 **If the config file exists**: Read `atlassian.account_id` and use it directly.
 
 **If the config file is missing**:
 1. Ask the user: "I need your Atlassian account ID to find your tickets. Would you like me to fetch it from Atlassian and cache it for future use?"
-2. If yes: Use `atlassianUserInfo` to fetch, then create `~/.aichemist/config.json` with this structure:
+2. If yes: Use `atlassianUserInfo` to fetch, then create `${CLAUDE_PLUGIN_ROOT}/config.json` with this structure:
    ```json
    {
      "atlassian": {

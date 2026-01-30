@@ -85,7 +85,7 @@ Like the alchemists of old who sought to transform base metals into gold, AIchem
 
 AIchemist uses lazy configuration - settings are fetched and cached on first use:
 
-- **Jira user info**: Fetched via Atlassian MCP and stored in `~/.aichemist/config.json`
+- **Jira user info**: Fetched via Atlassian MCP and stored in `config.json` within the plugin directory
 - **No manual placeholders required**: Just install and use
 
 ### MCP Server Configuration
