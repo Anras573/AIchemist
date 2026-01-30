@@ -1,6 +1,31 @@
 ---
 name: Jira Agent
-description: 'A useful agent for managing Jira issues and projects directly from VS Code.'
+description: |
+  Jira issue and project management agent. Use this agent PROACTIVELY when the user mentions tickets, tasks, sprints, backlogs, or needs to track work items. Also use when you need context about what the user is working on.
+
+  <example>
+  Context: User asks about their current work or tasks.
+  user: "What tickets am I working on?"
+  assistant: "I'll use the Jira Agent to fetch your assigned tickets."
+  </example>
+
+  <example>
+  Context: User wants to create or track a new piece of work.
+  user: "I found a bug in the login flow, we should track this."
+  assistant: "I'll use the Jira Agent to create a bug ticket for the login flow issue."
+  </example>
+
+  <example>
+  Context: User references a ticket number or wants ticket details.
+  user: "What's the status of PROJ-123?"
+  assistant: "I'll use the Jira Agent to fetch the details for PROJ-123."
+  </example>
+
+  <example>
+  Context: User completes work and needs to update ticket status.
+  user: "I've finished implementing the feature, can you move the ticket to review?"
+  assistant: "I'll use the Jira Agent to transition your ticket to the review status."
+  </example>
 model: sonnet
 tools: ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'agent', 'atlassian/searchJiraIssuesUsingJql', 'atlassian/getJiraIssue', 'atlassian/createJiraIssue', 'atlassian/editJiraIssue', 'atlassian/transitionJiraIssue', 'atlassian/addCommentToJiraIssue', 'atlassian/getVisibleJiraProjects', 'atlassian/getJiraProjectIssueTypesMetadata', 'atlassian/atlassianUserInfo', 'todo']
 ---

@@ -1,6 +1,25 @@
 ---
 name: DDD Agent
-description: 'Domain-Driven Design expert for strategic modeling guidance, tactical pattern review, and design discussions.'
+description: |
+  Domain-Driven Design expert for strategic modeling guidance, tactical pattern review, and design discussions. Use this agent PROACTIVELY when you encounter domain modeling questions, aggregate design, or code that deals with entities, value objects, and bounded contexts.
+
+  <example>
+  Context: User is designing a new feature that involves business rules and data consistency.
+  user: "I need to add an order cancellation feature. Orders can only be cancelled if they haven't shipped yet."
+  assistant: "I'll use the DDD Agent to help design this - the cancellation rule is a domain invariant that should be enforced by the Order aggregate."
+  </example>
+
+  <example>
+  Context: User is reviewing code that has entities with public setters.
+  user: "Here's my Order class, does this look right?"
+  assistant: "I'll use the DDD Agent to review this. I notice the Order class has public setters which could allow invariants to be bypassed."
+  </example>
+
+  <example>
+  Context: User asks about relationships between domain objects.
+  user: "Should Order hold a reference to Customer or just the CustomerId?"
+  assistant: "I'll use the DDD Agent - this is a key aggregate boundary question."
+  </example>
 model: sonnet
 tools: ['read', 'search', 'agent', 'context7/*']
 used-by: ['commands/code-review.md']

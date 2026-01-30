@@ -1,6 +1,25 @@
 ---
 name: Code Review Agent
-description: 'An expert code reviewer that provides thorough, constructive feedback on code quality, security, and best practices.'
+description: |
+  Expert code reviewer providing thorough, constructive feedback on code quality, security, and best practices. Use this agent PROACTIVELY when the user asks for feedback on code, wants a second opinion, or when reviewing changes before committing.
+
+  <example>
+  Context: User has written code and wants feedback.
+  user: "Can you review this function I just wrote?"
+  assistant: "I'll use the Code Review Agent to review this for correctness, security, and best practices."
+  </example>
+
+  <example>
+  Context: User is about to commit or push changes.
+  user: "I think this is ready to commit, anything I should check?"
+  assistant: "I'll use the Code Review Agent to do a quick review before you commit."
+  </example>
+
+  <example>
+  Context: User is unsure about code quality or patterns.
+  user: "Is this the right way to handle this error?"
+  assistant: "I'll use the Code Review Agent to evaluate the error handling approach."
+  </example>
 model: opus
 tools: ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'github/*', 'atlassian/getJiraIssue', 'context7/*', 'microsoft-docs/*', 'agent', 'todo']
 used-by: ['commands/code-review.md']
