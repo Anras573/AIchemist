@@ -22,6 +22,14 @@ AIchemist/
 
 ## Installation
 
+### Option 1: Install from GitHub (Recommended)
+
+```bash
+claude plugins add github:Anras573/AIchemist
+```
+
+### Option 2: Clone and Link
+
 1. Clone this repository:
    ```bash
    git clone https://github.com/Anras573/AIchemist.git
@@ -29,7 +37,9 @@ AIchemist/
 
 2. Add the plugin to Claude Code by navigating to **Settings > Plugins** and adding the path to the `.claude-plugin` directory.
 
-3. **(Optional)** Configure the MCP servers as described in [MCP Server Configuration](#mcp-server-configuration).
+### Post-Installation
+
+**(Optional)** Configure the MCP servers as described in [MCP Server Configuration](#mcp-server-configuration).
 
 That's it! User-specific configuration (like Atlassian account info) is auto-fetched on first use.
 

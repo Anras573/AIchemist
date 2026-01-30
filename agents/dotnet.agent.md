@@ -1,5 +1,5 @@
 ---
-name: .NET Coding Agent
+name: dotnet-agent
 description: |
   Expert .NET software engineer for building, debugging, and optimizing .NET applications. Use this agent PROACTIVELY when working with C#, F#, .NET projects, or when the user needs help with async patterns, SOLID principles, testing, or .NET-specific APIs.
 

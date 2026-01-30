@@ -1,5 +1,5 @@
 ---
-name: TypeScript/React Agent
+name: typescript-react-agent
 description: |
   Expert full-stack TypeScript developer specializing in React, Next.js, Node.js, and modern frontend/backend patterns. Use this agent PROACTIVELY when working with TypeScript, JavaScript, React components, Next.js apps, or Node.js backends.
 
