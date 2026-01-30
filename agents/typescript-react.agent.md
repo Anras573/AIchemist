@@ -1,7 +1,7 @@
 ---
 name: TypeScript/React Agent
 description: 'Expert full-stack TypeScript developer specializing in React, Next.js, Node.js, and modern frontend/backend patterns.'
-model: Claude Opus 4.5 (copilot)
+model: opus
 tools: ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'github/*', 'agent', 'context7/*', 'todo']
 ---
 

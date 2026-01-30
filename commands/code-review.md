@@ -1,6 +1,7 @@
 ---
 name: code-review
 description: Comprehensive code review with specialized agents, Jira integration, and flexible scope (PR or branch diff).
+argument-hint: "[--comment] [--base <branch>] [--ticket <KEY>]"
 allowed-tools: Bash(gh pr comment:*), Bash(gh pr diff:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(git diff:*), mcp__atlassian__getJiraIssue, mcp__github_inline_comment__create_inline_comment
 ---
 

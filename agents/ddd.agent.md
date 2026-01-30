@@ -1,6 +1,7 @@
 ---
 name: DDD Agent
 description: 'Domain-Driven Design expert for strategic modeling guidance, tactical pattern review, and design discussions.'
+model: sonnet
 tools: ['read', 'search', 'agent', 'context7/*']
 used-by: ['commands/code-review.md']
 ---

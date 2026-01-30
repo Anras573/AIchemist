@@ -1,12 +1,12 @@
 {
   "hooks": {
-    "Notification": [
+    "Stop": [
       {
         "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_DIR}/tools/notify.sh\" 'Claude Code' 'Awaiting your input'"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/tools/notify.sh\" 'Claude Code' 'Awaiting your input'"
           }
         ]
       }

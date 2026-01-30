@@ -1,6 +1,7 @@
 ---
 name: Code Review Agent
 description: 'An expert code reviewer that provides thorough, constructive feedback on code quality, security, and best practices.'
+model: opus
 tools: ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'github/*', 'atlassian/getJiraIssue', 'context7/*', 'microsoft-docs/*', 'agent', 'todo']
 used-by: ['commands/code-review.md']
 ---

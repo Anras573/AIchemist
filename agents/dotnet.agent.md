@@ -1,7 +1,7 @@
 ---
 name: .NET Coding Agent
 description: 'This custom agent is a .NET software engineer with expertise in building, debugging, and optimizing .NET applications.'
-model: Claude Opus 4.5 (copilot)
+model: opus
 tools: ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'atlassian/search', 'github/*', 'microsoft-docs/*', 'agent', 'context7/*', 'todo']
 inspiration:
   - https://github.com/github/awesome-copilot/blob/main/agents/CSharpExpert.agent.md
