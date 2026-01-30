@@ -20,6 +20,95 @@ AIchemist/
 └── examples/        # Usage examples and demonstrations
 ```
 
+## Installation
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/Anras573/AIchemist.git
+   ```
+
+2. Add the plugin to Claude Code by navigating to **Settings > Plugins** and adding the path to the `.claude-plugin` directory.
+
+3. **(Optional)** Configure the MCP servers as described in [MCP Server Configuration](#mcp-server-configuration).
+
+That's it! User-specific configuration (like Atlassian account info) is auto-fetched on first use.
+
+## Agents
+
+AIchemist includes specialized agents for different development tasks:
+
+| Agent | Description |
+| ----- | ----------- |
+| **Code Review** | Expert code reviewer with parallel agent support, Jira integration, and confidence scoring |
+| **TypeScript/React** | Full-stack TypeScript developer specializing in React, Next.js, Node.js, and modern frontend patterns |
+| **.NET** | C#/.NET expert covering async patterns, SOLID principles, DDD, and testing frameworks |
+| **DDD** | Domain-Driven Design expert for strategic modeling and tactical pattern review |
+| **Jira** | Jira issue management with auto-configured user context |
+
+Agents can consult each other for specialized guidance. For example, the Code Review agent consults the .NET agent for C# reviews and the TypeScript/React agent for frontend reviews.
+
+## Commands
+
+### `/jira-my-tickets [date]`
+
+Show all Jira tickets where you are the assignee or creator since a specified date.
+
+```text
+/jira-my-tickets 2025-01-01
+/jira-my-tickets last week
+```
+
+**First run**: The command will prompt to fetch and cache your Atlassian user info.
+
+### `/code-review [options]`
+
+Comprehensive code review with parallel agents, Jira integration, and confidence-based filtering.
+
+```text
+/code-review                     # Review current branch vs origin/main
+/code-review --base develop      # Review against different base branch
+/code-review --comment           # Post findings as inline PR comments
+/code-review --ticket PROJ-123   # Override Jira ticket detection
+```
+
+**Features:**
+- Launches parallel review agents (guidelines, bugs, security), plus file-triggered agents (e.g., DDD, .NET) when relevant
+- Confidence scoring (0-100) with 80 threshold to filter false positives
+- Auto-detects Jira tickets from branch name or PR description
+- Inline PR comments with committable suggestions
+
+## Configuration
+
+### Auto-Configuration
+
+AIchemist uses lazy configuration - settings are fetched and cached on first use:
+
+- **Jira user info**: Fetched via Atlassian MCP and stored in `config.json` within the plugin directory
+- **No manual placeholders required**: Just install and use
+
+> **Note:** The config file contains personal data (email, account ID) and is excluded from version control via `.gitignore`.
+
+### MCP Server Configuration
+
+The `.mcp.json` file configures external MCP servers. All servers use hosted HTTP endpoints.
+
+| Server | Description | Auth Required |
+| ------ | ----------- | ------------- |
+| `github` | GitHub Copilot MCP integration | GitHub Copilot subscription |
+| `atlassian` | Jira and Confluence access | Atlassian account (OAuth via browser) |
+| `microsoft-docs` | Microsoft Learn documentation (.NET, Azure, C#) | None |
+| `context7` | Up-to-date library documentation | API key |
+
+#### Context7 API Key
+
+Context7 requires an API key set as an environment variable:
+
+```bash
+export CONTEXT7_API_KEY="your-api-key-here"
+```
+
+Get your API key from [Context7](https://context7.com).
+
 ## Directories
 
 ### `agents/`
@@ -52,24 +141,11 @@ LSP (Language Server Protocol) configurations that provide code intelligence fea
 
 ### `.mcp.json`
 
-MCP (Model Context Protocol) server configurations that expose new capabilities and integrations to AI agents. See [MCP Server Configuration](#mcp-server-configuration) for setup details.
+MCP (Model Context Protocol) server configurations that expose new capabilities and integrations to AI agents.
 
 ### `examples/`
 
 Practical examples demonstrating how to use and combine the components in this repository.
-
-## Installation
-
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/Anras573/AIchemist.git
-   ```
-
-2. Add the plugin to Claude Code by navigating to **Settings > Plugins** and adding the path to the `.claude-plugin` directory.
-
-3. **(Optional)** Configure the MCP servers as described in [MCP Server Configuration](#mcp-server-configuration).
-
-That's it! User-specific configuration (like Atlassian account info) is auto-fetched on first use.
 
 ## Philosophy
 
@@ -78,66 +154,6 @@ Like the alchemists of old who sought to transform base metals into gold, AIchem
 - **Composable** - Works well independently and in combination
 - **Documented** - Clear purpose and usage instructions
 - **Practical** - Solves real problems in daily workflows
-
-## Configuration
-
-### Auto-Configuration
-
-AIchemist uses lazy configuration - settings are fetched and cached on first use:
-
-- **Jira user info**: Fetched via Atlassian MCP and stored in `config.json` within the plugin directory
-- **No manual placeholders required**: Just install and use
-
-> **Note:** The config file contains personal data (email, account ID) and is excluded from version control via `.gitignore`.
-
-### MCP Server Configuration
-
-The `.mcp.json` file configures external MCP servers that provide additional capabilities to agents. All servers use hosted HTTP endpoints.
-
-| Server | Description | Auth Required |
-| ------ | ----------- | ------------- |
-| `github` | GitHub Copilot MCP integration | GitHub Copilot subscription |
-| `atlassian` | Jira and Confluence access | Atlassian account (OAuth via browser) |
-| `microsoft-docs` | Microsoft Learn documentation (.NET, Azure, C#) | None |
-| `context7` | Up-to-date library documentation | API key |
-
-#### Context7 API Key
-
-Context7 requires an API key set as an environment variable:
-
-```bash
-export CONTEXT7_API_KEY="your-api-key-here"
-```
-
-Get your API key from [Context7](https://context7.com).
-
-## Commands
-
-### `/jira-my-tickets [date]`
-
-Show all Jira tickets where you are the assignee or creator since a specified date.
-
-```text
-/jira-my-tickets 2025-01-01
-/jira-my-tickets last week
-```
-
-### `/code-review [options]`
-
-Comprehensive code review with parallel agents, Jira integration, and confidence-based filtering.
-
-```text
-/code-review                     # Review current branch vs origin/main
-/code-review --base develop      # Review against different base branch
-/code-review --comment           # Post findings as inline PR comments
-/code-review --ticket PROJ-123   # Override Jira ticket detection
-```
-
-**Features:**
-- Launches 4+ parallel review agents (guidelines, bugs, security)
-- Confidence scoring (0-100) with 80 threshold to filter false positives
-- Auto-detects Jira tickets from branch name or PR description
-- Inline PR comments with committable suggestions
 
 ## License
 
