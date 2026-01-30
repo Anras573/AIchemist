@@ -67,7 +67,9 @@ Practical examples demonstrating how to use and combine the components in this r
 
 2. Add the plugin to Claude Code by navigating to **Settings > Plugins** and adding the path to the `.claude-plugin` directory.
 
-3. Configure the placeholders as described in the [Configuration](#configuration) section below.
+3. **(Optional)** Configure the MCP servers as described in [MCP Server Configuration](#mcp-server-configuration).
+
+That's it! User-specific configuration (like Atlassian account info) is auto-fetched on first use.
 
 ## Philosophy
 
@@ -79,29 +81,14 @@ Like the alchemists of old who sought to transform base metals into gold, AIchem
 
 ## Configuration
 
-Some agents and skills use placeholders that must be replaced with your own values before use.
+### Auto-Configuration
 
-### Jira Placeholders
+AIchemist uses lazy configuration - settings are fetched and cached on first use:
 
-The following placeholders are used by Jira-related components:
+- **Jira user info**: Fetched via Atlassian MCP and stored in `config.json` within the plugin directory
+- **No manual placeholders required**: Just install and use
 
-| Placeholder | Used By | Description | Example |
-| ----------- | ------- | ----------- | ------- |
-| `{{USER_NAME}}` | Agent | Your full name | `Jane Smith` |
-| `{{USER_NICKNAME}}` | Agent | Your display name | `Jane` |
-| `{{USER_EMAIL}}` | Agent | Your Atlassian email | `jane.smith@company.com` |
-| `{{ATLASSIAN_ACCOUNT_ID}}` | Agent, Skill | Your Atlassian account ID | `712020:abc123...` |
-| `{{USER_LOCALE}}` | Agent | Your locale | `en-US` |
-| `{{USER_JOB_TITLE}}` | Agent | Your job title | `Software Engineer` |
-| `{{USER_TEAM_TYPE}}` | Agent | Your team type | `Software development` |
-| `{{DEFAULT_PROJECT_KEY}}` | Agent | Default Jira project key | `MYPROJECT` |
-
-**Components:**
-
-- `agents/jira.agent.md` - Requires all placeholders above
-- `commands/jira-my-tickets.md` - Requires only `{{ATLASSIAN_ACCOUNT_ID}}`
-
-To find your Atlassian account ID, visit your Atlassian profile or use the Atlassian API.
+> **Note:** The config file contains personal data (email, account ID) and is excluded from version control via `.gitignore`.
 
 ### MCP Server Configuration
 
