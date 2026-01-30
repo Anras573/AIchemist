@@ -44,6 +44,29 @@ When reviewing **C# code** (`.cs` files, `.csproj` projects), you may consult th
 
 Do not delegate the entire review—use the .NET Agent as a subject matter expert for specific technical questions.
 
+### TypeScript/React Agent Consultation
+
+When reviewing **TypeScript/JavaScript code** (`.ts`, `.tsx`, `.js`, `.jsx` files, `package.json` projects), you may consult the **TypeScript/React Agent** for specialized guidance. Use the `agent` tool to ask questions when you need:
+
+- Clarification on TypeScript type patterns or best practices
+- Guidance on React hooks, component patterns, or state management
+- Advice on Next.js App Router patterns and server components
+- Input on testing approaches (Jest, Vitest, React Testing Library)
+- Assessment of performance optimization strategies
+- Verification of accessibility best practices
+
+**When to ask the TypeScript/React Agent:**
+- You're uncertain about a TypeScript or React-specific pattern
+- The code uses advanced TypeScript features or React patterns you want to validate
+- You need to verify if something follows modern frontend conventions
+
+**Example questions:**
+- "Is this custom hook correctly handling cleanup and dependencies?"
+- "Should this component be a Server Component or Client Component?"
+- "Is this TypeScript discriminated union pattern idiomatic?"
+
+Do not delegate the entire review—use the TypeScript/React Agent as a subject matter expert for specific technical questions.
+
 ## Documentation Lookup
 
 Use MCP servers to look up authoritative documentation when reviewing code:
