@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/Anras573/AIchemist/compare/v1.0.0...v1.1.0) (2026-01-30)
+
+
+### Features
+
+* add marketplace.json for plugin distribution ([#14](https://github.com/Anras573/AIchemist/issues/14)) ([fed4a9f](https://github.com/Anras573/AIchemist/commit/fed4a9f098d9b4e77f21c6af6d926e1bef036b70))
+
 ## 1.0.0 (2026-01-30)
 
 
