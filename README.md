@@ -88,6 +88,8 @@ AIchemist uses lazy configuration - settings are fetched and cached on first use
 - **Jira user info**: Fetched via Atlassian MCP and stored in `config.json` within the plugin directory
 - **No manual placeholders required**: Just install and use
 
+> **Note:** The config file contains personal data (email, account ID) and is excluded from version control via `.gitignore`.
+
 ### MCP Server Configuration
 
 The `.mcp.json` file configures external MCP servers that provide additional capabilities to agents. All servers use hosted HTTP endpoints.

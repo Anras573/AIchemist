@@ -18,21 +18,29 @@ Examples:
 
 ## Configuration
 
-This command uses your Atlassian account ID from `${CLAUDE_PLUGIN_ROOT}/config.json`.
+This command uses your Atlassian account information from `${CLAUDE_PLUGIN_ROOT}/config.json`.
 
 **If the config file exists**: Read `atlassian.account_id` and use it directly.
 
-**If the config file is missing**:
-1. Ask the user: "I need your Atlassian account ID to find your tickets. Would you like me to fetch it from Atlassian and cache it for future use?"
-2. If yes: Use `atlassianUserInfo` to fetch, then create `${CLAUDE_PLUGIN_ROOT}/config.json` with this structure:
+**If the config file is missing or incomplete**:
+1. Use `atlassianUserInfo` to fetch your Atlassian user details
+2. Ask the user: "Would you like me to save your Atlassian info for future use? This avoids fetching it each time."
+3. If yes: Create `${CLAUDE_PLUGIN_ROOT}/config.json` with the full schema (matching the Jira Agent):
    ```json
    {
      "atlassian": {
-       "account_id": "<your Atlassian account ID>"
+       "account_id": "<your Atlassian account ID>",
+       "email": "<your Atlassian email>",
+       "name": "<your full name>",
+       "nickname": "<your display name>",
+       "locale": "<your locale, e.g. en-US>"
+     },
+     "defaults": {
+       "project_key": "<optional: default Jira project key>"
      }
    }
    ```
-3. If no: Use the fetched account ID for this session only without saving
+4. If no: Use the fetched account ID for this session only without saving
 
 ## Execution Steps
 

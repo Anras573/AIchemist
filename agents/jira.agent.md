@@ -42,7 +42,7 @@ Read the file and use the stored user information for all Jira operations. The c
    - Optionally ask for a default project key
 
 3. **If user declines**:
-   - Fetch user info for this session only (don't save)
+   - Use `atlassianUserInfo` to fetch user details for this session only (don't save)
    - Proceed with the task
 
 ## Using the Configuration
