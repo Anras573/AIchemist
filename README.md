@@ -72,7 +72,7 @@ Comprehensive code review with parallel agents, Jira integration, and confidence
 ```
 
 **Features:**
-- Launches 4+ parallel review agents (guidelines, bugs, security, DDD)
+- Launches parallel review agents (guidelines, bugs, security), plus file-triggered agents (e.g., DDD, .NET) when relevant
 - Confidence scoring (0-100) with 80 threshold to filter false positives
 - Auto-detects Jira tickets from branch name or PR description
 - Inline PR comments with committable suggestions
@@ -83,8 +83,10 @@ Comprehensive code review with parallel agents, Jira integration, and confidence
 
 AIchemist uses lazy configuration - settings are fetched and cached on first use:
 
-- **Jira user info**: Fetched via Atlassian MCP and stored in `~/.aichemist/config.json`
+- **Jira user info**: Fetched via Atlassian MCP and stored in `config.json` within the plugin directory
 - **No manual placeholders required**: Just install and use
+
+> **Note:** The config file contains personal data (email, account ID) and is excluded from version control via `.gitignore`.
 
 ### MCP Server Configuration
 

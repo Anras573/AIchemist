@@ -11,3 +11,4 @@ Thumbs.db
 
 # Local configuration with secrets
 *.local.json
+config.json
