@@ -1,6 +1,8 @@
 ---
 name: jira-my-tickets
 description: Show all Jira tickets you've been involved with (as assignee or creator) since a specified date.
+argument-hint: "<date> (e.g., 2025-01-01, 'last week')"
+allowed-tools: mcp__atlassian__searchJiraIssuesUsingJql, mcp__atlassian__atlassianUserInfo, Read, Write
 ---
 
 # My Jira Tickets Command

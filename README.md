@@ -99,6 +99,12 @@ The `.mcp.json` file configures external MCP servers. All servers use hosted HTT
 | `microsoft-docs` | Microsoft Learn documentation (.NET, Azure, C#) | None |
 | `context7` | Up-to-date library documentation | API key |
 
+### Required Environment Variables
+
+| Variable | Required For | Description |
+| -------- | ------------ | ----------- |
+| `CONTEXT7_API_KEY` | Context7 MCP server | API key for library documentation lookups |
+
 #### Context7 API Key
 
 Context7 requires an API key set as an environment variable:
@@ -108,6 +114,8 @@ export CONTEXT7_API_KEY="your-api-key-here"
 ```
 
 Get your API key from [Context7](https://context7.com).
+
+Add this to your shell profile (`.bashrc`, `.zshrc`, etc.) for persistence.
 
 ## Directories
 
