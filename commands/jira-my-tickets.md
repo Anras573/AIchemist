@@ -24,8 +24,15 @@ This command uses your Atlassian account ID from `~/.aichemist/config.json`.
 
 **If the config file is missing**:
 1. Ask the user: "I need your Atlassian account ID to find your tickets. Would you like me to fetch it from Atlassian and cache it for future use?"
-2. If yes: Use `atlassianUserInfo` to fetch, then create `~/.aichemist/config.json` with the result
-3. If no: Fetch for this session only without saving
+2. If yes: Use `atlassianUserInfo` to fetch, then create `~/.aichemist/config.json` with this structure:
+   ```json
+   {
+     "atlassian": {
+       "account_id": "<your Atlassian account ID>"
+     }
+   }
+   ```
+3. If no: Use the fetched account ID for this session only without saving
 
 ## Execution Steps
 
@@ -36,10 +43,11 @@ When this command is invoked:
    - Relative: `last week`, `last month`, `30 days ago`
    - Convert relative dates to JQL format (e.g., `-7d`, `-1w`, `-30d`)
 
-2. **Build the JQL query**:
+2. **Build the JQL query** using the loaded or fetched account ID:
    ```
-   (assignee = "{{ATLASSIAN_ACCOUNT_ID}}" OR reporter = "{{ATLASSIAN_ACCOUNT_ID}}") AND updated >= "YYYY-MM-DD" ORDER BY updated DESC
+   (assignee = "<account_id>" OR reporter = "<account_id>") AND updated >= "YYYY-MM-DD" ORDER BY updated DESC
    ```
+   Replace `<account_id>` with the value from `atlassian.account_id` in the config file (or the session value if not cached).
 
 3. **Execute the search**: Use the `mcp__atlassian__searchJiraIssuesUsingJql` tool with:
    - The constructed JQL query
@@ -60,4 +68,5 @@ When this command is invoked:
 
 - If no date is provided, ask the user for one
 - If no issues are found, confirm the search was successful but returned no results
-- If the account ID placeholder hasn't been replaced, remind the user to configure it
+- If the config file is missing and user declines to cache, proceed with session-only fetch
+- If `atlassianUserInfo` fails, inform the user and suggest checking their Atlassian authentication
