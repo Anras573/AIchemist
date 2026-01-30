@@ -108,9 +108,9 @@ Do not guess or rely on potentially outdated knowledge. Look it up.
 
 > **Note**: When used by the `/code-review` command, Jira context is fetched by the command and provided to you. Skip steps 1-3 below and use the provided context directly.
 
-**When running standalone**, check the current git branch name. If it matches the pattern `*/{{DEFAULT_PROJECT_KEY}}-XXXX` (e.g., `feature/{{DEFAULT_PROJECT_KEY}}-1234`, `bugfix/{{DEFAULT_PROJECT_KEY}}-5678`):
+**When running standalone**, check the current git branch name for Jira ticket patterns like `feature/PROJ-1234` or `bugfix/ABC-5678`:
 
-1. Extract the ticket number (e.g., `{{DEFAULT_PROJECT_KEY}}-1234`)
+1. Extract the ticket key from the branch name (e.g., `PROJ-1234`)
 2. Fetch the Jira issue using `getJiraIssue`
 3. Use the ticket's **description** and **acceptance criteria** to inform your review
 
@@ -122,14 +122,14 @@ When Jira context is available (either provided or fetched), your review should 
 Include a summary at the start of your review:
 
 ```
-## Jira Context: {{DEFAULT_PROJECT_KEY}}-XXXX
+## Jira Context: [TICKET-KEY]
 **Summary**: [Ticket summary]
 **Acceptance Criteria Status**:
 - [ ] Criterion 1 - [Implemented/Missing/Partial]
 - [ ] Criterion 2 - [Implemented/Missing/Partial]
 ```
 
-If the branch doesn't match the pattern or no ticket is found, proceed with the review without Jira context.
+If the branch doesn't contain a ticket pattern or no ticket is found, proceed with the review without Jira context.
 
 ## Review Process
 

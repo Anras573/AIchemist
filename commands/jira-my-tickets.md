@@ -18,13 +18,14 @@ Examples:
 
 ## Configuration
 
-This command requires your Atlassian account ID. Replace the placeholder below with your actual account ID:
+This command uses your Atlassian account ID from `~/.aichemist/config.json`.
 
-```
-Account ID: {{ATLASSIAN_ACCOUNT_ID}}
-```
+**If the config file exists**: Read `atlassian.account_id` and use it directly.
 
-To find your account ID, visit your Atlassian profile or use the `atlassianUserInfo` MCP tool.
+**If the config file is missing**:
+1. Ask the user: "I need your Atlassian account ID to find your tickets. Would you like me to fetch it from Atlassian and cache it for future use?"
+2. If yes: Use `atlassianUserInfo` to fetch, then create `~/.aichemist/config.json` with the result
+3. If no: Fetch for this session only without saving
 
 ## Execution Steps
 
