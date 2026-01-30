@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "aichemist",
-      "source": "./plugin.json"
+      "source": "./.claude-plugin/plugin.json"
     }
   ]
 }
