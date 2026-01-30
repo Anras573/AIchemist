@@ -1,0 +1,40 @@
+{
+  "name": "aichemist",
+  "displayName": "AIchemist",
+  "description": "Custom agents, commands, and skills for AI-assisted development with Jira, .NET, TypeScript/React, and DDD integration",
+  "version": "1.0.0",
+  "author": {
+    "name": "Anders Bo Rasmussen",
+    "url": "https://github.com/Anras573"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/Anras573/AIchemist",
+  "homepage": "https://github.com/Anras573/AIchemist#readme",
+  "bugs": {
+    "url": "https://github.com/Anras573/AIchemist/issues"
+  },
+  "keywords": [
+    "jira",
+    "dotnet",
+    "typescript",
+    "react",
+    "agents",
+    "productivity",
+    "code-review",
+    "ddd"
+  ],
+  "category": "development",
+  "tags": [
+    "agents",
+    "commands",
+    "jira-integration",
+    "dotnet-development",
+    "typescript-react",
+    "domain-driven-design",
+    "code-review"
+  ],
+  "pricing": "free",
+  "documentation": "https://github.com/Anras573/AIchemist/blob/main/README.md",
+  "changelog": "https://github.com/Anras573/AIchemist/blob/main/CHANGELOG.md",
+  "support": "https://github.com/Anras573/AIchemist/issues"
+}
