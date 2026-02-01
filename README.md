@@ -22,20 +22,25 @@ AIchemist/
 
 ## Installation
 
-### Option 1: Install from GitHub (Recommended)
+### Option 1: Install from Marketplace (Recommended)
 
 ```bash
-claude plugins add github:Anras573/AIchemist
+claude plugin install aichemist
 ```
 
-### Option 2: Clone and Link
+### Option 2: Install from Local Path
 
 1. Clone this repository:
    ```bash
    git clone https://github.com/Anras573/AIchemist.git
    ```
 
-2. Add the plugin to Claude Code by navigating to **Settings > Plugins** and adding the path to the `.claude-plugin` directory.
+2. Install the plugin from the local path:
+   ```bash
+   claude plugin install ./AIchemist
+   ```
+
+You can also specify the installation scope with `--scope user`, `--scope project`, or `--scope local`.
 
 ### Post-Installation
 
