@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.1](https://github.com/Anras573/AIchemist/compare/v1.1.0...v1.1.1) (2026-02-01)
+
+
+### Bug Fixes
+
+* add author email and correct plugin source path ([#19](https://github.com/Anras573/AIchemist/issues/19)) ([5198853](https://github.com/Anras573/AIchemist/commit/519885355e494baf314a2c9c6b0e82879502f76b))
+* correct plugin source path in marketplace.json ([#18](https://github.com/Anras573/AIchemist/issues/18)) ([d3d3dd3](https://github.com/Anras573/AIchemist/commit/d3d3dd37f7fd5082c1ef12050eb2fbf1df633f51))
+* fixed plugin location inside marketplace.json ([#21](https://github.com/Anras573/AIchemist/issues/21)) ([f520641](https://github.com/Anras573/AIchemist/commit/f52064185560bc977cb8660642fa1a5f581e5efd))
+* simplify marketplace.json by removing unnecessary fields ([#16](https://github.com/Anras573/AIchemist/issues/16)) ([786a366](https://github.com/Anras573/AIchemist/commit/786a3663c9c43a569fc5b6a333e11ad5d3aa32a1))
+* use correct flat schema for .mcp.json ([#22](https://github.com/Anras573/AIchemist/issues/22)) ([1ee2c9a](https://github.com/Anras573/AIchemist/commit/1ee2c9ac0b7591a0e373f0bbef6a0cab132af8f5))
+* use GitHub source format in marketplace.json ([#20](https://github.com/Anras573/AIchemist/issues/20)) ([0924722](https://github.com/Anras573/AIchemist/commit/0924722fbcfd1f49b28957612c00005fd9bebc93))
+
 ## [1.1.0](https://github.com/Anras573/AIchemist/compare/v1.0.0...v1.1.0) (2026-01-30)
 
 
