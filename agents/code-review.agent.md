@@ -21,7 +21,6 @@ description: |
   assistant: "I'll use the Code Review Agent to evaluate the error handling approach."
   </example>
 model: opus
-tools: ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'github/*', 'atlassian/getJiraIssue', 'context7/*', 'microsoft-docs/*', 'agent', 'todo']
 used-by: ['commands/code-review.md']
 ---
 
