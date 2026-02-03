@@ -57,10 +57,26 @@ AIchemist includes specialized agents for different development tasks:
 | **Code Review** | Expert code reviewer with parallel agent support, Jira integration, and confidence scoring |
 | **TypeScript/React** | Full-stack TypeScript developer specializing in React, Next.js, Node.js, and modern frontend patterns |
 | **.NET** | C#/.NET expert covering async patterns, SOLID principles, DDD, and testing frameworks |
-| **DDD** | Domain-Driven Design expert for strategic modeling and tactical pattern review |
-| **Jira** | Jira issue management with auto-configured user context |
+| **DDD** | Domain-Driven Design expert for strategic modeling and tactical pattern review (language-agnostic) |
 
 Agents can consult each other for specialized guidance. For example, the Code Review agent consults the .NET agent for C# reviews and the TypeScript/React agent for frontend reviews.
+
+## Skills
+
+Skills provide specialized capabilities that are triggered contextually based on user requests.
+
+| Skill | Description |
+| ----- | ----------- |
+| **Jira** | Jira issue management with read/write operations. Read operations execute automatically; write operations require user confirmation via interactive prompts. |
+
+### Jira Skill
+
+The Jira skill handles all Jira-related requests:
+
+- **Read operations** (automatic): Search issues, view details, list projects
+- **Write operations** (confirmation required): Create issues, update fields, transition status, add comments
+
+User context is auto-fetched and cached on first use.
 
 ## Commands
 
