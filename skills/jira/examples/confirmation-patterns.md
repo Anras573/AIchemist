@@ -229,8 +229,8 @@ Execute the write operation and confirm success:
 Created PROJ-124: "Login timeout on mobile devices"
 ```
 
-### If "Edit" selected:
-Ask follow-up questions to gather corrections, then re-confirm.
+### If "Edit details first" selected:
+Ask follow-up questions to gather corrections, then re-confirm with updated details.
 
 ### If "Cancel" selected:
 Acknowledge and move on:
@@ -238,5 +238,5 @@ Acknowledge and move on:
 Okay, I won't create the ticket.
 ```
 
-### If "Other" selected (custom input):
-Parse user's custom response and adjust accordingly.
+### If user provides custom input (via "Other"):
+Parse user's custom response and adjust accordingly. Users can always type custom text.

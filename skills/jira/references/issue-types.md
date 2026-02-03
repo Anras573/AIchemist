@@ -130,7 +130,7 @@ Use `atlassian/getTransitionsForJiraIssue` to get valid transitions:
 ```
 
 Response includes:
-- `id` - Transition ID (used in transitionJiraIssue)
+- `id` - Transition ID (used in `atlassian/transitionJiraIssue`)
 - `name` - Display name
 - `to` - Target status
 - `hasScreen` - Whether transition shows a screen

@@ -31,9 +31,9 @@ This skill provides Jira integration for searching, viewing, creating, and manag
 
 | Tool | Purpose | Confirmation Message |
 |------|---------|---------------------|
-| `atlassian/createJiraIssue` | Create new issue | "Create issue '[summary]' in [project]?" |
-| `atlassian/editJiraIssue` | Update issue fields | "Update [field] on [issue-key] to '[value]'?" |
-| `atlassian/transitionJiraIssue` | Change issue status | "Move [issue-key] to [status]?" |
+| `atlassian/createJiraIssue` | Create new issue | "Create this Jira issue?" (show details) |
+| `atlassian/editJiraIssue` | Update issue fields | "Update [ISSUE-KEY]?" (show changes) |
+| `atlassian/transitionJiraIssue` | Change issue status | "Move [ISSUE-KEY] from '[current]' to '[new]'?" |
 | `atlassian/addCommentToJiraIssue` | Add comment to issue | "Add comment to [issue-key]?" |
 | `atlassian/addWorklogToJiraIssue` | Log work on issue | "Log [time] on [issue-key]?" |
 
@@ -48,7 +48,7 @@ On first use, check for configuration at `${CLAUDE_PLUGIN_ROOT}/config.json`:
 **If config missing:** Use `AskUserQuestion` to ask:
 > "I don't have your Atlassian user info cached. Should I fetch and save it to speed up future queries?"
 
-If confirmed, use `atlassianUserInfo` to fetch details and write to config file.
+If confirmed, use `atlassian/atlassianUserInfo` to fetch details and write to config file.
 
 ### Config Structure
 
@@ -57,7 +57,9 @@ If confirmed, use `atlassianUserInfo` to fetch details and write to config file.
   "atlassian": {
     "account_id": "...",
     "email": "...",
-    "name": "..."
+    "name": "...",
+    "nickname": "...",
+    "locale": "..."
   },
   "defaults": {
     "project_key": "..."
