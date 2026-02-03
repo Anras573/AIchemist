@@ -21,7 +21,6 @@ description: |
   assistant: "I'll use the DDD Agent - this is a key aggregate boundary question."
   </example>
 model: sonnet
-tools: ['read', 'search', 'agent', 'context7/*']
 used-by: ['commands/code-review.md']
 ---
 

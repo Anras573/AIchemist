@@ -27,7 +27,6 @@ description: |
   assistant: "I'll use the .NET Coding Agent - I'll suggest using FluentResults or a Result pattern instead of exceptions for control flow."
   </example>
 model: opus
-tools: ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'atlassian/search', 'github/*', 'microsoft-docs/*', 'agent', 'context7/*', 'todo']
 inspiration:
   - https://github.com/github/awesome-copilot/blob/main/agents/CSharpExpert.agent.md
 ---
