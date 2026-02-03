@@ -133,7 +133,7 @@ When reviewing DDD code, verify:
 - [ ] Immutable (no public setters, no mutation methods)
 - [ ] Validated in constructor (invalid state is impossible)
 - [ ] Equality based on all properties
-- [ ] Implemented as `record` types in C# where appropriate
+- [ ] Implemented idiomatically for the language (C# records, TypeScript readonly classes, etc.)
 
 ### Entities
 
@@ -163,6 +163,9 @@ When reviewing DDD code, verify:
 **Problem**: Entities with only getters/setters, all logic in services
 **Fix**: Move business logic into domain objects where the data lives
 
+<details>
+<summary>C# Example</summary>
+
 ```csharp
 // Bad: Anemic
 public class Order {
@@ -190,11 +193,55 @@ public class Order {
     }
 }
 ```
+</details>
+
+<details>
+<summary>TypeScript Example</summary>
+
+```typescript
+// Bad: Anemic
+class Order {
+  public total: number;
+  public status: OrderStatus;
+}
+class OrderService {
+  cancel(order: Order): void {
+    if (order.status === OrderStatus.Shipped) {
+      throw new Error('Cannot cancel');
+    }
+    order.status = OrderStatus.Cancelled;
+  }
+}
+
+// Good: Rich domain model
+class Order {
+  private readonly _id: OrderId;
+  private _total: number;
+  private _status: OrderStatus;
+  private _domainEvents: DomainEvent[] = [];
+
+  get id(): OrderId { return this._id; }
+  get total(): number { return this._total; }
+  get status(): OrderStatus { return this._status; }
+
+  cancel(): void {
+    if (this._status === OrderStatus.Shipped) {
+      throw new DomainError('Cannot cancel shipped orders');
+    }
+    this._status = OrderStatus.Cancelled;
+    this._domainEvents.push(new OrderCancelled(this._id));
+  }
+}
+```
+</details>
 
 ### Aggregate Reference by Object
 
 **Problem**: Aggregates holding references to other aggregates
 **Fix**: Reference by ID, load when needed
+
+<details>
+<summary>C# Example</summary>
 
 ```csharp
 // Bad: Object reference
@@ -207,11 +254,32 @@ public class Order {
     public CustomerId CustomerId { get; private set; }
 }
 ```
+</details>
+
+<details>
+<summary>TypeScript Example</summary>
+
+```typescript
+// Bad: Object reference
+class Order {
+  customer: Customer; // Direct reference
+}
+
+// Good: ID reference
+class Order {
+  private readonly _customerId: CustomerId;
+  get customerId(): CustomerId { return this._customerId; }
+}
+```
+</details>
 
 ### Broken Invariants
 
 **Problem**: Public setters allowing invalid state
 **Fix**: Encapsulate with validation
+
+<details>
+<summary>C# Example</summary>
 
 ```csharp
 // Bad: Invariant can be broken
@@ -233,6 +301,36 @@ public class Order {
     }
 }
 ```
+</details>
+
+<details>
+<summary>TypeScript Example</summary>
+
+```typescript
+// Bad: Invariant can be broken
+class Order {
+  lines: OrderLine[] = [];
+  total: number = 0;
+}
+
+// Good: Invariant protected
+class Order {
+  private readonly _lines: OrderLine[] = [];
+
+  get lines(): readonly OrderLine[] { return this._lines; }
+  get total(): number {
+    return this._lines.reduce((sum, l) => sum + l.subtotal, 0);
+  }
+
+  addLine(product: Product, quantity: number): void {
+    if (quantity <= 0) {
+      throw new DomainError('Quantity must be positive');
+    }
+    this._lines.push(new OrderLine(product.id, product.price, quantity));
+  }
+}
+```
+</details>
 
 ### Missing Domain Events
 
@@ -248,7 +346,7 @@ public class Order {
 
 ### When to Consult .NET Agent
 
-Use the `agent` tool to consult the .NET Coding Agent for:
+Use the `agent` tool to consult the .NET Coding Agent for C#/F# projects:
 - C# implementation patterns (records, init-only setters)
 - Entity Framework Core mapping strategies
 - Async patterns in domain services
@@ -259,12 +357,32 @@ Use the `agent` tool to consult the .NET Coding Agent for:
 - "How should I map this aggregate to EF Core without polluting the domain?"
 - "What's the idiomatic way to implement domain event dispatch in .NET?"
 
+### When to Consult TypeScript/React Agent
+
+Use the `agent` tool to consult the TypeScript/React Agent for TypeScript/JavaScript projects:
+- TypeScript class patterns for entities and value objects
+- Immutability patterns (readonly, Object.freeze, Immer)
+- State management integration with domain models
+- Testing strategies with Jest/Vitest
+
+**Example questions**:
+- "What's the best way to implement an immutable Value Object in TypeScript?"
+- "How should I handle domain events in a React/Redux architecture?"
+- "What's the idiomatic way to enforce private fields in TypeScript?"
+
 ### Context7 Usage
 
 Use Context7 to look up documentation for:
+
+**C#/.NET:**
 - MediatR (domain event handling)
 - FluentValidation (input validation)
 - EF Core (persistence patterns)
+
+**TypeScript/JavaScript:**
+- Zod (validation and parsing)
+- Immer (immutable state updates)
+- TypeORM/Prisma (persistence patterns)
 
 ## Communication Style
 

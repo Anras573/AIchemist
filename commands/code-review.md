@@ -180,7 +180,11 @@ Check the list of changed files and include these agents in the parallel launch 
 | File Patterns | Agent | Model | Description |
 |---------------|-------|-------|-------------|
 | `*.cs`, `*.csproj`, `*.sln`, `*.fsproj` | .NET Coding Agent | opus | C#/F# best practices, async patterns, SOLID principles, .NET conventions |
-| `**/Domain/**/*.cs`, `**/Entities/**/*.cs`, `**/ValueObjects/**/*.cs`, `**/Aggregates/**/*.cs`, `**/DomainEvents/**/*.cs` | DDD Agent | sonnet | Domain model design, aggregate boundaries, invariant enforcement |
+| `**/domain/**/*`, `**/Domain/**/*` | DDD Agent | sonnet | Domain model design, aggregate boundaries, invariant enforcement (any language) |
+| `**/entities/**/*`, `**/Entities/**/*` | DDD Agent | sonnet | Entity design, identity patterns |
+| `**/value-objects/**/*`, `**/valueobjects/**/*`, `**/ValueObjects/**/*` | DDD Agent | sonnet | Value object immutability, equality |
+| `**/aggregates/**/*`, `**/Aggregates/**/*` | DDD Agent | sonnet | Aggregate boundaries, consistency rules |
+| `**/domain-events/**/*`, `**/domainevents/**/*`, `**/DomainEvents/**/*` | DDD Agent | sonnet | Domain event design, eventual consistency |
 
 To add a new file-triggered agent: add a row to this table.
 
