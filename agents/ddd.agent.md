@@ -215,10 +215,12 @@ class OrderService {
 
 // Good: Rich domain model
 class Order {
+  private readonly _id: OrderId;
   private _total: number;
   private _status: OrderStatus;
   private _domainEvents: DomainEvent[] = [];
 
+  get id(): OrderId { return this._id; }
   get total(): number { return this._total; }
   get status(): OrderStatus { return this._status; }
 
@@ -227,7 +229,7 @@ class Order {
       throw new DomainError('Cannot cancel shipped orders');
     }
     this._status = OrderStatus.Cancelled;
-    this._domainEvents.push(new OrderCancelled(this.id));
+    this._domainEvents.push(new OrderCancelled(this._id));
   }
 }
 ```
