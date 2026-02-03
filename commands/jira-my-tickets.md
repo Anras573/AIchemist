@@ -27,7 +27,7 @@ This command uses your Atlassian account information from `${CLAUDE_PLUGIN_ROOT}
 **If the config file is missing or incomplete**:
 1. Use `atlassianUserInfo` to fetch your Atlassian user details
 2. Ask the user: "Would you like me to save your Atlassian info for future use? This avoids fetching it each time."
-3. If yes: Create `${CLAUDE_PLUGIN_ROOT}/config.json` with the full schema (matching the Jira Agent):
+3. If yes: Create `${CLAUDE_PLUGIN_ROOT}/config.json` with the full schema (matching the Jira skill):
    ```json
    {
      "atlassian": {
