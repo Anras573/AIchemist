@@ -15,33 +15,33 @@ This skill provides guidance on choosing between equivalent tools when multiple 
 
 | Operation | Preferred | Avoid |
 |-----------|-----------|-------|
-| View PR details | `gh pr view` | `mcp__plugin_github_github__pull_request_read` |
-| Get PR diff | `gh pr diff` | `mcp__plugin_github_github__get_commit` |
-| List PRs | `gh pr list` | `mcp__plugin_github_github__list_pull_requests` |
-| Search PRs | `gh pr list --search "query"` | `mcp__plugin_github_github__search_pull_requests` |
-| Post PR comment | `gh pr comment` | `mcp__plugin_github_github__add_issue_comment` |
-| View issues | `gh issue view` | `mcp__plugin_github_github__issue_read` |
-| List issues | `gh issue list` | `mcp__plugin_github_github__list_issues` |
-| Create issues | `gh issue create` | `mcp__plugin_github_github__issue_write` |
+| View PR details | `gh pr view` | GitHub MCP `pull_request_read` |
+| Get PR diff | `gh pr diff` | GitHub MCP `get_commit` |
+| List PRs | `gh pr list` | GitHub MCP `list_pull_requests` |
+| Search PRs | `gh pr list --search "query"` | GitHub MCP `search_pull_requests` |
+| Post PR comment | `gh pr comment` | GitHub MCP `add_issue_comment` |
+| View issues | `gh issue view` | GitHub MCP `issue_read` |
+| List issues | `gh issue list` | GitHub MCP `list_issues` |
+| Create issues | `gh issue create` | GitHub MCP `issue_write` |
 
 ### Why Prefer `gh` CLI
 
 1. **Already authenticated** - Uses user's existing git/GitHub credentials
-2. **Faster execution** - No HTTP round-trip to MCP server
+2. **Less indirection** - Avoids an extra MCP/tooling hop by talking directly to GitHub APIs
 3. **Predictable output** - Consistent format with `--json` flag
 4. **Better errors** - Clear, actionable error messages
-5. **Offline caching** - Some operations work with cached data
+5. **Uses local repo state** - Can operate directly on the checked-out repository when appropriate
 
 ### When GitHub MCP Tools ARE Appropriate
 
 Use GitHub MCP tools only when they provide functionality the CLI lacks:
 
-| Use Case | MCP Tool | Reason |
-|----------|----------|--------|
-| Inline PR review comments | `mcp__github_inline_comment__create_inline_comment` | CLI doesn't support line-specific review comments |
-| Pending review management | `mcp__plugin_github_github__pull_request_review_write` | Creating/submitting pending reviews |
-| File contents at specific ref | `mcp__plugin_github_github__get_file_contents` | When you need content without cloning |
-| Cross-repo code search | `mcp__plugin_github_github__search_code` | GitHub's code search API |
+| Use Case | Reason |
+|----------|--------|
+| Inline PR review comments | CLI doesn't support line-specific review comments |
+| Pending review management | Creating/submitting pending reviews with multiple comments |
+| File contents at specific ref | When you need content without cloning the repo |
+| Cross-repo code search | GitHub's code search API across repositories |
 
 ### Common `gh` CLI Patterns
 
@@ -76,9 +76,9 @@ gh repo view --json nameWithOwner,defaultBranchRef
 |-----------|-----------|-------|
 | Check status | `git status` | Any wrapper |
 | View diff | `git diff` | GitHub MCP diff tools |
-| Create branch | `git checkout -b name` | `mcp__plugin_github_github__create_branch` |
+| Create branch | `git checkout -b name` | GitHub MCP `create_branch` |
 | Commit changes | `git commit` | Any remote commit API |
-| Push changes | `git push` | `mcp__plugin_github_github__push_files` |
+| Push changes | `git push` | GitHub MCP `push_files` |
 
 ### Rationale
 
@@ -89,9 +89,9 @@ Git operations should be local-first. Using MCP tools for git operations:
 
 ## Atlassian/Jira Operations
 
-**Prefer Atlassian MCP tools** - there is no equivalent CLI.
+**Prefer Atlassian MCP tools (the supported integration in this repo).**
 
-The Atlassian MCP server (`atlassian/*` tools) is the correct choice for all Jira and Confluence operations. See the Jira skill for detailed guidance.
+The Atlassian MCP server (`atlassian/*` tools) is the preferred choice for Jira and Confluence operations in this environment. See the Jira skill for detailed guidance.
 
 ## Documentation Lookups
 
@@ -109,15 +109,19 @@ These MCP tools provide curated, up-to-date documentation that's more reliable t
 When unsure which tool to use, apply this framework:
 
 ```
-1. Is there a local CLI tool that does this?
-   YES → Use the CLI (gh, git, npm, dotnet, etc.)
+1. Is this a documentation lookup?
+   YES → Prefer MCP documentation tools (Context7, Microsoft Learn)
    NO  → Continue to step 2
 
-2. Does the MCP tool provide unique functionality?
+2. Is there a local CLI tool that does this?
+   YES → Use the CLI (gh, git, npm, dotnet, etc.)
+   NO  → Continue to step 3
+
+3. Does the MCP tool provide unique functionality?
    YES → Use the MCP tool
    NO  → Prefer CLI if available
 
-3. Does the operation need to respect local state/hooks?
+4. Does the operation need to respect local state/hooks?
    YES → Must use local tools (git commit, npm install)
    NO  → Either is acceptable
 ```
