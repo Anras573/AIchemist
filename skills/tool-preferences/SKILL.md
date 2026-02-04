@@ -15,14 +15,14 @@ This skill provides guidance on choosing between equivalent tools when multiple 
 
 | Operation | Preferred | Avoid |
 |-----------|-----------|-------|
-| View PR details | `gh pr view` | `pull_request_read` MCP |
-| Get PR diff | `gh pr diff` | `get_commit` MCP |
-| List PRs | `gh pr list` | `list_pull_requests` MCP |
-| Search PRs | `gh pr list --search "query"` | `search_pull_requests` MCP |
-| Post PR comment | `gh pr comment` | `add_issue_comment` MCP |
-| View issues | `gh issue view` | `issue_read` MCP |
-| List issues | `gh issue list` | `list_issues` MCP |
-| Create issues | `gh issue create` | `issue_write` MCP |
+| View PR details | `gh pr view` | `mcp__plugin_github_github__pull_request_read` |
+| Get PR diff | `gh pr diff` | `mcp__plugin_github_github__get_commit` |
+| List PRs | `gh pr list` | `mcp__plugin_github_github__list_pull_requests` |
+| Search PRs | `gh pr list --search "query"` | `mcp__plugin_github_github__search_pull_requests` |
+| Post PR comment | `gh pr comment` | `mcp__plugin_github_github__add_issue_comment` |
+| View issues | `gh issue view` | `mcp__plugin_github_github__issue_read` |
+| List issues | `gh issue list` | `mcp__plugin_github_github__list_issues` |
+| Create issues | `gh issue create` | `mcp__plugin_github_github__issue_write` |
 
 ### Why Prefer `gh` CLI
 
@@ -38,10 +38,10 @@ Use GitHub MCP tools only when they provide functionality the CLI lacks:
 
 | Use Case | MCP Tool | Reason |
 |----------|----------|--------|
-| Inline PR review comments | `add_comment_to_pending_review` | CLI doesn't support line-specific review comments |
-| Pending review management | `pull_request_review_write` | Creating/submitting pending reviews |
-| File contents at specific ref | `get_file_contents` | When you need content without cloning |
-| Cross-repo code search | `search_code` | GitHub's code search API |
+| Inline PR review comments | `mcp__github_inline_comment__create_inline_comment` | CLI doesn't support line-specific review comments |
+| Pending review management | `mcp__plugin_github_github__pull_request_review_write` | Creating/submitting pending reviews |
+| File contents at specific ref | `mcp__plugin_github_github__get_file_contents` | When you need content without cloning |
+| Cross-repo code search | `mcp__plugin_github_github__search_code` | GitHub's code search API |
 
 ### Common `gh` CLI Patterns
 
@@ -76,9 +76,9 @@ gh repo view --json nameWithOwner,defaultBranchRef
 |-----------|-----------|-------|
 | Check status | `git status` | Any wrapper |
 | View diff | `git diff` | GitHub MCP diff tools |
-| Create branch | `git checkout -b name` | `create_branch` MCP |
+| Create branch | `git checkout -b name` | `mcp__plugin_github_github__create_branch` |
 | Commit changes | `git commit` | Any remote commit API |
-| Push changes | `git push` | `push_files` MCP |
+| Push changes | `git push` | `mcp__plugin_github_github__push_files` |
 
 ### Rationale
 
