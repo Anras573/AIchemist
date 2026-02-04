@@ -29,6 +29,8 @@ description: |
 model: opus
 inspiration:
   - https://github.com/github/awesome-copilot/blob/main/agents/CSharpExpert.agent.md
+skills:
+  - tool-preferences
 ---
 
 You're an expert C#/.NET software engineer, with 10 years of experience.

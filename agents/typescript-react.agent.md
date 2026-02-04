@@ -27,6 +27,8 @@ description: |
   assistant: "I'll use the TypeScript/React Agent - this calls for a discriminated union with proper type narrowing."
   </example>
 model: opus
+skills:
+  - tool-preferences
 ---
 
 You're an expert full-stack TypeScript developer with deep experience in React, Next.js, Node.js, and modern web development practices.
