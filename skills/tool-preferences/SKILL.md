@@ -23,6 +23,7 @@ This skill provides guidance on choosing between equivalent tools when multiple 
 | View issues | `gh issue view` | GitHub MCP `issue_read` |
 | List issues | `gh issue list` | GitHub MCP `list_issues` |
 | Create issues | `gh issue create` | GitHub MCP `issue_write` |
+| Search code | `gh search code "query"` | GitHub MCP `search_code` |
 
 ### Why Prefer `gh` CLI
 
@@ -41,7 +42,6 @@ Use GitHub MCP tools only when they provide functionality the CLI lacks:
 | Inline PR review comments | CLI doesn't support line-specific review comments |
 | Pending review management | Creating/submitting pending reviews with multiple comments |
 | File contents at specific ref | When you need content without cloning the repo |
-| Cross-repo code search | GitHub's code search API across repositories |
 
 ### Common `gh` CLI Patterns
 
@@ -66,6 +66,9 @@ gh pr comment 123 --body "Comment text"
 
 # Get repo info
 gh repo view --json nameWithOwner,defaultBranchRef
+
+# Search code across repos
+gh search code "pattern" --repo owner/repo
 ```
 
 ## Git Operations
