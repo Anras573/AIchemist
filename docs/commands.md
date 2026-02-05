@@ -1,0 +1,97 @@
+# Commands
+
+Slash commands are action-oriented operations invoked with `/command-name`.
+
+## /jira-my-tickets
+
+Show all Jira tickets where you are the assignee or creator since a specified date.
+
+### Usage
+
+```
+/jira-my-tickets [date]
+```
+
+### Examples
+
+```bash
+/jira-my-tickets 2025-01-01
+/jira-my-tickets last week
+/jira-my-tickets yesterday
+```
+
+### First Run
+
+The command will prompt to fetch and cache your Atlassian user info for faster queries.
+
+### Output
+
+Lists tickets grouped by your role:
+- Tickets assigned to you
+- Tickets you created (reported)
+
+Each ticket shows: key, summary, status, and updated date.
+
+## /code-review
+
+Comprehensive code review with parallel agents, Jira integration, and confidence-based filtering.
+
+### Usage
+
+```
+/code-review [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--base <branch>` | Base branch to compare against (default: `origin/main`) |
+| `--comment` | Post findings as inline PR comments |
+| `--ticket <key>` | Override Jira ticket detection with specific key |
+
+### Examples
+
+```bash
+# Review current branch against origin/main
+/code-review
+
+# Review against a different base branch
+/code-review --base develop
+
+# Review and post comments to PR
+/code-review --comment
+
+# Specify Jira ticket explicitly
+/code-review --ticket PROJ-123
+
+# Combine options
+/code-review --base develop --comment --ticket PROJ-456
+```
+
+### Features
+
+**Parallel Review Agents:**
+- Guidelines agent — checks code style and project conventions
+- Bugs agent — identifies logic errors and potential bugs
+- Security agent — scans for security vulnerabilities
+
+**File-Triggered Agents:**
+- DDD agent — invoked when domain model files are detected
+- .NET agent — invoked for C# files
+- TypeScript/React agent — invoked for TS/TSX files
+
+**Confidence Scoring:**
+- Each finding includes a confidence score (0-100)
+- Default threshold: 80 — findings below this are filtered out
+- Reduces false positives and noise
+
+**Jira Integration:**
+- Auto-detects Jira tickets from branch name (e.g., `feature/PROJ-123-description`)
+- Can also detect from PR description
+- Links review context to ticket requirements
+
+**Inline PR Comments:**
+- With `--comment`, posts findings directly to the PR
+- Includes committable code suggestions where applicable
+- Groups related findings by file
