@@ -41,6 +41,56 @@ On first use, the skill prompts to fetch and cache your Atlassian user info. Thi
 
 Config is stored at `${CLAUDE_PLUGIN_ROOT}/config.json` and excluded from version control.
 
+## PostgreSQL Query Skill
+
+PostgreSQL database querying with safe defaults that block write operations.
+
+**Trigger phrases:** "query postgres", "run SQL", "check database", "show tables", "describe table", "query database", "execute SQL query", "list tables", "show indexes", "database schema".
+
+### Prerequisites
+
+1. **Environment variable:** `POSTGRES_URL` must be set with connection string
+   ```
+   postgresql://user:password@host:port/database
+   ```
+
+2. **psql client:** Must be installed
+   - macOS: `brew install postgresql` or `brew install libpq`
+   - Linux: `apt-get install postgresql-client`
+
+### Read vs Write Operations
+
+| Type | Operations | Behavior |
+|------|------------|----------|
+| **Read** | SELECT, EXPLAIN, \d commands | Automatic — no confirmation needed |
+| **Write** | INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER, CREATE | **BLOCKED by default** |
+
+### Read Operations
+
+- Run SELECT queries
+- Explain query plans
+- Describe tables (`\d table_name`)
+- List tables, indexes, views (`\dt`, `\di`, `\dv`)
+- List schemas, functions, roles
+
+### Write Operations (Blocked by Default)
+
+Write operations are blocked for safety. To enable writes, explicitly say:
+- "enable writes"
+- "I want to modify data"
+- "allow write operations"
+
+When enabled, write operations still require confirmation before execution.
+
+### Output Formats
+
+- **Default:** Markdown tables
+- **On request:** JSON output
+
+### Configuration
+
+No configuration file needed — uses `POSTGRES_URL` environment variable directly.
+
 ## Tool Preferences Skill
 
 Guidance for selecting between equivalent tools when multiple options exist (e.g., `gh` CLI vs GitHub MCP tools).
