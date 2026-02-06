@@ -64,7 +64,7 @@ PostgreSQL database querying with safe defaults that block write operations.
 |------|------------|----------|
 | **Read** | SELECT, EXPLAIN (without ANALYZE on writes), \d commands | Automatic — no confirmation needed |
 | **Write** | INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER, CREATE, COPY, GRANT, REVOKE, REFRESH, CALL, DO | **BLOCKED by default** |
-| **Admin** | pg_cancel_backend, pg_terminate_backend, VACUUM, REINDEX | Requires confirmation |
+| **Admin** | pg_cancel_backend, pg_terminate_backend, VACUUM, REINDEX, CLUSTER | Requires confirmation |
 
 ### Read Operations
 
