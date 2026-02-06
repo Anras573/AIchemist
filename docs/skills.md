@@ -62,16 +62,19 @@ PostgreSQL database querying with safe defaults that block write operations.
 
 | Type | Operations | Behavior |
 |------|------------|----------|
-| **Read** | SELECT, EXPLAIN, \d commands | Automatic — no confirmation needed |
-| **Write** | INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER, CREATE | **BLOCKED by default** |
+| **Read** | SELECT, EXPLAIN (without ANALYZE on writes), \d commands | Automatic — no confirmation needed |
+| **Write** | INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER, CREATE, COPY, GRANT, REVOKE | **BLOCKED by default** |
+| **Admin** | pg_cancel_backend, pg_terminate_backend, VACUUM, REINDEX | Requires confirmation |
 
 ### Read Operations
 
 - Run SELECT queries
-- Explain query plans
+- Explain query plans (EXPLAIN without ANALYZE)
 - Describe tables (`\d table_name`)
 - List tables, indexes, views (`\dt`, `\di`, `\dv`)
 - List schemas, functions, roles
+
+**Note:** `EXPLAIN ANALYZE` actually executes the query. `EXPLAIN ANALYZE DELETE...` will delete rows! Treat as write operation.
 
 ### Write Operations (Blocked by Default)
 

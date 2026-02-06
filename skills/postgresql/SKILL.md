@@ -62,13 +62,14 @@ If either is missing, explain the setup requirements and provide installation in
 
 | Type | Operations | Behavior |
 |------|------------|----------|
-| **Read** | SELECT, EXPLAIN, \d commands | Automatic - no confirmation needed |
-| **Write** | INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER, CREATE | **BLOCKED by default** |
+| **Read** | SELECT, EXPLAIN (without ANALYZE on writes), \d commands | Automatic - no confirmation needed |
+| **Write** | INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER, CREATE, COPY, GRANT, REVOKE | **BLOCKED by default** |
+| **Admin** | pg_cancel_backend, pg_terminate_backend, VACUUM, REINDEX, CLUSTER | **Requires confirmation** |
 
 ### Read Operations (Automatic)
 
-- `SELECT` queries
-- `EXPLAIN` / `EXPLAIN ANALYZE` queries
+- `SELECT` queries (except those with side-effect functions)
+- `EXPLAIN` queries (without `ANALYZE` on write statements—see note below)
 - `\d` - describe table structure
 - `\dt` - list tables
 - `\di` - list indexes
@@ -88,6 +89,27 @@ The following operations are **blocked** unless the user explicitly enables writ
 - `TRUNCATE` - empty tables
 - `ALTER` - modify schema
 - `CREATE` - create objects
+- `COPY` - import/export data (can write files)
+- `GRANT` / `REVOKE` - modify permissions
+- `COMMENT` - modify metadata
+
+**IMPORTANT:** `EXPLAIN ANALYZE` actually executes the query. If the analyzed query is a write operation (e.g., `EXPLAIN ANALYZE DELETE FROM users`), it **will execute the deletion**. Treat `EXPLAIN ANALYZE` + write statement as a write operation.
+
+### Administrative Operations (Confirmation Required)
+
+These operations use SELECT syntax but have side effects:
+
+- `pg_cancel_backend(pid)` - cancels a running query (disruptive)
+- `pg_terminate_backend(pid)` - terminates a connection (disruptive)
+- `VACUUM` - reclaims storage, can lock tables
+- `REINDEX` - rebuilds indexes, can lock tables
+- `CLUSTER` - reorders table data, requires exclusive lock
+
+Always confirm before executing these, even if writes are not enabled.
+
+### Transaction Commands
+
+Transaction control commands (`BEGIN`, `COMMIT`, `ROLLBACK`, `START TRANSACTION`) have limited utility with this skill because each `psql -c` invocation uses a **separate connection**. Transaction state is not preserved between calls. If transaction support is needed, inform the user of this limitation.
 
 **To enable writes**, the user must explicitly request it:
 - "enable writes"
@@ -99,35 +121,37 @@ The following operations are **blocked** unless the user explicitly enables writ
 
 ### Basic Query Pattern
 
-Use the Bash tool to execute queries via psql:
+Use the Bash tool to execute queries via psql. Use **single quotes** around the query to prevent shell injection:
 
 ```bash
-psql "$POSTGRES_URL" --no-password -c "YOUR_QUERY_HERE"
+psql "$POSTGRES_URL" --no-password -c 'YOUR_QUERY_HERE'
 ```
+
+**Security Note:** Always use single quotes around SQL queries to prevent shell command injection. With double quotes, malicious input containing backticks or `$()` could execute arbitrary shell commands. For queries that need single quotes internally, escape them as `''` (two single quotes) which is standard SQL escaping.
 
 ### Output Formats
 
 **Default (Markdown tables):**
 ```bash
-psql "$POSTGRES_URL" --no-password -t -A -F '|' -c "SELECT * FROM users LIMIT 5"
+psql "$POSTGRES_URL" --no-password -t -A -F $'\t' -c 'SELECT * FROM users LIMIT 5'
 ```
 
-Then format the pipe-delimited output as a markdown table.
+Then format the tab-delimited output as a markdown table. Using tab (`$'\t'`) instead of pipe avoids issues when data contains pipe characters. When converting to markdown, escape any literal `|` in the data as `\|`.
 
 **JSON output (when requested):**
 ```bash
-psql "$POSTGRES_URL" --no-password -t -A -c "SELECT row_to_json(t) FROM (SELECT * FROM users LIMIT 5) t"
+psql "$POSTGRES_URL" --no-password -t -A -c 'SELECT row_to_json(t) FROM (SELECT * FROM users LIMIT 5) t'
 ```
 
 ### Useful psql Flags
 
 | Flag | Purpose |
 |------|---------|
-| `-c "query"` | Execute single query |
+| `-c 'query'` | Execute single query (use single quotes!) |
 | `--no-password` | Never prompt for password (use connection string) |
 | `-t` | Tuples only (no headers/footers) |
 | `-A` | Unaligned output (no padding) |
-| `-F '|'` | Set field separator |
+| `-F $'\t'` | Set field separator (tab recommended) |
 | `-x` | Expanded output (one column per line) |
 
 ## Core Workflows
@@ -135,20 +159,20 @@ psql "$POSTGRES_URL" --no-password -t -A -c "SELECT row_to_json(t) FROM (SELECT 
 ### Listing Tables
 
 ```bash
-psql "$POSTGRES_URL" --no-password -c "\dt"
+psql "$POSTGRES_URL" --no-password -c '\dt'
 ```
 
 ### Describing a Table
 
 ```bash
-psql "$POSTGRES_URL" --no-password -c "\d table_name"
+psql "$POSTGRES_URL" --no-password -c '\d table_name'
 ```
 
 ### Running SELECT Queries
 
 ```bash
 # Get data with markdown-friendly output
-psql "$POSTGRES_URL" --no-password -t -A -F '|' -c "SELECT id, name, email FROM users LIMIT 10"
+psql "$POSTGRES_URL" --no-password -t -A -F $'\t' -c 'SELECT id, name, email FROM users LIMIT 10'
 ```
 
 Format result as:
@@ -163,15 +187,29 @@ Format result as:
 ### Explaining Query Plans
 
 ```bash
-psql "$POSTGRES_URL" --no-password -c "EXPLAIN ANALYZE SELECT * FROM users WHERE status = 'active'"
+# EXPLAIN without ANALYZE (safe - doesn't execute the query)
+psql "$POSTGRES_URL" --no-password -c 'EXPLAIN SELECT * FROM users WHERE status = ''active'''
+
+# EXPLAIN ANALYZE (executes the query - safe only for SELECT)
+psql "$POSTGRES_URL" --no-password -c 'EXPLAIN ANALYZE SELECT * FROM users WHERE status = ''active'''
 ```
+
+**Warning:** Never use `EXPLAIN ANALYZE` with write statements unless writes are enabled and you intend to execute them. `EXPLAIN ANALYZE DELETE FROM users` will actually delete rows!
 
 ## Write Operations Workflow
 
 ### Detecting Write Operations
 
-Before executing any query, check if it contains write keywords:
+Before executing any query, check if it contains write-related keywords:
+
+**Data-modifying statements:**
 - `INSERT`, `UPDATE`, `DELETE`, `DROP`, `TRUNCATE`, `ALTER`, `CREATE`
+- `COPY`, `GRANT`, `REVOKE`, `COMMENT`
+
+**Special cases:**
+- `EXPLAIN ANALYZE` + any of the above = treat as write operation
+- `pg_cancel_backend`, `pg_terminate_backend` = require confirmation (admin ops)
+- `VACUUM`, `REINDEX`, `CLUSTER` = require confirmation (admin ops)
 
 Use case-insensitive matching and handle queries that start with these keywords or contain them after CTEs (`WITH`).
 
@@ -250,16 +288,14 @@ Convert psql output to readable markdown tables:
 When user asks for JSON output:
 
 ```bash
-psql "$POSTGRES_URL" --no-password -t -A -c "
-SELECT json_agg(row_to_json(t))
-FROM (SELECT * FROM users LIMIT 5) t
-"
+psql "$POSTGRES_URL" --no-password -t -A -c 'SELECT json_agg(row_to_json(t)) FROM (SELECT * FROM users LIMIT 5) t'
 ```
 
 ### Handling Large Result Sets
 
 For queries returning many rows:
-- Default to `LIMIT 100` if no limit specified
+- When **generating** a simple SELECT query, include `LIMIT 100` if the user hasn't specified a limit
+- Do **not** automatically inject LIMIT into user-provided SQL (could break subqueries, CTEs, aggregations)
 - Inform user: "Showing first 100 rows. Add `LIMIT n` to see more or fewer."
 
 ### Handling NULL Values

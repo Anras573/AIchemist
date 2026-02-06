@@ -136,11 +136,19 @@ ORDER BY duration DESC;
 
 ### Kill a Query
 
+**⚠️ These are administrative operations that require confirmation before execution.**
+
+Despite using SELECT syntax, these functions have side effects and can disrupt other users' sessions.
+
 ```sql
--- Cancel query (graceful)
+-- Cancel query (graceful, but still disruptive)
+-- Interrupts the currently running query in the target session
+-- Requires appropriate privileges (often superuser)
 SELECT pg_cancel_backend(pid);
 
--- Terminate connection (force)
+-- Terminate connection (forceful and more disruptive)
+-- Completely disconnects the session, rolling back any in-progress transaction
+-- Use with caution - understand the impact before executing
 SELECT pg_terminate_backend(pid);
 ```
 
