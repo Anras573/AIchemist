@@ -63,7 +63,7 @@ If either is missing, explain the setup requirements and provide installation in
 | Type | Operations | Behavior |
 |------|------------|----------|
 | **Read** | SELECT, EXPLAIN (without ANALYZE on writes), \d commands | Automatic - no confirmation needed |
-| **Write** | INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER, CREATE, COPY, GRANT, REVOKE | **BLOCKED by default** |
+| **Write** | INSERT, UPDATE, DELETE, DROP, TRUNCATE, ALTER, CREATE, COPY, GRANT, REVOKE, REFRESH, CALL, DO | **BLOCKED by default** |
 | **Admin** | pg_cancel_backend, pg_terminate_backend, VACUUM, REINDEX, CLUSTER | **Requires confirmation** |
 
 ### Read Operations (Automatic)
@@ -92,6 +92,9 @@ The following operations are **blocked** unless the user explicitly enables writ
 - `COPY` - import/export data (can write files)
 - `GRANT` / `REVOKE` - modify permissions
 - `COMMENT` - modify metadata
+- `REFRESH MATERIALIZED VIEW` - rewrites materialized view data
+- `CALL` - executes stored procedures (can perform writes)
+- `DO` - executes anonymous code blocks (can perform any operation)
 
 **IMPORTANT:** `EXPLAIN ANALYZE` actually executes the query. If the analyzed query is a write operation (e.g., `EXPLAIN ANALYZE DELETE FROM users`), it **will execute the deletion**. Treat `EXPLAIN ANALYZE` + write statement as a write operation.
 
@@ -205,6 +208,7 @@ Before executing any query, check if it contains write-related keywords:
 **Data-modifying statements:**
 - `INSERT`, `UPDATE`, `DELETE`, `DROP`, `TRUNCATE`, `ALTER`, `CREATE`
 - `COPY`, `GRANT`, `REVOKE`, `COMMENT`
+- `REFRESH MATERIALIZED VIEW`, `CALL`, `DO`
 
 **Special cases:**
 - `EXPLAIN ANALYZE` + any of the above = treat as write operation
@@ -212,6 +216,8 @@ Before executing any query, check if it contains write-related keywords:
 - `VACUUM`, `REINDEX`, `CLUSTER` = require confirmation (admin ops)
 
 Use case-insensitive matching and handle queries that start with these keywords or contain them after CTEs (`WITH`).
+
+**Note on `DO`:** Only treat `DO` as a write keyword when it appears as a leading statement keyword (at the beginning of the query or after a CTE), to avoid false positives with the common word "do" in other contexts.
 
 ### When Writes Are Blocked
 
