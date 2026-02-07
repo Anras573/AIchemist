@@ -3,7 +3,7 @@
 ## From Marketplace (Recommended)
 
 ```bash
-claude plugin install aichemist
+claude plugin install Anras573/AIchemist
 ```
 
 ## From Local Path
