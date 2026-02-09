@@ -121,3 +121,58 @@ Use GitHub MCP tools when CLI lacks functionality:
 - Inline PR review comments (line-specific)
 - Pending review management
 - File contents at specific ref without cloning
+
+## Obsidian Knowledge Management Skill
+
+Integrates Claude Code with Obsidian for knowledge management during coding sessions.
+
+**Trigger phrases:** "capture to obsidian", "add to daily note", "research in vault", "search my notes", "save this insight", "query obsidian", "check daily note", "create daily note", "append to daily note", "find in obsidian", "look up notes".
+
+### Prerequisites
+
+1. **Obsidian Local REST API plugin:** Install from Community Plugins
+2. **Environment variable:** `OBSIDIAN_API_KEY` must be set
+3. **Obsidian running:** The desktop app must be open for API access
+
+### Capabilities
+
+| Capability | Command | Description |
+|------------|---------|-------------|
+| **Daily Note** | `/daily-note` | Retrieve, create, or append to daily notes |
+| **Capture** | `/capture` | Quick capture of thoughts, code snippets, insights |
+| **Research** | `/research` | Search vault for relevant context |
+
+### Daily Note Operations
+
+| Command | Action |
+|---------|--------|
+| `/daily-note` | Retrieve today's note |
+| `/daily-note create` | Create today's note |
+| `/daily-note add "content"` | Append to today's note |
+| `/daily-note --date 2024-01-15` | Access specific date |
+
+### Capture Operations
+
+| Command | Action |
+|---------|--------|
+| `/capture This thought` | Append to daily note (default) |
+| `/capture --note "Name" content` | Capture to specific note |
+| `/capture --tag #tag content` | Include tags |
+| `/capture --code` | Capture current code context |
+
+### Research Operations
+
+| Command | Action |
+|---------|--------|
+| `/research query` | Full-text search |
+| `/research --tag #tag query` | Filter by tag |
+| `/research --folder Path/ query` | Search within folder |
+
+### Configuration
+
+On first use, the skill prompts for:
+- Daily note path pattern
+- Default capture behavior
+- Preferred timestamp format
+
+Settings stored in `${CLAUDE_PLUGIN_ROOT}/config.json`.

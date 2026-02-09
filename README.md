@@ -24,6 +24,8 @@ See [docs/installation.md](docs/installation.md) for alternative installation me
 **Skills** — Context-aware capabilities:
 
 - **Jira** — Issue management with confirmation gates for write operations
+- **PostgreSQL** — Safe database querying with blocked writes by default
+- **Obsidian** — Knowledge management with daily notes, capture, and research
 - **Tool Preferences** — Consistent tool selection patterns
 
 **Commands** — Slash commands:
