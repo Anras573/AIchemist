@@ -95,3 +95,127 @@ Comprehensive code review with parallel agents, Jira integration, and confidence
 - With `--comment`, posts findings directly to the PR
 - Includes committable code suggestions where applicable
 - Groups related findings by file
+
+## /daily-note
+
+Interact with your Obsidian daily note — retrieve, create, or append content.
+
+### Usage
+
+```
+/daily-note [operation] [options]
+```
+
+### Operations
+
+| Operation | Description |
+|-----------|-------------|
+| (none) | Retrieve and display today's note |
+| `create` | Create today's daily note |
+| `add <text>` | Append text to today's note |
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--date YYYY-MM-DD` | Target a specific date instead of today |
+
+### Examples
+
+```bash
+# Show today's note
+/daily-note
+
+# Create today's note
+/daily-note create
+
+# Add content
+/daily-note add "Discovered JWT refresh token issue"
+
+# Check yesterday
+/daily-note --date 2024-01-14
+```
+
+### First Run
+
+Prompts for your daily note path pattern (e.g., `Daily Notes/{{date:YYYY-MM-DD}}.md`) and saves it for future use.
+
+## /capture
+
+Quick capture of thoughts, code snippets, or insights to Obsidian.
+
+### Usage
+
+```
+/capture <text> [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--note <name>` | Capture to a specific note instead of daily note |
+| `--tag #tag` | Add tag(s) to the capture (repeatable) |
+| `--code` | Include current file context |
+
+### Examples
+
+```bash
+# Quick capture to daily note
+/capture This auth pattern works well for SPAs
+
+# Capture to specific note
+/capture --note "Architecture Decisions" Using event sourcing for audit
+
+# Capture with tags
+/capture --tag #security Found XSS in form handling
+
+# Multiple tags
+/capture --tag #bug --tag #priority Race condition in checkout
+```
+
+### Behavior
+
+- Default: appends to today's daily note with timestamp
+- Includes project context (current directory)
+- Creates target note if it doesn't exist
+
+## /research
+
+Search your Obsidian vault for relevant context and past knowledge.
+
+### Usage
+
+```
+/research <query> [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--folder <path>` | Limit search to specific folder |
+| `--limit <n>` | Maximum results (default: 5) |
+
+### Examples
+
+```bash
+# Basic search
+/research authentication patterns
+
+# Search within folder
+/research --folder Projects/ caching strategy
+
+# More results
+/research --limit 10 error handling
+
+# Combined
+/research --folder Architecture/ --limit 3 database design
+```
+
+### Output
+
+Returns matching notes with:
+- Note title and path
+- Relevant excerpt showing the match
+- Option to "read N" to see full note content
