@@ -6,17 +6,17 @@ This reference documents the available tools from the `mcp-obsidian` MCP server.
 
 | Tool | Description | Returns |
 |------|-------------|---------|
-| `list_files_in_vault` | Lists all files in the vault | Array of file paths |
-| `list_files_in_dir` | Lists files in a specific directory | Array of file paths |
-| `get_file_contents` | Reads the content of a note | Note content as string |
-| `search` | Full-text search across vault | Array of search results |
-| `patch_content` | Creates or overwrites note content | Success confirmation |
-| `append_content` | Appends content to existing note | Success confirmation |
-| `delete_file` | Deletes a note from the vault | Success confirmation |
+| `obsidian/list_files_in_vault` | Lists all files in the vault | Array of file paths |
+| `obsidian/list_files_in_dir` | Lists files in a specific directory | Array of file paths |
+| `obsidian/get_file_contents` | Reads the content of a note | Note content as string |
+| `obsidian/search` | Full-text search across vault | Array of search results |
+| `obsidian/patch_content` | Creates or overwrites note content | Success confirmation |
+| `obsidian/append_content` | Appends content to existing note | Success confirmation |
+| `obsidian/delete_file` | Deletes a note from the vault | Success confirmation |
 
 ## Tool Details
 
-### list_files_in_vault
+### obsidian/list_files_in_vault
 
 Lists all files in the Obsidian vault.
 
@@ -33,7 +33,7 @@ Lists all files in the Obsidian vault.
 
 ---
 
-### list_files_in_dir
+### obsidian/list_files_in_dir
 
 Lists files within a specific directory.
 
@@ -55,7 +55,7 @@ Lists files within a specific directory.
 
 ---
 
-### get_file_contents
+### obsidian/get_file_contents
 
 Retrieves the content of a specific note.
 
@@ -77,7 +77,7 @@ Retrieves the content of a specific note.
 
 ---
 
-### search
+### obsidian/search
 
 Performs full-text search across the vault.
 
@@ -101,7 +101,7 @@ Performs full-text search across the vault.
 
 ---
 
-### patch_content
+### obsidian/patch_content
 
 Creates a new note or overwrites an existing one.
 
@@ -127,7 +127,7 @@ Creates a new note or overwrites an existing one.
 
 ---
 
-### append_content
+### obsidian/append_content
 
 Appends content to an existing note.
 
@@ -151,7 +151,7 @@ Appends content to an existing note.
 
 ---
 
-### delete_file
+### obsidian/delete_file
 
 Deletes a note from the vault.
 

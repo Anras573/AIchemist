@@ -57,7 +57,7 @@ The `mcp-obsidian` server should be configured in `.mcp.json` (already included 
 On first use, verify prerequisites:
 
 1. Check if Obsidian MCP tools are available
-2. Test vault connectivity with `list_files_in_vault`
+2. Test vault connectivity with `obsidian/list_files_in_vault`
 
 If connection fails, provide setup guidance.
 
@@ -288,7 +288,7 @@ Store user preferences in `${CLAUDE_PLUGIN_ROOT}/config.json`:
   "obsidian": {
     "daily_note_path": "Daily Notes/{{date:YYYY-MM-DD}}.md",
     "daily_note_template": "templates/daily.md",
-    "default_capture_target": "daily"
+    "capture_folder": "Captures"
   }
 }
 ```
