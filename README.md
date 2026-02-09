@@ -32,6 +32,9 @@ See [docs/installation.md](docs/installation.md) for alternative installation me
 
 - `/jira-my-tickets [date]` — List your assigned/created tickets
 - `/code-review [options]` — Run comprehensive code review
+- `/daily-note [operation]` — Interact with Obsidian daily notes
+- `/capture <text>` — Quick capture to Obsidian
+- `/research <query>` — Search Obsidian vault
 
 See [docs/](docs/) for detailed documentation.
 
