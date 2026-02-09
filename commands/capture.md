@@ -118,6 +118,13 @@ If `--code` flag is set:
 
 ### 5. Append to Target
 
+**Check if target note exists:**
+```
+1. Use mcp__obsidian__get_file_contents to check if note exists
+2. If exists → proceed to append
+3. If not found → create new note
+```
+
 **If target note exists:**
 ```
 1. Use mcp__obsidian__append_content with formatted capture
@@ -134,9 +141,11 @@ For daily note:
 
 For named note (`--note`):
 ```
-1. Create minimal note with title
+1. Create minimal note with title using mcp__obsidian__patch_content
 2. Then append the capture
 ```
+
+**Note:** Always check existence first. Never use `patch_content` on an existing note without user confirmation — it overwrites all content.
 
 ### 6. Confirm Capture
 
