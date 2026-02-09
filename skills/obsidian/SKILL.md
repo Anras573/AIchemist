@@ -13,6 +13,20 @@ This skill integrates Claude Code with Obsidian for knowledge management workflo
 2. **Capture** (`/capture`) - Quick capture of thoughts, code snippets, or insights
 3. **Research** (`/research`) - Search vault for relevant context
 
+## Read vs Write Operations
+
+| Type | Operations | Behavior |
+|------|------------|----------|
+| **Read** | Search, list files, get file contents | Automatic — no confirmation needed |
+| **Write** | Append content, create notes | Automatic for append; confirm before overwriting |
+| **Destructive** | Delete notes, overwrite existing content | **Requires explicit user confirmation** |
+
+**Safety Rules:**
+- `obsidian/append_content` is safe — it only adds to existing notes
+- `obsidian/patch_content` overwrites — confirm before using on existing notes
+- `obsidian/delete_file` is destructive — always confirm before deletion
+- Never delete notes without explicit user request
+
 ## Prerequisites
 
 ### Obsidian Local REST API Plugin

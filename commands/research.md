@@ -2,7 +2,7 @@
 name: research
 description: Search your Obsidian vault for relevant context, notes, and past knowledge on a topic.
 argument-hint: "<query> [--folder <path>] [--limit <n>]"
-allowed-tools: mcp__obsidian__*, Read
+allowed-tools: mcp__obsidian__search, mcp__obsidian__get_file_contents, mcp__obsidian__list_files_in_vault, mcp__obsidian__list_files_in_dir, Read
 ---
 
 # Research Command

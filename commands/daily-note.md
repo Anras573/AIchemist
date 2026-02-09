@@ -2,7 +2,7 @@
 name: daily-note
 description: Interact with today's Obsidian daily note - retrieve, create, or append content.
 argument-hint: "[create | add <text> | --date YYYY-MM-DD]"
-allowed-tools: mcp__obsidian__*, Read, Write, AskUserQuestion
+allowed-tools: mcp__obsidian__get_file_contents, mcp__obsidian__patch_content, mcp__obsidian__append_content, mcp__obsidian__list_files_in_dir, Read, Write, AskUserQuestion
 ---
 
 # Daily Note Command

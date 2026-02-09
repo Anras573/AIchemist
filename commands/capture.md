@@ -2,7 +2,7 @@
 name: capture
 description: Quick capture of thoughts, code snippets, or insights to Obsidian without leaving the coding flow.
 argument-hint: "<text> [--note <name>] [--tag #tag] [--code]"
-allowed-tools: mcp__obsidian__*, Read, Write
+allowed-tools: mcp__obsidian__get_file_contents, mcp__obsidian__patch_content, mcp__obsidian__append_content, Read, Write
 ---
 
 # Capture Command
