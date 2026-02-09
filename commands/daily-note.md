@@ -66,7 +66,7 @@ Extract the operation and any flags:
 Read `${CLAUDE_PLUGIN_ROOT}/config.json` for daily note path pattern.
 
 If missing or no `obsidian.daily_note_path`:
-1. Use `mcp__obsidian__list_files_in_vault` to discover structure
+1. Use `mcp__obsidian__list_files_in_dir` to discover structure
 2. Look for common patterns: `Daily Notes/`, `Journal/`, dated folders
 3. Ask user to confirm or specify pattern
 4. Save to config
