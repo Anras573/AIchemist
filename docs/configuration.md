@@ -28,6 +28,8 @@ The `.mcp.json` file configures external MCP servers.
 | ------ | ----------- | ------------- |
 | `obsidian` | Obsidian vault access via Local REST API | API key + Obsidian running |
 
+The `obsidian` MCP server is launched via `uvx mcp-obsidian`, so you need `uv` (which provides the `uvx` command) installed and on your `PATH`. On first use, `uvx` will automatically download and run the `mcp-obsidian` package if it is not already available.
+
 ## Environment Variables
 
 | Variable | Required For | Description |

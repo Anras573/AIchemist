@@ -32,6 +32,22 @@ Set `OBSIDIAN_API_KEY` in your environment:
 export OBSIDIAN_API_KEY="your-api-key-here"
 ```
 
+#### Security Notes
+
+- Never print or echo `OBSIDIAN_API_KEY` in logs, terminals, or chat responses
+- Avoid logging full error payloads if they might include HTTP headers containing this key
+- Do not write `OBSIDIAN_API_KEY` into Obsidian notes or vault files
+
+### uv/uvx
+
+The Obsidian MCP server is launched via `uvx mcp-obsidian`. Install `uv`:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+On first use, `uvx` will automatically download and run the `mcp-obsidian` package.
+
 ### MCP Server
 
 The `mcp-obsidian` server should be configured in `.mcp.json` (already included in this plugin).
@@ -53,8 +69,8 @@ If connection fails, provide setup guidance.
 | `obsidian/list_files_in_dir` | List files in a specific directory |
 | `obsidian/get_file_contents` | Read note contents |
 | `obsidian/search` | Full-text search across vault |
-| `obsidian/patch_content` | Modify note content |
-| `obsidian/append_content` | Append content to a note |
+| `obsidian/patch_content` | Create or overwrite the full contents of a note (use with care) |
+| `obsidian/append_content` | Safely append content to an existing note |
 | `obsidian/delete_file` | Delete a note |
 
 ## Daily Note Capability

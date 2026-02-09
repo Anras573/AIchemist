@@ -138,7 +138,7 @@ Interact with your Obsidian daily note — retrieve, create, or append content.
 
 ### First Run
 
-Prompts for your daily note path pattern (e.g., `Daily Notes/YYYY-MM-DD.md`) and saves it for future use.
+Prompts for your daily note path pattern (e.g., `Daily Notes/{{date:YYYY-MM-DD}}.md`) and saves it for future use.
 
 ## /capture
 

@@ -133,6 +133,7 @@ Integrates Claude Code with Obsidian for knowledge management during coding sess
 1. **Obsidian Local REST API plugin:** Install from Community Plugins
 2. **Environment variable:** `OBSIDIAN_API_KEY` must be set
 3. **Obsidian running:** The desktop app must be open for API access
+4. **uv CLI installed:** The MCP server is launched via `uvx mcp-obsidian`
 
 ### Capabilities
 

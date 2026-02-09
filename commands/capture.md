@@ -62,9 +62,10 @@ Extract from user input:
 ### 2. Determine Target
 
 **If `--note` specified:**
-- Target path: `{capture_folder}/{note_name}.md`
-- If note name includes `/`, treat as relative path
-- Example: `--note "Projects/Auth"` → `Captures/Projects/Auth.md`
+- If note name does **not** include `/`: target path is `{capture_folder}/{note_name}.md`
+- If note name **includes** `/`: treat as subpath under `capture_folder`
+  - Target path is `{capture_folder}/{note_name}.md`
+  - Example: `--note "Projects/Auth"` → `Captures/Projects/Auth.md`
 
 **Otherwise (default):**
 - Target: today's daily note (using `daily_note_path` pattern)

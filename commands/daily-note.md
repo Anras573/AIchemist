@@ -42,12 +42,12 @@ This command uses daily note settings from `${CLAUDE_PLUGIN_ROOT}/config.json`:
 
 **If config is missing**, prompt the user on first use:
 
-> "I need to know where your daily notes are stored. What's your daily note path pattern?"
+> "I need to know where your daily notes are stored. What's your daily note path pattern (using `{{date:...}}` token)?"
 >
 > Common patterns:
-> - `Daily Notes/YYYY-MM-DD.md`
-> - `Journal/YYYY-MM-DD.md`
-> - `YYYY/MM-MMMM/YYYY-MM-DD.md`
+> - `Daily Notes/{{date:YYYY-MM-DD}}.md`
+> - `Journal/{{date:YYYY-MM-DD}}.md`
+> - `{{date:YYYY/MM-MMMM/YYYY-MM-DD}}.md`
 
 Save their preference to config for future use.
 
