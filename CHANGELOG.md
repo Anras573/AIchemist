@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.0.0](https://github.com/Anras573/AIchemist/compare/v1.1.1...v2.0.0) (2026-02-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* **jira:** jira-agent is no longer available as a Task agent. Use the Jira skill which loads into the main conversation instead.
+
+### Features
+
+* **skills:** add Obsidian knowledge management integration ([#36](https://github.com/Anras573/AIchemist/issues/36)) ([991124f](https://github.com/Anras573/AIchemist/commit/991124fcae76525f3f18dece330b027b9ac66d7c))
+* **skills:** add PostgreSQL query skill with safe defaults ([#34](https://github.com/Anras573/AIchemist/issues/34)) ([72c3ac6](https://github.com/Anras573/AIchemist/commit/72c3ac614de966871b421f833bf32c835cc3630d))
+* **skills:** add tool-preferences skill for consistent tool selection ([#30](https://github.com/Anras573/AIchemist/issues/30)) ([f6ecb81](https://github.com/Anras573/AIchemist/commit/f6ecb81d3ffdcc3d94e37f8b060858bb69da3a8f))
+
+
+### Bug Fixes
+
+* **ci:** use manifest mode for release-please to update plugin.json ([#29](https://github.com/Anras573/AIchemist/issues/29)) ([12285fa](https://github.com/Anras573/AIchemist/commit/12285fa690bc5e382126ab35d257df6fa64f790f))
+
+
+### Code Refactoring
+
+* **jira:** convert agent to skill with confirmation gates ([#24](https://github.com/Anras573/AIchemist/issues/24)) ([601088c](https://github.com/Anras573/AIchemist/commit/601088c67e60224b5038773945471ea60c6b54f1))
+
 ## [1.1.1](https://github.com/Anras573/AIchemist/compare/v1.1.0...v1.1.1) (2026-02-01)
 
 
