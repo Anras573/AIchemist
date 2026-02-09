@@ -64,7 +64,6 @@ For each result, gather context:
 ```
 1. Extract note title from path
 2. Get matching excerpt from search result
-3. Optionally fetch last modified date if available
 ```
 
 ### 6. Present Results

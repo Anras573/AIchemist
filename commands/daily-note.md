@@ -23,7 +23,7 @@ Interact with your Obsidian daily note for journaling, task tracking, and sessio
 | Argument | Description |
 |----------|-------------|
 | (none) | Retrieve and display today's daily note |
-| `create` | Create today's daily note (fails if exists) |
+| `create` | Create today's daily note (won't overwrite if one already exists) |
 | `add <text>` | Append text to today's daily note |
 | `--date YYYY-MM-DD` | Target a specific date instead of today |
 

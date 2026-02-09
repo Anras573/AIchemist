@@ -185,8 +185,8 @@ Search the vault for relevant context on a topic, leveraging past knowledge duri
 | Command | Action |
 |---------|--------|
 | `/research authentication patterns` | Full-text search for term |
-| `/research --tag #architecture query` | Filter by tag |
 | `/research --folder Projects/ query` | Search within folder |
+| `/research --limit 10 query` | Return more results |
 
 ### Search Strategy
 
@@ -204,7 +204,6 @@ Search the vault for relevant context on a topic, leveraging past knowledge duri
 4. Present top results with:
    - Note title and path
    - Relevant excerpt
-   - Last modified date
 5. Offer to read full note if requested
 ```
 

@@ -1,7 +1,7 @@
 ---
 name: capture
 description: Quick capture of thoughts, code snippets, or insights to Obsidian without leaving the coding flow.
-argument-hint: "<text> [--note <name>] [--tag #tag]"
+argument-hint: "<text> [--note <name>] [--tag #tag] [--code]"
 allowed-tools: mcp__obsidian__*, Read, Write
 ---
 
@@ -91,7 +91,7 @@ Format the capture entry:
 This auth pattern using JWT refresh tokens works well for SPAs
 
 **Tags:** #auth #patterns
-**Context:** AIchemist
+**Context:** ProjectName
 ```
 
 ### 4. Handle Code Context (if --code)
@@ -175,7 +175,7 @@ Please verify:
 1. Obsidian is running with Local REST API plugin enabled
 2. `OBSIDIAN_API_KEY` environment variable is set
 
-Your capture has been preserved. Retry when Obsidian is available.
+Your capture could not be saved. Please retry when Obsidian is available.
 ```
 
 ### Daily Note Path Not Configured

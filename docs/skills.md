@@ -165,8 +165,8 @@ Integrates Claude Code with Obsidian for knowledge management during coding sess
 | Command | Action |
 |---------|--------|
 | `/research query` | Full-text search |
-| `/research --tag #tag query` | Filter by tag |
 | `/research --folder Path/ query` | Search within folder |
+| `/research --limit 10 query` | Return more results |
 
 ### Configuration
 
