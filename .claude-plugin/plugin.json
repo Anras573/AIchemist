@@ -1,12 +1,22 @@
 {
   "name": "aichemist",
   "description": "Custom agents, commands, and skills for AI-assisted development",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "author": {
     "name": "Anders Bo Rasmussen",
     "email": "anras573@gmail.com"
   },
   "license": "MIT",
   "repository": "https://github.com/Anras573/AIchemist",
-  "keywords": ["jira", "dotnet", "typescript", "react", "agents", "productivity", "code-review", "obsidian", "knowledge-management"]
+  "keywords": [
+    "jira",
+    "dotnet",
+    "typescript",
+    "react",
+    "agents",
+    "productivity",
+    "code-review",
+    "obsidian",
+    "knowledge-management"
+  ]
 }
