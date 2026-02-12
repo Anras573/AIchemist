@@ -11,25 +11,29 @@ AIchemist uses lazy configuration — settings are fetched and cached on first u
 
 ## MCP Servers
 
-The `.mcp.json` file configures external MCP servers.
+### Official Claude Code Integrations
 
-### Official Claude MCP Servers
+For **GitHub**, **Atlassian** (Jira/Confluence), and **Context7**, use the official MCP servers built into Claude Code. These are managed via Claude Code's integrations UI, not via `.mcp.json`.
 
-For **GitHub**, **Atlassian** (Jira/Confluence), and **Context7**, use the official MCP servers built into Claude Code:
+To add them, run the following slash command inside Claude Code (not your system shell):
 
-```bash
+```text
 /mcp
 ```
 
 These are maintained by Anthropic and provide the best integration experience. The plugin's Jira skills work seamlessly with the official Atlassian MCP server.
 
-### HTTP Servers (Hosted)
+### Additional MCP Servers (.mcp.json)
+
+The `.mcp.json` file configures additional MCP servers not available as official integrations.
+
+#### HTTP Servers (Hosted)
 
 | Server | Description | Auth Required |
 | ------ | ----------- | ------------- |
 | `microsoft-docs` | Microsoft Learn documentation (.NET, Azure, C#) | None |
 
-### Local Servers (stdio)
+#### Local Servers (stdio)
 
 | Server | Description | Auth Required |
 | ------ | ----------- | ------------- |
