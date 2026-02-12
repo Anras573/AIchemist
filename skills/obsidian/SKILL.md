@@ -72,8 +72,31 @@ On first use, verify prerequisites:
 
 1. Check if Obsidian MCP tools are available
 2. Test vault connectivity with `obsidian/list_files_in_vault`
+3. **Check for AGENT.md** at the vault root and read it if present
 
 If connection fails, provide setup guidance.
+
+## AGENT.md Support
+
+If an `AGENT.md` file exists at the vault root, read it on first interaction to understand the user's vault conventions. This file provides context similar to how `CLAUDE.md` works for codebases.
+
+### Reading AGENT.md
+
+```
+1. On first vault interaction, call obsidian/get_file_contents with filepath "AGENT.md"
+2. If found, incorporate the context into your understanding of the vault
+3. If not found, proceed normally (it's optional)
+4. Don't prompt users to create one - just use it if present
+```
+
+### What AGENT.md Typically Contains
+
+- **Folder structure** - What each top-level folder is for
+- **Daily note conventions** - Path pattern, template structure
+- **Tagging taxonomy** - What tags mean, hierarchies used
+- **Note types** - MOCs, atomic notes, project notes, etc.
+- **Linking conventions** - When to use `[[wikilinks]]` vs tags
+- **Capture preferences** - Where quick captures should go
 
 ## Available MCP Tools
 
