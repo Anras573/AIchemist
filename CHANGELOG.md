@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/Anras573/AIchemist/compare/v2.1.0...v2.1.1) (2026-02-12)
+
+
+### Bug Fixes
+
+* wrap MCP servers in mcpServers object per spec ([#39](https://github.com/Anras573/AIchemist/issues/39)) ([621abe8](https://github.com/Anras573/AIchemist/commit/621abe84723d653d499c3fe0af5fd03af12229f4))
+
 ## [2.1.0](https://github.com/Anras573/AIchemist/compare/v2.0.0...v2.1.0) (2026-02-12)
 
 
