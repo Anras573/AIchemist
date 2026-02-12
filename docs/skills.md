@@ -177,3 +177,36 @@ On first use, the skill prompts for:
 - Preferred timestamp format
 
 Settings stored in `${CLAUDE_PLUGIN_ROOT}/config.json`.
+
+### AGENT.md (Best Practice)
+
+Create an `AGENT.md` file at your vault root to give Claude context about your vault conventions. This is optional but recommended - it helps Claude understand how you organize notes without repeated explanations.
+
+**Example AGENT.md:**
+
+```markdown
+# Vault Context for AI Assistants
+
+## Folder Structure
+- `Daily Notes/` - Daily journal entries (YYYY-MM-DD.md format)
+- `Projects/` - Active project notes, one folder per project
+- `References/` - Permanent reference material
+- `Captures/` - Quick captures, inbox for processing
+
+## Daily Note Conventions
+- Path: `Daily Notes/YYYY-MM-DD.md`
+- Sections: Tasks, Log, Reflections
+- Link to project notes when relevant
+
+## Tagging System
+- `#status/active`, `#status/archived` - Note lifecycle
+- `#type/meeting`, `#type/decision` - Note categorization
+- `#project/[name]` - Project association
+
+## Preferences
+- Append captures to daily note under "## Captures" section
+- Use [[wikilinks]] for internal links
+- Include timestamps on log entries (HH:MM format)
+```
+
+The skill reads this file automatically on first vault interaction - no configuration needed.
