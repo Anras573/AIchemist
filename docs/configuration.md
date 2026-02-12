@@ -13,14 +13,21 @@ AIchemist uses lazy configuration — settings are fetched and cached on first u
 
 The `.mcp.json` file configures external MCP servers.
 
+### Official Claude MCP Servers
+
+For **GitHub**, **Atlassian** (Jira/Confluence), and **Context7**, use the official MCP servers built into Claude Code:
+
+```bash
+/mcp
+```
+
+These are maintained by Anthropic and provide the best integration experience. The plugin's Jira skills work seamlessly with the official Atlassian MCP server.
+
 ### HTTP Servers (Hosted)
 
 | Server | Description | Auth Required |
 | ------ | ----------- | ------------- |
-| `github` | GitHub Copilot MCP integration | GitHub Copilot subscription |
-| `atlassian` | Jira and Confluence access | Atlassian account (OAuth via browser) |
 | `microsoft-docs` | Microsoft Learn documentation (.NET, Azure, C#) | None |
-| `context7` | Up-to-date library documentation | API key |
 
 ### Local Servers (stdio)
 
@@ -34,20 +41,7 @@ The `obsidian` MCP server is launched via `uvx mcp-obsidian`, so you need `uv` (
 
 | Variable | Required For | Description |
 | -------- | ------------ | ----------- |
-| `CONTEXT7_API_KEY` | Context7 MCP server | API key for library documentation lookups |
 | `OBSIDIAN_API_KEY` | Obsidian MCP server | API key from Obsidian Local REST API plugin |
-
-### Context7 API Key
-
-Context7 requires an API key set as an environment variable:
-
-```bash
-export CONTEXT7_API_KEY="your-api-key-here"
-```
-
-Get your API key from [Context7](https://context7.com).
-
-Add this to your shell profile (`.bashrc`, `.zshrc`, etc.) for persistence.
 
 ### Obsidian API Key
 
