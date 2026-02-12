@@ -1,31 +1,33 @@
 {
-  "github": {
-    "type": "http",
-    "url": "https://api.githubcopilot.com/mcp/"
-  },
-  "atlassian": {
-    "type": "http",
-    "url": "https://mcp.atlassian.com/v1/sse"
-  },
-  "microsoft-docs": {
-    "type": "http",
-    "url": "https://learn.microsoft.com/api/mcp"
-  },
-  "context7": {
-    "type": "http",
-    "url": "https://mcp.context7.com/mcp",
-    "headers": {
-      "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
-    }
-  },
-  "obsidian": {
-    "type": "stdio",
-    "command": "uvx",
-    "args": ["mcp-obsidian"],
-    "env": {
-      "OBSIDIAN_API_KEY": "${OBSIDIAN_API_KEY}",
-      "OBSIDIAN_HOST": "127.0.0.1",
-      "OBSIDIAN_PORT": "27124"
+  "mcpServers": {
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
+    "atlassian": {
+      "type": "http",
+      "url": "https://mcp.atlassian.com/v1/sse"
+    },
+    "microsoft-docs": {
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp"
+    },
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
+      }
+    },
+    "obsidian": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["mcp-obsidian"],
+      "env": {
+        "OBSIDIAN_API_KEY": "${OBSIDIAN_API_KEY}",
+        "OBSIDIAN_HOST": "127.0.0.1",
+        "OBSIDIAN_PORT": "27124"
+      }
     }
   }
 }
