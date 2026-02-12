@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/Anras573/AIchemist/compare/v2.0.0...v2.1.0) (2026-02-12)
+
+
+### Features
+
+* **skills:** add AGENT.md support to Obsidian skill ([#37](https://github.com/Anras573/AIchemist/issues/37)) ([17ef759](https://github.com/Anras573/AIchemist/commit/17ef7599d25f32656527d15b0f4dc992a716ae4b))
+
 ## [2.0.0](https://github.com/Anras573/AIchemist/compare/v1.1.1...v2.0.0) (2026-02-09)
 
 
