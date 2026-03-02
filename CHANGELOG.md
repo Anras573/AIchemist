@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/Anras573/AIchemist/compare/v2.1.1...v2.2.0) (2026-03-02)
+
+
+### Features
+
+* **obsidian:** migrate from MCP server to Obsidian CLI ([#42](https://github.com/Anras573/AIchemist/issues/42)) ([f594ad8](https://github.com/Anras573/AIchemist/commit/f594ad83ae4da7cdd21030acdaab9a5f9d8f4ab1))
+
 ## [2.1.1](https://github.com/Anras573/AIchemist/compare/v2.1.0...v2.1.1) (2026-02-12)
 
 
