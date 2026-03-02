@@ -33,29 +33,60 @@ The `.mcp.json` file configures additional MCP servers not available as official
 | ------ | ----------- | ------------- |
 | `microsoft-docs` | Microsoft Learn documentation (.NET, Azure, C#) | None |
 
-#### Local Servers (stdio)
+## Obsidian Setup
 
-| Server | Description | Auth Required |
-| ------ | ----------- | ------------- |
-| `obsidian` | Obsidian vault access via Local REST API | API key + Obsidian running |
+The Obsidian skill uses the Obsidian CLI (included with Obsidian v1.5.0+) to interact with your vault. No MCP server or API key is required.
 
-The `obsidian` MCP server is launched via `uvx mcp-obsidian`, so you need `uv` (which provides the `uvx` command) installed and on your `PATH`. On first use, `uvx` will automatically download and run the `mcp-obsidian` package if it is not already available.
+### Requirements
 
-## Environment Variables
+1. **Obsidian desktop app** installed (v1.5.0 or later)
+2. **At least one vault** created in Obsidian
+3. **Obsidian running** (the CLI communicates with the running application)
 
-| Variable | Required For | Description |
-| -------- | ------------ | ----------- |
-| `OBSIDIAN_API_KEY` | Obsidian MCP server | API key from Obsidian Local REST API plugin |
+### CLI Location
 
-### Obsidian API Key
+The CLI is included with Obsidian:
 
-The Obsidian MCP server requires:
+| Platform | CLI Path |
+| -------- | -------- |
+| macOS | `/Applications/Obsidian.app/Contents/MacOS/obsidian` |
+| Linux | `/usr/bin/obsidian` or `/opt/Obsidian/obsidian` |
+| Windows | `C:\Users\<username>\AppData\Local\Obsidian\obsidian.exe` |
 
-1. **Obsidian Local REST API plugin** installed and enabled in your vault
-2. **API key** from the plugin settings
+### Optional Shell Alias
+
+For convenience, add an alias to your shell profile:
 
 ```bash
-export OBSIDIAN_API_KEY="your-api-key-here"
+# macOS/Linux: Add to ~/.zshrc or ~/.bashrc
+alias obsidian="/Applications/Obsidian.app/Contents/MacOS/obsidian"
 ```
 
-The MCP server connects to `127.0.0.1:27124` by default. Obsidian must be running for the connection to work.
+### First Use
+
+On first use of Obsidian skills, you'll be prompted to select a vault if you have multiple vaults. The skill will remember your preference.
+
+### AGENT.md File
+
+Optionally create an `AGENT.md` file at the root of your vault to document your vault structure, conventions, and preferences. The skill will automatically read this file on first interaction to better understand your vault.
+
+Example `AGENT.md`:
+```markdown
+# My Vault Guide
+
+## Folder Structure
+- `Daily Notes/` — Daily journals in YYYY-MM-DD format
+- `Projects/` — Project documentation
+- `Captures/` — Quick captures and fleeting notes
+
+## Tagging Conventions
+- `#dev` — Development notes
+- `#meeting` — Meeting notes
+- `#idea` — Ideas and brainstorming
+
+## Daily Note Template
+Daily notes use the "daily" template with sections for:
+- Morning planning
+- Work log
+- Evening reflection
+```

@@ -2,12 +2,12 @@
 name: Obsidian Knowledge Management
 description: |
   This skill should be used when the user asks to "capture to obsidian", "add to daily note", "research in vault", "search my notes", "save this insight", "query obsidian", "check daily note", "create daily note", "append to daily note", "find in obsidian", "look up notes", or mentions Obsidian-related knowledge management tasks. Provides three capabilities: daily notes, quick capture, and vault research.
-version: 1.0.0
+version: 2.0.0
 ---
 
 # Obsidian Knowledge Management Skill
 
-This skill integrates Claude Code with Obsidian for knowledge management workflows during coding sessions. It provides three core capabilities:
+This skill integrates Claude Code with Obsidian for knowledge management workflows during coding sessions using the Obsidian CLI. It provides three core capabilities:
 
 1. **Daily Note** (`/daily-note`) - Interact with today's daily note
 2. **Capture** (`/capture`) - Quick capture of thoughts, code snippets, or insights
@@ -17,61 +17,50 @@ This skill integrates Claude Code with Obsidian for knowledge management workflo
 
 | Type | Operations | Behavior |
 |------|------------|----------|
-| **Read** | Search, list files, get file contents | Automatic — no confirmation needed |
-| **Write** | Append content, create notes | Automatic for append; confirm before overwriting |
+| **Read** | Search, list files, read file contents | Automatic — no confirmation needed |
+| **Write** | Append/prepend content, create notes | Automatic for append/prepend; confirm before overwriting |
 | **Destructive** | Delete notes, overwrite existing content | **Requires explicit user confirmation** |
 
 **Safety Rules:**
-- `obsidian/append_content` is safe — it only adds to existing notes
-- `obsidian/patch_content` overwrites — confirm before using on existing notes
-- `obsidian/delete_file` is destructive — always confirm before deletion
+- `append` and `prepend` commands are safe — they only add to existing notes
+- `create` with `overwrite` flag overwrites — confirm before using on existing notes
+- `delete` is destructive — always confirm before deletion
 - Never delete notes without explicit user request
 
 ## Prerequisites
 
-### Obsidian Local REST API Plugin
+### Obsidian Application
 
-The [Obsidian Local REST API plugin](https://github.com/coddingtonbear/obsidian-local-rest-api) must be installed and enabled in your vault:
+The Obsidian desktop application must be installed and running. The CLI is included with Obsidian (v1.5.0+).
 
-1. Open Obsidian Settings > Community plugins
-2. Search for "Local REST API"
-3. Install and enable the plugin
-4. Copy the API key from the plugin settings
+**Installation:**
+- macOS: [Download from obsidian.md](https://obsidian.md)
+- The CLI is located at: `/Applications/Obsidian.app/Contents/MacOS/obsidian`
 
-### Environment Variable
+### Vault Setup
 
-Set `OBSIDIAN_API_KEY` in your environment:
+You need an active Obsidian vault. The CLI can work with multiple vaults using the `vault=<name>` parameter.
 
+**To list available vaults:**
 ```bash
-export OBSIDIAN_API_KEY="your-api-key-here"
+/Applications/Obsidian.app/Contents/MacOS/obsidian vaults
 ```
 
-#### Security Notes
+### Environment Setup (Optional)
 
-- Never print or echo `OBSIDIAN_API_KEY` in logs, terminals, or chat responses
-- Avoid logging full error payloads if they might include HTTP headers containing this key
-- Do not write `OBSIDIAN_API_KEY` into Obsidian notes or vault files
-
-### uv/uvx
-
-The Obsidian MCP server is launched via `uvx mcp-obsidian`. Install `uv`:
+For convenience, you can add an alias to your shell profile:
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# Add to ~/.zshrc or ~/.bashrc
+alias obsidian="/Applications/Obsidian.app/Contents/MacOS/obsidian"
 ```
-
-On first use, `uvx` will automatically download and run the `mcp-obsidian` package.
-
-### MCP Server
-
-The `mcp-obsidian` server should be configured in `.mcp.json` (already included in this plugin).
 
 ### First-Run Check
 
 On first use, verify prerequisites:
 
-1. Check if Obsidian MCP tools are available
-2. Test vault connectivity with `obsidian/list_files_in_vault`
+1. Check if Obsidian CLI is available
+2. List vaults to verify connectivity
 3. **Check for AGENT.md** at the vault root and read it if present
 
 If connection fails, provide setup guidance.
@@ -83,7 +72,7 @@ If an `AGENT.md` file exists at the vault root, read it on first interaction to 
 ### Reading AGENT.md
 
 ```
-1. On first vault interaction, call obsidian/get_file_contents with filepath "AGENT.md"
+1. On first vault interaction, use the read command to get AGENT.md contents
 2. If found, incorporate the context into your understanding of the vault
 3. If not found, proceed normally (it's optional)
 4. Don't prompt users to create one - just use it if present
@@ -98,17 +87,41 @@ If an `AGENT.md` file exists at the vault root, read it on first interaction to 
 - **Linking conventions** - When to use `[[wikilinks]]` vs tags
 - **Capture preferences** - Where quick captures should go
 
-## Available MCP Tools
+## CLI Command Reference
 
-| Tool | Purpose |
-|------|---------|
-| `obsidian/list_files_in_vault` | List all files in the vault |
-| `obsidian/list_files_in_dir` | List files in a specific directory |
-| `obsidian/get_file_contents` | Read note contents |
-| `obsidian/search` | Full-text search across vault |
-| `obsidian/patch_content` | Create or overwrite the full contents of a note (use with care) |
-| `obsidian/append_content` | Safely append content to an existing note |
-| `obsidian/delete_file` | Delete a note |
+All commands follow the pattern:
+```bash
+/Applications/Obsidian.app/Contents/MacOS/obsidian <command> [options] vault=<vault-name>
+```
+
+### Essential Commands for This Skill
+
+| Command | Purpose | Key Options |
+|---------|---------|-------------|
+| `read` | Read file contents | `file=<name>` or `path=<path>` |
+| `create` | Create new file | `path=<path>`, `content=<text>`, `template=<name>` |
+| `append` | Append to file | `path=<path>`, `content=<text>`, `inline` |
+| `prepend` | Prepend to file | `path=<path>`, `content=<text>`, `inline` |
+| `search` | Search vault | `query=<text>`, `format=json`, `limit=<n>` |
+| `search:context` | Search with context | `query=<text>`, `format=json` |
+| `files` | List files | `folder=<path>`, `ext=<extension>`, `total` |
+| `folders` | List folders | `folder=<path>`, `total` |
+| `daily:read` | Read daily note | None |
+| `daily:append` | Append to daily note | `content=<text>`, `inline` |
+| `daily:prepend` | Prepend to daily note | `content=<text>`, `inline` |
+| `daily:path` | Get daily note path | None |
+| `delete` | Delete file | `path=<path>`, `permanent` |
+| `vault` | Get vault info | `info=name\|path\|files\|folders\|size` |
+| `vaults` | List vaults | `verbose` |
+
+### Important Notes
+
+- Use `path=<path>` for exact file paths (e.g., `path="Folder/Note.md"`)
+- Use `file=<name>` for name-based resolution (like wikilinks)
+- Quote values with spaces: `content="My content here"`
+- Use `\n` for newlines in content values
+- Default vault is used unless `vault=<name>` is specified
+- Most commands default to the active file when file/path is omitted
 
 ## Daily Note Capability
 
@@ -132,38 +145,41 @@ Daily notes are typically stored in one of these locations:
 - `Journal/YYYY-MM-DD.md`
 - `YYYY/MM-MMMM/YYYY-MM-DD.md`
 
-**On first use**, ask the user for their daily note path pattern if not obvious from vault structure.
+**On first use**, check `daily:path` to discover the user's pattern, or ask if not configured.
 
 ### Workflow: Retrieve Daily Note
 
+```bash
+# Get daily note path
+obsidian daily:path vault="My Vault"
+
+# Read daily note contents
+obsidian daily:read vault="My Vault"
 ```
-1. Calculate today's date in YYYY-MM-DD format
-2. Construct path based on user's pattern (or detect from vault)
-3. Use obsidian/get_file_contents to fetch the note
-4. Display contents with clear formatting
-5. If note doesn't exist, offer to create it
-```
+
+Display contents with clear formatting. If note doesn't exist, offer to create it.
 
 ### Workflow: Create Daily Note
 
-```
-1. Check if daily note already exists
-2. If exists, inform user and offer to append instead
-3. If creating, use appropriate template:
-   - Date header
-   - Standard sections (optional)
-4. Use obsidian/patch_content to create the note
+```bash
+# Check if daily note exists first
+obsidian daily:path vault="My Vault"
+
+# Create daily note with template (if configured)
+obsidian create path="Daily Notes/2024-01-15.md" template="daily" vault="My Vault"
+
+# Or create with initial content
+obsidian create path="Daily Notes/2024-01-15.md" content="# 2024-01-15\n\n## Today's Focus\n\n" vault="My Vault"
 ```
 
 ### Workflow: Append to Daily Note
 
-```
-1. Verify daily note exists (create if needed)
-2. Format content appropriately:
-   - Add timestamp if requested
-   - Include context (current project/file if relevant)
-3. Use obsidian/append_content to add the entry
-4. Confirm success
+```bash
+# Append content with newlines
+obsidian daily:append content="## 14:30 - Code Review Notes\n\nFound issue with token refresh logic..." vault="My Vault"
+
+# Inline append (no newline)
+obsidian daily:append content=" - Additional task" inline vault="My Vault"
 ```
 
 ## Capture Capability
@@ -208,23 +224,38 @@ When capturing, format entries consistently:
 
 ### Workflow: Quick Capture
 
-```
-1. Parse capture command for options (--note, --tag, --code)
-2. Determine target (daily note or specific note)
-3. Format content with timestamp and context
-4. Use obsidian/append_content to save
-5. Confirm capture with link to note
+```bash
+# Capture to daily note
+timestamp=$(date +"%H:%M")
+obsidian daily:append content="\n## [$timestamp] Capture\n\n> Quick thought about authentication\n\n**Tags:** #dev #auth" vault="My Vault"
+
+# Capture to specific note
+obsidian append path="Captures/Ideas.md" content="\n## $(date +"%Y-%m-%d %H:%M")\n\nNew feature idea..." vault="My Vault"
 ```
 
 ### Workflow: Code Capture
 
 When `--code` flag is used:
 
+```bash
+# Format code capture
+cat << 'EOF' > /tmp/capture.txt
+
+## [15:30] Code Snippet
+
+```typescript
+// File: src/auth/middleware.ts
+export async function validateToken(token: string) {
+  // Implementation
+}
 ```
-1. Get current file context (path, selection if any)
-2. Format as code block with language
-3. Add file path as reference
-4. Capture to specified target
+
+**Context:** Working on authentication middleware
+**Tags:** #code #typescript #auth
+EOF
+
+# Append to daily note
+obsidian daily:append content="$(cat /tmp/capture.txt)" vault="My Vault"
 ```
 
 ## Research Capability
@@ -243,22 +274,26 @@ Search the vault for relevant context on a topic, leveraging past knowledge duri
 
 ### Search Strategy
 
-1. **Full-text search** using `obsidian/search`
-2. **Filter results** by relevance
-3. **Summarize findings** for quick consumption
-4. **Suggest related notes** via backlinks
+1. **Full-text search** using `search` command
+2. **Get context** using `search:context` for matching lines
+3. **Filter results** by relevance
+4. **Summarize findings** for quick consumption
+5. **Suggest related notes** via backlinks (if available)
 
 ### Workflow: Research Query
 
+```bash
+# Simple search (returns file list with match counts)
+obsidian search query="authentication patterns" format=json vault="My Vault"
+
+# Search with context (returns matching lines)
+obsidian search:context query="JWT" format=json limit=5 vault="My Vault"
+
+# Search within folder
+obsidian search query="API" path="Projects/" format=json vault="My Vault"
 ```
-1. Parse research query and options
-2. Execute search via obsidian/search
-3. Filter and rank results by relevance
-4. Present top results with:
-   - Note title and path
-   - Relevant excerpt
-5. Offer to read full note if requested
-```
+
+Parse JSON output to present results cleanly.
 
 ### Result Presentation
 
@@ -279,20 +314,38 @@ Search the vault for relevant context on a topic, leveraging past knowledge duri
 Say "read 1" to see the full note, or refine your search.
 ```
 
+### Reading Full Note After Research
+
+```bash
+# Read specific note from results
+obsidian read path="Architecture/Auth.md" vault="My Vault"
+```
+
 ## Error Handling
 
-### Connection Errors
+### CLI Not Found
 
-If MCP tools fail:
+If Obsidian CLI is not available:
 
 ```markdown
-**Obsidian connection failed**
+**Obsidian CLI not found**
 
 Please verify:
-1. Obsidian is running
-2. Local REST API plugin is enabled
-3. `OBSIDIAN_API_KEY` environment variable is set
-4. Port 27124 is accessible
+1. Obsidian desktop app is installed (v1.5.0+)
+2. On macOS, CLI is at: `/Applications/Obsidian.app/Contents/MacOS/obsidian`
+3. Consider adding an alias: `alias obsidian="/Applications/Obsidian.app/Contents/MacOS/obsidian"`
+```
+
+### Vault Not Found
+
+```markdown
+**Vault not found:** "My Vault"
+
+Available vaults:
+- Personal Notes
+- Work Notes
+
+Use one of these names with the vault=<name> parameter.
 ```
 
 ### Note Not Found
@@ -311,33 +364,115 @@ Would you like me to create it?
 Suggestions:
 - Try broader terms
 - Check spelling
-- Search in specific folder with `--folder`
+- Search in specific folder with `path=<folder>`
 ```
 
 ## Configuration
 
-### Daily Note Settings
+### Vault Selection
 
-Store user preferences in `${CLAUDE_PLUGIN_ROOT}/config.json`:
+Store user's preferred vault in plugin memory or ask on first use:
 
-```json
-{
-  "obsidian": {
-    "daily_note_path": "Daily Notes/{{date:YYYY-MM-DD}}.md",
-    "daily_note_template": "templates/daily.md",
-    "capture_folder": "Captures"
-  }
-}
+```bash
+# List available vaults
+obsidian vaults verbose
+
+# Get vault info
+obsidian vault info=name vault="My Vault"
 ```
+
+### Daily Note Detection
+
+On first daily note interaction:
+
+```bash
+# Check daily note path pattern
+obsidian daily:path vault="My Vault"
+```
+
+This reveals the user's configured daily note location.
 
 ### First-Time Setup
 
-On first use, prompt for preferences:
+On first use, detect preferences:
 
-1. Daily note location pattern
-2. Default capture behavior
-3. Preferred timestamp format
+1. Available vaults (via `vaults` command)
+2. Daily note location pattern (via `daily:path`)
+3. Vault structure (via `folders` command)
+
+## Common Patterns
+
+### Check if Note Exists
+
+```bash
+# Attempt to read the file
+obsidian read path="Folder/Note.md" vault="My Vault" 2>&1
+
+# If returns error, file doesn't exist
+# If returns content, file exists
+```
+
+### Create Note if Missing
+
+```bash
+# Try to read first
+content=$(obsidian read path="Folder/Note.md" vault="My Vault" 2>&1)
+
+if [[ $? -ne 0 ]]; then
+  # File doesn't exist, create it
+  obsidian create path="Folder/Note.md" content="# Note Title\n\n" vault="My Vault"
+else
+  # File exists, append instead
+  obsidian append path="Folder/Note.md" content="\n## New Section\n\n" vault="My Vault"
+fi
+```
+
+### List Files in Folder
+
+```bash
+# List markdown files
+obsidian files folder="Daily Notes" ext=md format=json vault="My Vault"
+
+# Get total count
+obsidian files folder="Daily Notes" total vault="My Vault"
+```
+
+### Parse JSON Output
+
+Most commands support `format=json` option. Parse the JSON for programmatic access:
+
+```bash
+# Search with JSON output
+result=$(obsidian search query="test" format=json vault="My Vault")
+echo "$result" | jq -r '.[] | "\(.file): \(.matches | length) matches"'
+```
+
+## Platform Compatibility
+
+The Obsidian CLI path varies by platform:
+
+| Platform | CLI Location |
+|----------|-------------|
+| macOS | `/Applications/Obsidian.app/Contents/MacOS/obsidian` |
+| Linux | `/usr/bin/obsidian` (or installed location) |
+| Windows | `C:\Users\<username>\AppData\Local\Obsidian\obsidian.exe` |
+
+Detect platform and use appropriate path:
+
+```bash
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  OBSIDIAN_CLI="/Applications/Obsidian.app/Contents/MacOS/obsidian"
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  OBSIDIAN_CLI="obsidian"
+elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+  OBSIDIAN_CLI="obsidian.exe"
+fi
+```
 
 ## Additional Resources
 
-For MCP tool details, see `references/mcp-tools.md`.
+For complete CLI documentation, run:
+```bash
+obsidian help
+obsidian help <command>
+```
