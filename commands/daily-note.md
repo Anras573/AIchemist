@@ -2,7 +2,7 @@
 name: daily-note
 description: Interact with today's Obsidian daily note - retrieve, create, or append content.
 argument-hint: "[create | add <text> | --date YYYY-MM-DD]"
-allowed-tools: Bash, Read, Write, AskUserQuestion
+allowed-tools: Bash(obsidian*), Read, Write, AskUserQuestion
 ---
 
 # Daily Note Command
@@ -69,18 +69,20 @@ If missing or no `obsidian.preferredVault`:
 
 ### 3. Determine Daily Note Path
 
-Use the Obsidian CLI to get the daily note path:
+Use the Obsidian CLI to get today's daily note path:
 
 ```bash
-# Get the configured daily note path from Obsidian
+# Get today's daily note path from Obsidian
 obsidian daily:path vault="<preferredVault>"
+# Returns: Daily Notes/2024-01-15.md (example)
 ```
 
-This returns the path pattern configured in Obsidian's daily notes settings.
+This returns the concrete path to today's daily note based on Obsidian's configured daily notes settings.
 
-**For specific dates:**
-- The `daily:path` command returns today's path
-- For custom dates, construct path manually if needed, or use date-specific CLI features
+**For specific dates (--date flag):**
+- The `daily:path` command returns only today's path
+- For custom dates, infer the folder/naming pattern from today's path and construct the target date's path
+- Or handle custom dates by manually specifying the expected path based on user's convention
 
 ### 4. Execute Operation
 

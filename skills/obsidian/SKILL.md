@@ -100,8 +100,10 @@ If an `AGENT.md` file exists at the vault root, read it on first interaction to 
 
 All commands follow the pattern:
 ```bash
-/Applications/Obsidian.app/Contents/MacOS/obsidian <command> [options] vault=<vault-name>
+obsidian <command> [options] vault=<vault-name>
 ```
+
+(See platform-specific CLI paths in the Prerequisites section above.)
 
 ### Essential Commands for This Skill
 
@@ -395,11 +397,11 @@ Example config.json entry:
 On first daily note interaction:
 
 ```bash
-# Check daily note path pattern
+# Get today's daily note path
 obsidian daily:path vault="My Vault"
 ```
 
-This reveals the user's configured daily note location.
+This returns the concrete path to today's daily note (e.g., `Daily Notes/2024-01-15.md`). The folder and naming convention can be inferred from this path if needed for custom date operations.
 
 ### First-Time Setup
 

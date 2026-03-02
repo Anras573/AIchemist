@@ -172,7 +172,7 @@ Integrates Claude Code with Obsidian for knowledge management during coding sess
 
 The skill automatically detects:
 - Vault selection (prompts if multiple vaults exist)
-- Daily note path pattern (via `daily:path` command)
+- Daily note path (via `daily:path` command - returns today's path)
 - Vault structure (via `folders` command)
 
 No manual configuration required - preferences are inferred from your Obsidian setup.

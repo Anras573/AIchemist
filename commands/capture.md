@@ -2,7 +2,7 @@
 name: capture
 description: Quick capture of thoughts, code snippets, or insights to Obsidian without leaving the coding flow.
 argument-hint: "<text> [--note <name>] [--tag #tag] [--code]"
-allowed-tools: Bash, Read, Write, AskUserQuestion
+allowed-tools: Bash(obsidian*), Read, Write, AskUserQuestion
 ---
 
 # Capture Command
@@ -122,7 +122,7 @@ If `--code` flag is set:
 ```bash
 # For daily note
 obsidian daily:read vault="<preferredVault>" 2>/dev/null
-# If exits (exit code 0) → proceed to append
+# If exists (exit code 0) → proceed to append
 # If not found → create new note
 
 # For named note

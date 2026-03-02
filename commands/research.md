@@ -2,7 +2,7 @@
 name: research
 description: Search your Obsidian vault for relevant context, notes, and past knowledge on a topic.
 argument-hint: "<query> [--folder <path>] [--limit <n>]"
-allowed-tools: Bash, Read, AskUserQuestion
+allowed-tools: Bash(obsidian*), Read, AskUserQuestion
 ---
 
 # Research Command
@@ -24,6 +24,20 @@ Search your Obsidian vault for relevant context during coding sessions. Quickly 
 | `<query>` | Search terms (required) |
 | `--folder <path>` | Limit search to specific folder |
 | `--limit <n>` | Maximum results to show (default: 5) |
+
+## Configuration
+
+Read `${CLAUDE_PLUGIN_ROOT}/config.json` to get the preferred vault:
+
+```json
+{
+  "obsidian": {
+    "preferredVault": "My Vault"
+  }
+}
+```
+
+**If not configured:** Use `obsidian vaults` to list available vaults, prompt user to select one, and save to config.json.
 
 ## Execution Steps
 
