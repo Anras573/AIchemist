@@ -43,11 +43,18 @@ Uses settings from `${CLAUDE_PLUGIN_ROOT}/config.json`:
 ```json
 {
   "obsidian": {
-    "daily_note_path": "Daily Notes/{{date:YYYY-MM-DD}}.md",
-    "capture_folder": "Captures"
+    "preferredVault": "My Vault"
   }
 }
 ```
+
+**On first use**, if vault preference is not set:
+1. Use `obsidian vaults` to list available vaults
+2. Prompt user to select a vault
+3. Store selection in config.json
+
+The daily note path is automatically detected using `obsidian daily:path vault="<vault-name>"`.
+The capture folder defaults to `Captures/` but can be customized based on user preference.
 
 ## Execution Steps
 

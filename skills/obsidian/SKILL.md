@@ -156,7 +156,7 @@ Daily notes are typically stored in one of these locations:
 - `Journal/YYYY-MM-DD.md`
 - `YYYY/MM-MMMM/YYYY-MM-DD.md`
 
-**On first use**, check `daily:path` to discover the user's pattern, or ask if not configured.
+**On first use**, run `daily:path` to get the concrete path to today's daily note and, if needed, infer the folder/filename convention from that path. If daily notes are not configured, ask the user for their preferred location and naming.
 
 ### Workflow: Retrieve Daily Note
 
@@ -249,12 +249,12 @@ obsidian append path="Captures/Ideas.md" content="\n## $full_timestamp\n\nNew fe
 
 When `--code` flag is used, format with escaped newlines for consistency:
 
-```bash
+````bash
 # Format code capture and append to daily note
 obsidian daily:append content="## [15:30] Code Snippet\n\n\`\`\`typescript\n// File: src/auth/middleware.ts\nexport async function validateToken(token: string) {\n  // Implementation\n}\n\`\`\`\n\n**Context:** Working on authentication middleware\n**Tags:** #code #typescript #auth" vault="My Vault"
-```
+````
 
-**Note:** Use `\n` for newlines and `\`` (escaped backticks) for code fences in content values.
+**Note:** Use `\n` for newlines and escaped backticks (\`) for code fences in content values.
 
 ## Research Capability
 
@@ -450,13 +450,13 @@ obsidian files folder="Daily Notes" total vault="My Vault"
 
 ### Parse JSON Output
 
-Many commands support `format=json` option (e.g., `search`, `tasks`, `tags`). Parse the JSON for programmatic access:
+Some commands support `format=json` option (e.g., `search`, `tasks`, `tags`). Parse the JSON for programmatic access:
 
-```bash
+````bash
 # Search with JSON output
 result=$(obsidian search query="test" format=json vault="My Vault")
 echo "$result" | jq -r '.[] | "\(.file): \(.matches) matches"'
-```
+````
 
 ## Platform Compatibility
 
