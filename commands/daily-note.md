@@ -2,7 +2,7 @@
 name: daily-note
 description: Interact with today's Obsidian daily note - retrieve, create, or append content.
 argument-hint: "[create | add <text> | --date YYYY-MM-DD]"
-allowed-tools: mcp__obsidian__get_file_contents, mcp__obsidian__patch_content, mcp__obsidian__append_content, mcp__obsidian__list_files_in_dir, Read, Write, AskUserQuestion
+allowed-tools: Bash, Read, Write, AskUserQuestion
 ---
 
 # Daily Note Command
@@ -29,25 +29,22 @@ Interact with your Obsidian daily note for journaling, task tracking, and sessio
 
 ## Configuration
 
-This command uses daily note settings from `${CLAUDE_PLUGIN_ROOT}/config.json`:
+This command uses the Obsidian CLI to interact with daily notes. Configuration is stored in `${CLAUDE_PLUGIN_ROOT}/config.json`:
 
 ```json
 {
   "obsidian": {
-    "daily_note_path": "Daily Notes/{{date:YYYY-MM-DD}}.md",
-    "daily_note_template": null
+    "preferredVault": "My Vault"
   }
 }
 ```
 
-**If config is missing**, prompt the user on first use:
+**On first use**, if vault preference is not set:
+1. Use `obsidian vaults` to list available vaults
+2. Prompt user to select a vault
+3. Store selection in config.json
 
-> "I need to know where your daily notes are stored. What's your daily note path pattern (using `{{date:...}}` token)?"
->
-> Common patterns:
-> - `Daily Notes/{{date:YYYY-MM-DD}}.md`
-> - `Journal/{{date:YYYY-MM-DD}}.md`
-> - `{{date:YYYY/MM-MMMM/YYYY-MM-DD}}.md`
+The daily note path is automatically detected using `obsidian daily:path vault="<vault-name>"`.
 
 Save their preference to config for future use.
 
@@ -63,36 +60,39 @@ Extract the operation and any flags:
 
 ### 2. Load Configuration
 
-Read `${CLAUDE_PLUGIN_ROOT}/config.json` for daily note path pattern.
+Read `${CLAUDE_PLUGIN_ROOT}/config.json` for preferred vault.
 
-If missing or no `obsidian.daily_note_path`:
-1. Use `mcp__obsidian__list_files_in_dir` to discover structure
-2. Look for common patterns: `Daily Notes/`, `Journal/`, dated folders
-3. Ask user to confirm or specify pattern
-4. Save to config
+If missing or no `obsidian.preferredVault`:
+1. Use `obsidian vaults` CLI command to list available vaults
+2. Ask user to select their vault
+3. Save to config.json under `obsidian.preferredVault`
 
-### 3. Construct Note Path
+### 3. Determine Daily Note Path
 
-Replace `{{date:YYYY-MM-DD}}` (or similar) in path pattern with target date.
+Use the Obsidian CLI to get the daily note path:
 
-**Target date:**
-- Default: today in `YYYY-MM-DD` format
-- Override: value from `--date` flag
+```bash
+# Get the configured daily note path from Obsidian
+obsidian daily:path vault="<preferredVault>"
+```
 
-**Example:**
-- Pattern: `Daily Notes/{{date:YYYY-MM-DD}}.md`
-- Date: `2024-01-15`
-- Result: `Daily Notes/2024-01-15.md`
+This returns the path pattern configured in Obsidian's daily notes settings.
+
+**For specific dates:**
+- The `daily:path` command returns today's path
+- For custom dates, construct path manually if needed, or use date-specific CLI features
 
 ### 4. Execute Operation
 
 #### Retrieve (default)
 
+```bash
+# Read daily note contents
+obsidian daily:read vault="<preferredVault>"
 ```
-1. Use mcp__obsidian__get_file_contents with constructed path
-2. If found: Display contents with clear formatting
-3. If not found: Inform user and offer to create
-```
+
+If found: Display contents with clear formatting
+If not found: Inform user and offer to create
 
 **Output format:**
 ```markdown
@@ -106,37 +106,27 @@ _Path: Daily Notes/2024-01-15.md_
 
 #### Create
 
-```
-1. Check if note already exists using mcp__obsidian__get_file_contents
-2. If exists: Inform user and offer to append instead
-3. If not exists:
-   a. Build initial content with date header
-   b. Use mcp__obsidian__patch_content to create
-   c. Confirm creation
-```
+```bash
+# Check if note exists first
+obsidian daily:read vault="<preferredVault>" 2>/dev/null
 
-**Default template:**
-```markdown
-# {{date:YYYY-MM-DD}}
+# If exists: Inform user and offer to append instead
+# If not exists: Create with template (if configured in Obsidian) or default content
+obsidian create path="<daily-note-path>" template="daily" vault="<preferredVault>"
 
-## Tasks
-
-- [ ]
-
-## Notes
-
+# Or create with default content:
+obsidian create path="<daily-note-path>" content="# $(date +%Y-%m-%d)\n\n## Tasks\n\n- [ ] \n\n## Notes\n\n" vault="<preferredVault>"
 ```
 
 #### Append
 
-```
-1. Verify note exists (create if needed, with user confirmation)
-2. Format content to append:
-   - Add blank line separator
-   - Add timestamp header: ## HH:MM
-   - Add the user's content
-3. Use mcp__obsidian__append_content
-4. Confirm success
+```bash
+# Verify note exists (read command will fail if it doesn't)
+# Create if needed, with user confirmation
+
+# Format content with timestamp and append
+timestamp=$(date +%H:%M)
+obsidian daily:append content="\n\n## [$timestamp]\n\n<user-content>" vault="<preferredVault>"
 ```
 
 **Append format:**

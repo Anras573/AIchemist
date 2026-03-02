@@ -2,7 +2,7 @@
 name: capture
 description: Quick capture of thoughts, code snippets, or insights to Obsidian without leaving the coding flow.
 argument-hint: "<text> [--note <name>] [--tag #tag] [--code]"
-allowed-tools: mcp__obsidian__get_file_contents, mcp__obsidian__patch_content, mcp__obsidian__append_content, Read, Write
+allowed-tools: Bash, Read, Write, AskUserQuestion
 ---
 
 # Capture Command
@@ -119,33 +119,46 @@ If `--code` flag is set:
 ### 5. Append to Target
 
 **Check if target note exists:**
-```
-1. Use mcp__obsidian__get_file_contents to check if note exists
-2. If exists → proceed to append
-3. If not found → create new note
+```bash
+# For daily note
+obsidian daily:read vault="<preferredVault>" 2>/dev/null
+# If exits (exit code 0) → proceed to append
+# If not found → create new note
+
+# For named note
+obsidian read path="<note-path>" vault="<preferredVault>" 2>/dev/null
+# If exists → proceed to append
+# If not found → create new note
 ```
 
 **If target note exists:**
-```
-1. Use mcp__obsidian__append_content with formatted capture
-2. Confirm success with link
+```bash
+# For daily note
+obsidian daily:append content="<formatted-capture>" vault="<preferredVault>"
+
+# For named note
+obsidian append path="<note-path>" content="<formatted-capture>" vault="<preferredVault>"
 ```
 
 **If target note doesn't exist:**
 
 For daily note:
-```
-1. Create with standard template using mcp__obsidian__patch_content
-2. Then append the capture
+```bash
+# Create with template (if configured in Obsidian)
+obsidian create path="<daily-note-path>" template="daily" vault="<preferredVault>"
+# Then append the capture
+obsidian daily:append content="<formatted-capture>" vault="<preferredVault>"
 ```
 
 For named note (`--note`):
-```
-1. Create minimal note with title using mcp__obsidian__patch_content
-2. Then append the capture
+```bash
+# Create minimal note with title
+obsidian create path="<note-path>" content="# <note-title>\n\n" vault="<preferredVault>"
+# Then append the capture
+obsidian append path="<note-path>" content="<formatted-capture>" vault="<preferredVault>"
 ```
 
-**Note:** Always check existence first. Never use `patch_content` on an existing note without user confirmation — it overwrites all content.
+**Note:** The `append` command is safe — it only adds content. The `create` command with `overwrite` flag would replace content.
 
 ### 6. Confirm Capture
 
