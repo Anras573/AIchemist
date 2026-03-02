@@ -2,7 +2,7 @@
 name: capture
 description: Quick capture of thoughts, code snippets, or insights to Obsidian without leaving the coding flow.
 argument-hint: "<text> [--note <name>] [--tag #tag] [--code]"
-allowed-tools: mcp__obsidian__get_file_contents, mcp__obsidian__patch_content, mcp__obsidian__append_content, Read, Write
+allowed-tools: Bash(obsidian*), Read, Write, AskUserQuestion
 ---
 
 # Capture Command
@@ -43,11 +43,18 @@ Uses settings from `${CLAUDE_PLUGIN_ROOT}/config.json`:
 ```json
 {
   "obsidian": {
-    "daily_note_path": "Daily Notes/{{date:YYYY-MM-DD}}.md",
-    "capture_folder": "Captures"
+    "preferredVault": "My Vault"
   }
 }
 ```
+
+**On first use**, if vault preference is not set:
+1. Use `obsidian vaults` to list available vaults
+2. Prompt user to select a vault
+3. Store selection in config.json
+
+The daily note path is automatically detected using `obsidian daily:path vault="<vault-name>"`.
+The capture folder defaults to `Captures/` but can be customized based on user preference.
 
 ## Execution Steps
 
@@ -119,33 +126,46 @@ If `--code` flag is set:
 ### 5. Append to Target
 
 **Check if target note exists:**
-```
-1. Use mcp__obsidian__get_file_contents to check if note exists
-2. If exists → proceed to append
-3. If not found → create new note
+```bash
+# For daily note
+obsidian daily:read vault="<preferredVault>" 2>/dev/null
+# If exists (exit code 0) → proceed to append
+# If not found → create new note
+
+# For named note
+obsidian read path="<note-path>" vault="<preferredVault>" 2>/dev/null
+# If exists → proceed to append
+# If not found → create new note
 ```
 
 **If target note exists:**
-```
-1. Use mcp__obsidian__append_content with formatted capture
-2. Confirm success with link
+```bash
+# For daily note
+obsidian daily:append content="<formatted-capture>" vault="<preferredVault>"
+
+# For named note
+obsidian append path="<note-path>" content="<formatted-capture>" vault="<preferredVault>"
 ```
 
 **If target note doesn't exist:**
 
 For daily note:
-```
-1. Create with standard template using mcp__obsidian__patch_content
-2. Then append the capture
+```bash
+# Create with template (if configured in Obsidian)
+obsidian create path="<daily-note-path>" template="daily" vault="<preferredVault>"
+# Then append the capture
+obsidian daily:append content="<formatted-capture>" vault="<preferredVault>"
 ```
 
 For named note (`--note`):
-```
-1. Create minimal note with title using mcp__obsidian__patch_content
-2. Then append the capture
+```bash
+# Create minimal note with title
+obsidian create path="<note-path>" content="# <note-title>\n\n" vault="<preferredVault>"
+# Then append the capture
+obsidian append path="<note-path>" content="<formatted-capture>" vault="<preferredVault>"
 ```
 
-**Note:** Always check existence first. Never use `patch_content` on an existing note without user confirmation — it overwrites all content.
+**Note:** The `append` command is safe — it only adds content. The `create` command with `overwrite` flag would replace content.
 
 ### 6. Confirm Capture
 
@@ -182,8 +202,8 @@ Examples:
 **Obsidian connection failed**
 
 Please verify:
-1. Obsidian is running with Local REST API plugin enabled
-2. `OBSIDIAN_API_KEY` environment variable is set
+1. Obsidian desktop app is running
+2. Obsidian CLI is accessible (see configuration.md for path)
 
 Your capture could not be saved. Please retry when Obsidian is available.
 ```

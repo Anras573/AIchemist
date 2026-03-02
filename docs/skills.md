@@ -130,10 +130,9 @@ Integrates Claude Code with Obsidian for knowledge management during coding sess
 
 ### Prerequisites
 
-1. **Obsidian Local REST API plugin:** Install from Community Plugins
-2. **Environment variable:** `OBSIDIAN_API_KEY` must be set
-3. **Obsidian running:** The desktop app must be open for API access
-4. **uv CLI installed:** The MCP server is launched via `uvx mcp-obsidian`
+1. **Obsidian desktop app:** Version 1.5.0 or later (includes CLI)
+2. **Obsidian running:** The CLI communicates with the running application
+3. **At least one vault:** Created and configured in Obsidian
 
 ### Capabilities
 
@@ -171,12 +170,12 @@ Integrates Claude Code with Obsidian for knowledge management during coding sess
 
 ### Configuration
 
-On first use, the skill prompts for:
-- Daily note path pattern
-- Default capture behavior
-- Preferred timestamp format
+The skill automatically detects:
+- Vault selection (prompts if multiple vaults exist)
+- Daily note path (via `daily:path` command - returns today's path)
+- Vault structure (via `folders` command)
 
-Settings stored in `${CLAUDE_PLUGIN_ROOT}/config.json`.
+No manual configuration required - preferences are inferred from your Obsidian setup.
 
 ### AGENT.md (Best Practice)
 

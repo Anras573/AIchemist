@@ -2,7 +2,7 @@
 name: research
 description: Search your Obsidian vault for relevant context, notes, and past knowledge on a topic.
 argument-hint: "<query> [--folder <path>] [--limit <n>]"
-allowed-tools: mcp__obsidian__search, mcp__obsidian__get_file_contents, mcp__obsidian__list_files_in_vault, mcp__obsidian__list_files_in_dir, Read
+allowed-tools: Bash(obsidian*), Read, AskUserQuestion
 ---
 
 # Research Command
@@ -25,6 +25,20 @@ Search your Obsidian vault for relevant context during coding sessions. Quickly 
 | `--folder <path>` | Limit search to specific folder |
 | `--limit <n>` | Maximum results to show (default: 5) |
 
+## Configuration
+
+Read `${CLAUDE_PLUGIN_ROOT}/config.json` to get the preferred vault:
+
+```json
+{
+  "obsidian": {
+    "preferredVault": "My Vault"
+  }
+}
+```
+
+**If not configured:** Use `obsidian vaults` to list available vaults, prompt user to select one, and save to config.json.
+
 ## Execution Steps
 
 ### 1. Parse Arguments
@@ -36,20 +50,28 @@ Extract from user input:
 
 ### 2. Execute Search
 
-Use `mcp__obsidian__search` with the query:
+Use the Obsidian CLI search command:
 
+```bash
+# Search with context (provides matching lines)
+obsidian search:context query="<query>" format=json vault="<preferredVault>"
+
+# Or simple search (returns file list with match counts)
+obsidian search query="<query>" format=json vault="<preferredVault>"
 ```
-1. Call mcp__obsidian__search with query
-2. Receive array of matching results
-```
+
+Receive JSON array of matching results with file paths and match context.
 
 ### 3. Filter Results (if --folder)
 
-If `--folder` specified:
+If `--folder` specified, use the `path` parameter in the search command:
+
+```bash
+# Search within specific folder
+obsidian search:context query="<query>" path="<folder-path>" format=json vault="<preferredVault>"
 ```
-1. Filter results to only include files starting with folder path
-2. Example: --folder "Projects/" keeps only "Projects/..." paths
-```
+
+This limits search to files within the specified folder.
 
 ### 4. Rank and Limit Results
 
@@ -107,10 +129,12 @@ _Say "read 1" to see the full note, or refine your search._
 ### 7. Handle Follow-up (read N)
 
 If user responds with "read 1", "read 2", etc.:
-```
-1. Identify which result they want
-2. Use mcp__obsidian__get_file_contents to fetch full content
-3. Display the complete note
+```bash
+# Identify which result they want
+# Use the file path from the search result
+obsidian read path="<result-file-path>" vault="<preferredVault>"
+
+# Display the complete note
 ```
 
 ## Result Format
@@ -152,8 +176,8 @@ Suggestions:
 **Obsidian connection failed**
 
 Please verify:
-1. Obsidian is running with Local REST API plugin enabled
-2. `OBSIDIAN_API_KEY` environment variable is set
+1. Obsidian desktop app is running
+2. Obsidian CLI is accessible (see configuration.md for path)
 ```
 
 ### Folder Not Found

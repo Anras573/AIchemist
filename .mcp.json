@@ -3,16 +3,6 @@
     "microsoft-docs": {
       "type": "http",
       "url": "https://learn.microsoft.com/api/mcp"
-    },
-    "obsidian": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": ["mcp-obsidian"],
-      "env": {
-        "OBSIDIAN_API_KEY": "${OBSIDIAN_API_KEY}",
-        "OBSIDIAN_HOST": "127.0.0.1",
-        "OBSIDIAN_PORT": "27124"
-      }
     }
   }
 }
