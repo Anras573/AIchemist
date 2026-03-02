@@ -704,6 +704,9 @@ echo "Vault is at: $vault_path"
 
 ```bash
 # Use files command and sort by modification time
+# Get vault path first
+vault_path=$(obsidian vault info=path vault="My Vault")
+
 # Note: stat syntax differs between macOS/BSD and Linux
 if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "freebsd"* ]]; then
   # macOS/BSD

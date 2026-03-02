@@ -170,12 +170,12 @@ Integrates Claude Code with Obsidian for knowledge management during coding sess
 
 ### Configuration
 
-On first use, the skill prompts for:
-- Daily note path pattern
-- Default capture behavior
-- Preferred timestamp format
+The skill automatically detects:
+- Vault selection (prompts if multiple vaults exist)
+- Daily note path pattern (via `daily:path` command)
+- Vault structure (via `folders` command)
 
-Settings stored in `${CLAUDE_PLUGIN_ROOT}/config.json`.
+No manual configuration required - preferences are inferred from your Obsidian setup.
 
 ### AGENT.md (Best Practice)
 

@@ -33,7 +33,9 @@ The `.mcp.json` file configures additional MCP servers not available as official
 | ------ | ----------- | ------------- |
 | `microsoft-docs` | Microsoft Learn documentation (.NET, Azure, C#) | None |
 
-## Obsidian Setup
+## Skill-Specific Setup
+
+### Obsidian
 
 The Obsidian skill uses the Obsidian CLI (included with Obsidian v1.5.0+) to interact with your vault. No MCP server or API key is required.
 

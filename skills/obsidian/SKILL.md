@@ -230,7 +230,8 @@ timestamp=$(date +"%H:%M")
 obsidian daily:append content="\n## [$timestamp] Capture\n\n> Quick thought about authentication\n\n**Tags:** #dev #auth" vault="My Vault"
 
 # Capture to specific note
-obsidian append path="Captures/Ideas.md" content="\n## $(date +"%Y-%m-%d %H:%M")\n\nNew feature idea..." vault="My Vault"
+full_timestamp=$(date +'%Y-%m-%d %H:%M')
+obsidian append path="Captures/Ideas.md" content="\n## $full_timestamp\n\nNew feature idea..." vault="My Vault"
 ```
 
 ### Workflow: Code Capture
@@ -431,7 +432,7 @@ fi
 
 ```bash
 # List markdown files
-obsidian files folder="Daily Notes" ext=md format=json vault="My Vault"
+obsidian files folder="Daily Notes" ext=md vault="My Vault"
 
 # Get total count
 obsidian files folder="Daily Notes" total vault="My Vault"
@@ -439,7 +440,7 @@ obsidian files folder="Daily Notes" total vault="My Vault"
 
 ### Parse JSON Output
 
-Most commands support `format=json` option. Parse the JSON for programmatic access:
+Many commands support `format=json` option (e.g., `search`, `tasks`, `tags`). Parse the JSON for programmatic access:
 
 ```bash
 # Search with JSON output
