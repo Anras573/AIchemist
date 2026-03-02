@@ -155,9 +155,9 @@ Meeting notes from standup...
 **Obsidian connection failed**
 
 Please verify:
-1. Obsidian is running with Local REST API plugin enabled
-2. `OBSIDIAN_API_KEY` environment variable is set
-3. Port 27124 is accessible
+1. Obsidian desktop app is running
+2. Obsidian CLI is accessible (see configuration.md for path)
+3. At least one vault is configured
 
 See the Obsidian skill documentation for setup instructions.
 ```

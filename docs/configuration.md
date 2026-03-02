@@ -58,8 +58,14 @@ The CLI is included with Obsidian:
 For convenience, add an alias to your shell profile:
 
 ```bash
-# macOS/Linux: Add to ~/.zshrc or ~/.bashrc
+# macOS: Add to ~/.zshrc or ~/.bashrc
 alias obsidian="/Applications/Obsidian.app/Contents/MacOS/obsidian"
+
+# Linux: Add to ~/.zshrc or ~/.bashrc (adjust path if needed)
+# alias obsidian="/usr/bin/obsidian"
+
+# Windows (Git Bash/WSL): Add to ~/.bashrc
+# alias obsidian="/c/Users/<username>/AppData/Local/Obsidian/obsidian.exe"
 ```
 
 ### First Use

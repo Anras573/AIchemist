@@ -704,9 +704,18 @@ echo "Vault is at: $vault_path"
 
 ```bash
 # Use files command and sort by modification time
-obsidian files vault="My Vault" | while read -r file; do
-  stat -f "%m %N" "$vault_path/$file"
-done | sort -rn | head -10
+# Note: stat syntax differs between macOS/BSD and Linux
+if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "freebsd"* ]]; then
+  # macOS/BSD
+  obsidian files vault="My Vault" | while read -r file; do
+    stat -f "%m %N" "$vault_path/$file"
+  done | sort -rn | head -10
+else
+  # Linux
+  obsidian files vault="My Vault" | while read -r file; do
+    stat -c "%Y %n" "$vault_path/$file"
+  done | sort -rn | head -10
+fi
 ```
 
 ## Error Handling

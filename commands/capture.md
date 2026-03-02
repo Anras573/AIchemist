@@ -182,8 +182,8 @@ Examples:
 **Obsidian connection failed**
 
 Please verify:
-1. Obsidian is running with Local REST API plugin enabled
-2. `OBSIDIAN_API_KEY` environment variable is set
+1. Obsidian desktop app is running
+2. Obsidian CLI is accessible (see configuration.md for path)
 
 Your capture could not be saved. Please retry when Obsidian is available.
 ```

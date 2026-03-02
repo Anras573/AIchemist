@@ -237,7 +237,7 @@ obsidian append path="Captures/Ideas.md" content="\n## $(date +"%Y-%m-%d %H:%M")
 
 When `--code` flag is used:
 
-```bash
+````bash
 # Format code capture
 cat << 'EOF' > /tmp/capture.txt
 
@@ -256,7 +256,7 @@ EOF
 
 # Append to daily note
 obsidian daily:append content="$(cat /tmp/capture.txt)" vault="My Vault"
-```
+````
 
 ## Research Capability
 
@@ -444,7 +444,7 @@ Most commands support `format=json` option. Parse the JSON for programmatic acce
 ```bash
 # Search with JSON output
 result=$(obsidian search query="test" format=json vault="My Vault")
-echo "$result" | jq -r '.[] | "\(.file): \(.matches | length) matches"'
+echo "$result" | jq -r '.[] | "\(.file): \(.matches) matches"'
 ```
 
 ## Platform Compatibility
