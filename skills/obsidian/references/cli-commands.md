@@ -747,7 +747,7 @@ fi
 |----------|-------------|
 | macOS | `/Applications/Obsidian.app/Contents/MacOS/obsidian` |
 | Linux | `/usr/bin/obsidian` or `/opt/Obsidian/obsidian` |
-| Windows | `C:\Users\<user>\AppData\Local\Obsidian\obsidian.exe` |
+| Windows | `C:\Users\<username>\AppData\Local\Obsidian\obsidian.exe` |
 
 For portable scripts:
 

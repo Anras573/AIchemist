@@ -34,8 +34,16 @@ This skill integrates Claude Code with Obsidian for knowledge management workflo
 The Obsidian desktop application must be installed and running. The CLI is included with Obsidian (v1.5.0+).
 
 **Installation:**
-- macOS: [Download from obsidian.md](https://obsidian.md)
-- The CLI is located at: `/Applications/Obsidian.app/Contents/MacOS/obsidian`
+- Download from [obsidian.md](https://obsidian.md)
+- Available for macOS, Linux, and Windows
+
+**CLI Location by Platform:**
+
+| Platform | CLI Path |
+|----------|----------|
+| macOS | `/Applications/Obsidian.app/Contents/MacOS/obsidian` |
+| Linux | `/usr/bin/obsidian` or `/opt/Obsidian/obsidian` |
+| Windows | `C:\Users\<username>\AppData\Local\Obsidian\obsidian.exe` |
 
 ### Vault Setup
 
@@ -43,7 +51,8 @@ You need an active Obsidian vault. The CLI can work with multiple vaults using t
 
 **To list available vaults:**
 ```bash
-/Applications/Obsidian.app/Contents/MacOS/obsidian vaults
+# Use the CLI path for your platform
+obsidian vaults
 ```
 
 ### Environment Setup (Optional)
@@ -236,28 +245,14 @@ obsidian append path="Captures/Ideas.md" content="\n## $full_timestamp\n\nNew fe
 
 ### Workflow: Code Capture
 
-When `--code` flag is used:
+When `--code` flag is used, format with escaped newlines for consistency:
 
-````bash
-# Format code capture
-cat << 'EOF' > /tmp/capture.txt
-
-## [15:30] Code Snippet
-
-```typescript
-// File: src/auth/middleware.ts
-export async function validateToken(token: string) {
-  // Implementation
-}
+```bash
+# Format code capture and append to daily note
+obsidian daily:append content="## [15:30] Code Snippet\n\n\`\`\`typescript\n// File: src/auth/middleware.ts\nexport async function validateToken(token: string) {\n  // Implementation\n}\n\`\`\`\n\n**Context:** Working on authentication middleware\n**Tags:** #code #typescript #auth" vault="My Vault"
 ```
 
-**Context:** Working on authentication middleware
-**Tags:** #code #typescript #auth
-EOF
-
-# Append to daily note
-obsidian daily:append content="$(cat /tmp/capture.txt)" vault="My Vault"
-````
+**Note:** Use `\n` for newlines and `\`` (escaped backticks) for code fences in content values.
 
 ## Research Capability
 
@@ -372,7 +367,11 @@ Suggestions:
 
 ### Vault Selection
 
-Store user's preferred vault in plugin memory or ask on first use:
+Store the user's preferred vault in `${CLAUDE_PLUGIN_ROOT}/config.json` under the key `obsidian.preferredVault`. On first use, if this key is not set:
+
+1. List available vaults
+2. Prompt user to select one
+3. Persist the selection for future use
 
 ```bash
 # List available vaults
@@ -380,6 +379,15 @@ obsidian vaults verbose
 
 # Get vault info
 obsidian vault info=name vault="My Vault"
+```
+
+Example config.json entry:
+```json
+{
+  "obsidian": {
+    "preferredVault": "My Vault"
+  }
+}
 ```
 
 ### Daily Note Detection
@@ -472,8 +480,7 @@ fi
 
 ## Additional Resources
 
-For complete CLI documentation, run:
-```bash
-obsidian help
-obsidian help <command>
-```
+For complete CLI documentation:
+
+1. **In-repo reference:** See [references/cli-commands.md](references/cli-commands.md) for comprehensive command documentation with examples
+2. **Built-in help:** Run `obsidian help` or `obsidian help <command>` for command-specific help
