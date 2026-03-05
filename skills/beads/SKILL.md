@@ -27,10 +27,9 @@ which bd
 Install with one of:
 
 ```bash
-brew install beads                                                              # macOS/Linux
-npm install -g @beads/bd                                                        # npm
-go install github.com/steveyegge/beads/cmd/bd@latest                           # Go
-curl -fsSL https://raw.githubusercontent.com/steveyegge/beads/main/scripts/install.sh | bash
+brew install beads          # macOS/Linux — recommended (verified checksums)
+npm install -g @beads/bd    # npm
+go install github.com/steveyegge/beads/cmd/bd@latest  # Go
 ```
 
 After installing, retry your request.
@@ -69,7 +68,7 @@ BD_DB=$(ls "$REPO_ROOT/.beads/"*.db | head -1)
 Inform the user:
 > "Using in-repo beads storage (this repo has beads initialized)."
 
-Skip the remaining steps and proceed to [Running Commands](#running-commands).
+Skip the remaining steps and proceed to [Running Commands](#running-commands). Even though `bd` can auto-discover `.beads/` when run from the repo root, `--db "$BD_DB"` is still passed explicitly for consistency and to ensure commands work regardless of the current working directory.
 
 ### Step 3 — Sidecar mode (default)
 
@@ -88,17 +87,17 @@ If `$SIDECAR_DIR` already exists, check whether it belongs to this repo:
 cat "$MARKER" 2>/dev/null
 ```
 
-- **Matches `$REPO_ROOT` or file is absent** → use `$SIDECAR_DIR` as-is
-- **Mismatch** → another repo with the same name owns this sidecar. Use a fallback:
+- **Matches `$REPO_ROOT`** → use `$SIDECAR_DIR` as-is
+- **Marker missing or mismatch** → the sidecar belongs to another (or unknown) repo. Use a fallback:
 
 ```bash
-# Suffix = parent-dir + repo-name, e.g. /Users/alice/work/my-app → "work-my-app"
-SUFFIX=$(echo "$REPO_ROOT" | awk -F'/' '{print $(NF-1)"-"$NF}')
+# Suffix = parent directory name, e.g. /Users/alice/work/my-app → "work"
+SUFFIX=$(echo "$REPO_ROOT" | awk -F'/' '{print $(NF-1)}')
 SIDECAR_DIR="$HOME/.beads/$REPO_NAME-$SUFFIX"
 ```
 
 Inform the user:
-> "Note: Another repo named `my-app` has a beads sidecar. Using `~/.beads/my-app-work/` for this one."
+> "Note: Another repo named `my-app` has a beads sidecar. Using `~/.beads/my-app-work/` for this one (disambiguated by parent directory)."
 
 #### Initialize if new
 
@@ -294,7 +293,7 @@ bd doctor         # full health check
 cd "$SIDECAR_DIR" && bd init -p "$REPO_NAME"
 ```
 
-**Two repos with same name** → the collision fallback appends the parent directory. Check `cat ~/.beads/<name>/.beads-repo-path` to see which repo owns which sidecar.
+**Two repos with same name** → the collision fallback appends the parent directory. Check `cat ~/.beads/<name>/.beads-repo-path` to see which repo owns which sidecar. A missing marker is treated as an unknown owner — the fallback path will be used rather than risking a collision.
 
 ---
 

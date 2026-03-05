@@ -6,10 +6,9 @@ Version verified against: bd (run `bd version` to check)
 ## Installation
 
 ```bash
-brew install beads
-npm install -g @beads/bd
-go install github.com/steveyegge/beads/cmd/bd@latest
-curl -fsSL https://raw.githubusercontent.com/steveyegge/beads/main/scripts/install.sh | bash
+brew install beads          # macOS/Linux — recommended (verified checksums)
+npm install -g @beads/bd    # npm
+go install github.com/steveyegge/beads/cmd/bd@latest  # Go
 ```
 
 ## Global Flags (apply to every command)

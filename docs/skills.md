@@ -2,6 +2,59 @@
 
 Skills are context-aware capabilities that load into the main conversation when triggered by relevant user requests. Unlike agents (which run as subprocesses via Task tool), skills extend the current conversation with specialized knowledge and workflows.
 
+## Beads Task Tracking Skill
+
+AI-native task tracking using [Beads](https://github.com/steveyegge/beads) (`bd`), a distributed, git-backed graph issue tracker. Storage defaults to a sidecar directory outside the repo so no beads files are committed unless the repo has explicitly initialized beads.
+
+**Trigger phrases:** "track tasks with beads", "use bd", "add a beads task", "show ready tasks", "claim a task", "list bd tasks", "create a bd issue", "show my tasks", "what's ready to work on", "update task status", or beads task IDs like `bd-a1b2`.
+
+### Prerequisites
+
+1. **`bd` CLI:** Install via one of:
+   - `brew install beads` (macOS/Linux — recommended)
+   - `npm install -g @beads/bd`
+   - `go install github.com/steveyegge/beads/cmd/bd@latest`
+
+2. **Dolt:** Bundled with beads — no separate installation needed.
+
+### Storage Modes
+
+| Mode | When | Storage Location |
+|------|------|-----------------|
+| **In-repo** | `.db` file exists under `<repo-root>/.beads/` | `<repo-root>/.beads/` |
+| **Sidecar** (default) | No `.beads/*.db` in repo root | `~/.beads/<repo-name>/` |
+
+Sidecar mode keeps beads data out of your repo entirely. If two repos share the same name, a collision fallback appends the parent directory (e.g. `~/.beads/my-app-work/`). See `skills/beads/references/storage-modes.md` for full details.
+
+### Core Operations
+
+| Operation | Command |
+|-----------|---------|
+| Show unblocked tasks | `bd ready --json` |
+| List all tasks | `bd list --json` |
+| Create a task | `bd create "title"` |
+| View task details | `bd show bd-a1b2 --json` |
+| Claim a task (atomic) | `bd update bd-a1b2 --claim` |
+| Update status | `bd update bd-a1b2 --status done` |
+| Add dependency | `bd dep add bd-child bd-parent` |
+| Search | `bd search "query" --json` |
+
+All commands use `--db "$BD_DB"` to target the correct database regardless of working directory.
+
+### Write Operations
+
+Non-destructive writes (create, update, dep add) execute directly. Destructive operations (`bd delete`, `bd gc`, `bd purge`, `bd compact`) require explicit confirmation before execution.
+
+### Configuration
+
+No configuration file needed. Storage is auto-detected each session. To integrate beads workflow reminders into a project's `CLAUDE.md`:
+
+```bash
+bd --db "$BD_DB" setup claude --stealth
+```
+
+---
+
 ## Jira Skill
 
 Jira integration for searching, viewing, creating, and managing issues.
