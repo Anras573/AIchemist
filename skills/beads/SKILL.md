@@ -42,7 +42,7 @@ Dolt (the database backend) is bundled with beads and its server is auto-started
 
 ## Storage Mode Detection
 
-Run this logic **once per session** to determine where the beads database lives. Store the resolved `$BD_DB` path for use in all subsequent `bd --db $BD_DB` calls.
+Run this logic **once per session** to determine where the beads database lives. Store the resolved `$BD_DB` path for use in all subsequent `bd --db "$BD_DB"` calls.
 
 ### Step 1 — Get repo info
 
@@ -104,12 +104,16 @@ Inform the user:
 If `$SIDECAR_DIR/.beads/` does not exist:
 
 ```bash
-mkdir -p "$SIDECAR_DIR"
-if cd "$SIDECAR_DIR" && bd init -p "$REPO_NAME" -q; then
-  # Write the repo path marker for future collision detection
-  echo "$REPO_ROOT" > "$SIDECAR_DIR/.beads-repo-path"
-else
-  echo "Error: failed to initialize beads sidecar at '$SIDECAR_DIR'." >&2
+if [ ! -d "$SIDECAR_DIR/.beads" ]; then
+  mkdir -p "$SIDECAR_DIR"
+  if cd "$SIDECAR_DIR" && bd init -p "$REPO_NAME" -q; then
+    # Write the repo path marker for future collision detection
+    echo "$REPO_ROOT" > "$SIDECAR_DIR/.beads-repo-path"
+  else
+    echo "Error: failed to initialize beads sidecar at '$SIDECAR_DIR'." >&2
+    # Do not proceed to resolve BD_DB if initialization failed
+    exit 1
+  fi
 fi
 ```
 
