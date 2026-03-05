@@ -21,7 +21,7 @@ ls "$(git rev-parse --show-toplevel)/.beads/"*.db 2>/dev/null
 
 ## Mode 2: Sidecar (default)
 
-**When:** No `.beads/` in the repo root.
+**When:** No `.db` file exists under `.beads/` at the repo root.
 
 **Storage:** `~/.beads/<repo-name>/`
 
@@ -66,7 +66,7 @@ git rev-parse --show-toplevel > ~/.beads/<repo-name>/.beads-repo-path
 | Scenario | Result |
 |----------|--------|
 | Single repo `my-app` | `~/.beads/my-app/` |
-| Two repos both named `api` in different orgs | `~/.beads/api/` and `~/.beads/api-other-org/` |
+| Two repos both named `api` in different parent dirs | `~/.beads/api/` and `~/.beads/api-work/` |
 | Repo with `.beads/*.db` already present | In-repo mode, sidecar ignored |
 | Not in a git repo | Use `basename $PWD` as project name |
 
