@@ -1,7 +1,7 @@
 # Beads CLI Reference
 
 Source: https://github.com/steveyegge/beads
-Version verified against: bd (run `bd version` to check)
+CLI commands for the `bd` tool (run `bd version` to see your installed version)
 
 ## Installation
 

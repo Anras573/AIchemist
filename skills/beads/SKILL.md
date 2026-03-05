@@ -105,10 +105,12 @@ If `$SIDECAR_DIR/.beads/` does not exist:
 
 ```bash
 mkdir -p "$SIDECAR_DIR"
-cd "$SIDECAR_DIR" && bd init -p "$REPO_NAME" -q
-
-# Write the repo path marker for future collision detection
-echo "$REPO_ROOT" > "$SIDECAR_DIR/.beads-repo-path"
+if cd "$SIDECAR_DIR" && bd init -p "$REPO_NAME" -q; then
+  # Write the repo path marker for future collision detection
+  echo "$REPO_ROOT" > "$SIDECAR_DIR/.beads-repo-path"
+else
+  echo "Error: failed to initialize beads sidecar at '$SIDECAR_DIR'." >&2
+fi
 ```
 
 Inform the user:

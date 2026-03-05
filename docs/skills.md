@@ -39,7 +39,7 @@ Sidecar mode keeps beads data out of your repo entirely. If two repos share the 
 | Add dependency | `bd dep add bd-child bd-parent` |
 | Search | `bd search "query" --json` |
 
-All commands use `--db "$BD_DB"` to target the correct database regardless of working directory.
+All commands require `--db "$BD_DB"` to target the correct database regardless of working directory. The table above omits it for brevity.
 
 ### Write Operations
 

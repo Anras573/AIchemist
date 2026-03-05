@@ -2,7 +2,7 @@
 
 ## Overview
 
-The beads skill operates in one of two storage modes, auto-detected on each invocation.
+The beads skill operates in one of two storage modes, detected once per session and reused for all subsequent commands in that session.
 
 ## Mode 1: In-Repo (repo owns beads)
 
