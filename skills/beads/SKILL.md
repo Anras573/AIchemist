@@ -36,7 +36,7 @@ After installing, retry your request.
 
 ---
 
-Dolt (the database backend) is bundled with beads and its server is auto-started transparently — no separate installation or server management needed. Use `bd dolt status` to inspect it if something seems wrong, and `bd doctor` for a full health check.
+Dolt (the database backend) is bundled with beads and its server is auto-started transparently — no separate installation or server management needed. After resolving `BD_DB` using the steps below, use `bd dolt status --db "$BD_DB"` to inspect it if something seems wrong, and `bd doctor --db "$BD_DB"` for a full health check.
 
 ---
 
@@ -283,9 +283,9 @@ This writes beads workflow reminders into the project's Claude configuration wit
 
 **Dolt connection issues** → bd manages the Dolt server automatically, but if something is wrong:
 ```bash
-bd dolt status    # check server state
-bd dolt start     # start it explicitly if needed
-bd doctor         # full health check
+bd --db "$BD_DB" dolt status    # check server state
+bd --db "$BD_DB" dolt start     # start it explicitly if needed
+bd --db "$BD_DB" doctor         # full health check
 ```
 
 **`bd where` shows wrong location** → verify `$BD_DB` resolves to the expected path.
