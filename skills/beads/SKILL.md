@@ -92,7 +92,7 @@ cat "$MARKER" 2>/dev/null
 
 ```bash
 # Suffix = parent directory name, e.g. /Users/alice/work/my-app → "work"
-SUFFIX=$(echo "$REPO_ROOT" | awk -F'/' '{print $(NF-1)}')
+SUFFIX=$(basename "$(dirname "$REPO_ROOT")")
 SIDECAR_DIR="$HOME/.beads/$REPO_NAME-$SUFFIX"
 ```
 
@@ -112,7 +112,7 @@ if [ ! -d "$SIDECAR_DIR/.beads" ]; then
   else
     echo "Error: failed to initialize beads sidecar at '$SIDECAR_DIR'." >&2
     # Do not proceed to resolve BD_DB if initialization failed
-    exit 1
+    return 1  # Intended for use inside a shell function or script
   fi
 fi
 ```
