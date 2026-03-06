@@ -3,6 +3,10 @@
     "microsoft-docs": {
       "type": "http",
       "url": "https://learn.microsoft.com/api/mcp"
+    },
+    "graphiti": {
+      "type": "http",
+      "url": "${GRAPHITI_MCP_URL}"
     }
   }
 }

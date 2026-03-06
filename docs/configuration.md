@@ -32,8 +32,29 @@ The `.mcp.json` file configures additional MCP servers not available as official
 | Server | Description | Auth Required |
 | ------ | ----------- | ------------- |
 | `microsoft-docs` | Microsoft Learn documentation (.NET, Azure, C#) | None |
+| `graphiti` | Graphiti graph memory for persistent agent knowledge | None (local Docker) |
 
 ## Skill-Specific Setup
+
+### Graphiti
+
+The Graphiti skill uses a locally-running Docker container as its MCP server. No cloud account or API key is required.
+
+### Requirements
+
+1. **Docker** installed and running
+2. **Graphiti container** running — see the [Graphiti documentation](https://github.com/getzep/graphiti) for setup
+3. **`GRAPHITI_MCP_URL` environment variable** set to the container's MCP endpoint:
+   ```bash
+   export GRAPHITI_MCP_URL=http://localhost:8123/mcp
+   ```
+   Add this to your shell profile (`.zshrc`, `.bashrc`) for persistence.
+
+### Verify the server is reachable
+
+Once running, the skill will automatically call `graphiti/get_status` if it encounters connection errors. You can also ask Claude directly: *"check graphiti status"*.
+
+---
 
 ### Obsidian
 
