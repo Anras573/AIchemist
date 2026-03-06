@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.3.0](https://github.com/Anras573/AIchemist/compare/v2.2.0...v2.3.0) (2026-03-06)
+
+
+### Features
+
+* **graphiti:** add Graphiti graph memory MCP server and skill ([#46](https://github.com/Anras573/AIchemist/issues/46)) ([699241e](https://github.com/Anras573/AIchemist/commit/699241ec2e4c0ef7381d5a8f608a0be8b4a57fb9))
+* **skills:** add beads task tracking skill ([#44](https://github.com/Anras573/AIchemist/issues/44)) ([33571a8](https://github.com/Anras573/AIchemist/commit/33571a8e1ffd74b1769767913c75c213fb2c8d8b))
+
 ## [2.2.0](https://github.com/Anras573/AIchemist/compare/v2.1.1...v2.2.0) (2026-03-02)
 
 
