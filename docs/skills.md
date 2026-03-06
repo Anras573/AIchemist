@@ -210,7 +210,7 @@ The skill stores to memory automatically — without confirmation — when the u
 ### Operations
 
 | Type | Operations | Behavior |
-|------|------------|-----------|
+|------|------------|----------|
 | **Read** | `search_nodes`, `search_memory_facts`, `get_entity_edge`, `get_episodes`, `get_status` | Automatic |
 | **Write** | `add_memory` | Auto-store: no confirmation; explicit user request: confirmation required |
 | **Destructive** | `delete_episode`, `delete_entity_edge` | Confirmation required |
