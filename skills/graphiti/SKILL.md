@@ -1,7 +1,7 @@
 ---
 name: Graphiti Graph Memory
 description: |
-  This skill should be used to interact with the Graphiti knowledge graph memory. Use it when the user says "remember this", "store in memory", "what do you know about X", "search memory", "forget this", or "clear memory". Also activates automatically to store and retrieve context during tasks — see Auto-Trigger Behaviour below.
+  This skill should be used to interact with the Graphiti knowledge graph memory. Use it when the user says "remember this", "store in memory", "what do you know about X", "search memory", "forget this", or "clear memory". Also activates automatically to store and retrieve context during tasks — see Auto-Trigger Behavior below.
 version: 1.0.0
 ---
 
@@ -38,7 +38,7 @@ If not in a git repo, fall back to `aichemist` (global layer only).
 - A user preference (tool choices, code style, communication style)
 - A recurring pattern observed across multiple projects
 - A personal convention the user has stated explicitly
-- A correction the user made to the agent's behaviour
+- A correction the user made to the agent's behavior
 
 **Store in `<repo-name>` (project) when the information is:**
 - An architectural decision specific to this codebase
@@ -51,7 +51,7 @@ If not in a git repo, fall back to `aichemist` (global layer only).
 
 ---
 
-## Auto-Trigger Behaviour
+## Auto-Trigger Behavior
 
 ### Auto-Fetch (search before acting)
 
@@ -101,7 +101,7 @@ Present results clearly: what was found, which layer it came from, when it was s
 
 ### Storing a Memory
 
-**Auto-store triggers** (see Auto-Trigger Behaviour): call `add_memory` directly — no confirmation needed.
+**Auto-store triggers** (see Auto-Trigger Behavior): call `add_memory` directly — no confirmation needed.
 
 **Explicit user request** (e.g. "store this", "save this to memory"): use `AskUserQuestion` before calling `add_memory`:
 
