@@ -40,7 +40,7 @@ The `.mcp.json` file configures additional MCP servers not available as official
 
 The Graphiti skill uses a locally-running Docker container as its MCP server. No cloud account or API key is required.
 
-#### Requirements
+### Requirements
 
 1. **Docker** installed and running
 2. **Graphiti container** running — see the [Graphiti documentation](https://github.com/getzep/graphiti) for setup
@@ -50,7 +50,7 @@ The Graphiti skill uses a locally-running Docker container as its MCP server. No
    ```
    Add this to your shell profile (`.zshrc`, `.bashrc`) for persistence.
 
-#### Verify the server is reachable
+### Verify the server is reachable
 
 Once running, the skill will automatically call `graphiti/get_status` if it encounters connection errors. You can also ask Claude directly: *"check graphiti status"*.
 
