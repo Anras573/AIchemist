@@ -60,7 +60,7 @@ Health check — verifies the server and database are reachable. Call this if to
 
 ---
 
-## WRITE Tools (Confirmation Required)
+## WRITE Tools (Auto-store: no confirmation; explicit user request: confirmation required)
 
 ### `graphiti/add_memory`
 Add an episode to the knowledge graph. Graphiti will automatically extract entities and relationships.

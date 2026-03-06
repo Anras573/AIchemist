@@ -75,7 +75,7 @@ Add to memory automatically — without confirmation — when any of the followi
 - **An architectural decision is made** — technology choices, design patterns adopted, approaches explicitly rejected
 - **A codebase discovery is made** — file responsibilities, module boundaries, non-obvious conventions, known quirks
 - **A task is completed that revealed something new** — e.g. a bug fix that exposed a pattern, a refactor that clarified structure
-- **User explicitly says "remember this"** — always store immediately
+- **User explicitly says "remember this"** — store immediately, no confirmation
 - **A new convention is established** — any time the user and agent agree on "we do it this way"
 
 Apply the **two-layer rule** automatically: personal preferences and corrections go to `aichemist`; code, architecture, and codebase discoveries go to `<repo-name>`.
@@ -103,7 +103,7 @@ Present results clearly: what was found, which layer it came from, when it was s
 
 **Auto-store triggers** (see Auto-Trigger Behaviour): call `add_memory` directly — no confirmation needed.
 
-**Explicit user request** (e.g. "store this", "remember this"): use `AskUserQuestion` before calling `add_memory`:
+**Explicit user request** (e.g. "store this", "save this to memory"): use `AskUserQuestion` before calling `add_memory`:
 
 ```
 Question: "Store this in memory?"
@@ -147,7 +147,7 @@ Never call `clear_graph` without an explicit user request.
 
 ## Write Operation Confirmation Pattern
 
-For ALL write operations:
+For all write operations **initiated by an explicit user request** (i.e. not auto-store triggers):
 
 1. **Prepare** — determine the right layer, source type, and episode name
 2. **Preview** — show the user what will be stored/deleted

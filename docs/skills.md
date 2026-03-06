@@ -175,6 +175,49 @@ Use GitHub MCP tools when CLI lacks functionality:
 - Pending review management
 - File contents at specific ref without cloning
 
+## Graphiti Graph Memory Skill
+
+Persistent knowledge graph memory for AI agents. Automatically stores and retrieves context across sessions using a two-layer architecture.
+
+**Trigger phrases:** "remember this", "store in memory", "what do you know about X", "search memory", "forget this", "clear memory". Also activates automatically during tasks — see below.
+
+### Prerequisites
+
+1. **Docker** installed and running
+2. **Graphiti container** running locally
+3. **`GRAPHITI_MCP_URL`** environment variable set:
+   ```bash
+   export GRAPHITI_MCP_URL=http://localhost:8123/mcp
+   ```
+
+### Two-Layer Memory Architecture
+
+| Layer | `group_id` | Stores |
+|---|---|---|
+| **Global** | `aichemist` | User preferences, corrections, recurring patterns, cross-project conventions |
+| **Project** | `<repo-name>` | Architectural decisions, codebase patterns, file responsibilities, known quirks |
+
+The project `group_id` is derived automatically from the current git repo name. Both layers are always searched together.
+
+### Auto-Fetch Behaviour
+
+The skill searches memory automatically — without being asked — before any non-trivial task, before making recommendations, when encountering unfamiliar files or modules, and when discussing technologies or debugging errors. Results are silently incorporated into reasoning.
+
+### Auto-Store Behaviour
+
+The skill stores to memory automatically — without confirmation — when the user states a preference, corrects the agent, makes an architectural decision, or when a codebase discovery is made. The guiding principle is: save too much rather than too little.
+
+### Operations
+
+| Type | Operations | Behaviour |
+|------|------------|-----------|
+| **Read** | `search_nodes`, `search_memory_facts`, `get_entity_edge`, `get_episodes`, `get_status` | Automatic |
+| **Write** | `add_memory` | Auto-store: no confirmation; explicit user request: confirmation required |
+| **Destructive** | `delete_episode`, `delete_entity_edge` | Confirmation required |
+| **Destructive** | `clear_graph` | Strong confirmation with preview of data to be lost |
+
+---
+
 ## Obsidian Knowledge Management Skill
 
 Integrates Claude Code with Obsidian for knowledge management during coding sessions.
