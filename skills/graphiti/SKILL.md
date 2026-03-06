@@ -18,7 +18,7 @@ For the full tool reference, see `references/tools.md`.
 Every operation must target the correct `group_id` layer:
 
 | Layer | `group_id` | Stores |
-|---|---|---|
+|------|------|------|
 | **Global** | `aichemist` | User preferences, recurring patterns, personal conventions, cross-project decisions |
 | **Project** | `<repo-name>` | Codebase-specific knowledge, architectural decisions, discovered patterns, file locations |
 

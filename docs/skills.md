@@ -193,23 +193,23 @@ Persistent knowledge graph memory for AI agents. Automatically stores and retrie
 ### Two-Layer Memory Architecture
 
 | Layer | `group_id` | Stores |
-|---|---|---|
+|-------|-----------|--------|
 | **Global** | `aichemist` | User preferences, corrections, recurring patterns, cross-project conventions |
 | **Project** | `<repo-name>` | Architectural decisions, codebase patterns, file responsibilities, known quirks |
 
 The project `group_id` is derived automatically from the current git repo name. Both layers are always searched together.
 
-### Auto-Fetch Behaviour
+### Auto-Fetch Behavior
 
 The skill searches memory automatically — without being asked — before any non-trivial task, before making recommendations, when encountering unfamiliar files or modules, and when discussing technologies or debugging errors. Results are silently incorporated into reasoning.
 
-### Auto-Store Behaviour
+### Auto-Store Behavior
 
 The skill stores to memory automatically — without confirmation — when the user states a preference, corrects the agent, makes an architectural decision, or when a codebase discovery is made. The guiding principle is: save too much rather than too little.
 
 ### Operations
 
-| Type | Operations | Behaviour |
+| Type | Operations | Behavior |
 |------|------------|-----------|
 | **Read** | `search_nodes`, `search_memory_facts`, `get_entity_edge`, `get_episodes`, `get_status` | Automatic |
 | **Write** | `add_memory` | Auto-store: no confirmation; explicit user request: confirmation required |
