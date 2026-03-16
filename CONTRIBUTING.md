@@ -125,6 +125,19 @@ Place new skills in `skills/` following existing patterns.
 
 Update `hooks/hooks.json` for new event hooks.
 
+## Plugin Manifests
+
+The plugin metadata is defined in two files that must stay in sync:
+
+| File | Used by |
+|------|---------|
+| `plugin.json` | GitHub Copilot CLI |
+| `.claude-plugin/plugin.json` | Claude Code |
+
+Both files are identical in content. **When updating plugin metadata** (description, keywords, author, etc.), update both files.
+
+**Version numbers are managed automatically** by release-please — both files are listed in `extra-files` in `release-please-config.json` and will be bumped together on each release.
+
 ## Questions?
 
 Open an issue for questions or discussions about potential contributions.
