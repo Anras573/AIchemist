@@ -92,7 +92,16 @@ Follow existing patterns. Where the existing code has problems that affect this 
 
 ### 6. Write and Commit Spec
 
-After the user approves the design, write the spec to disk and commit it.
+After the user approves the design, confirm before writing anything:
+
+**Write operations (confirmation required):**
+
+| Operation | Confirmation prompt |
+|-----------|-------------------|
+| Write spec file | "Ready to write the spec to `docs/specs/YYYY-MM-DD-<topic>.md`. Shall I proceed?" |
+| Git commit | "Commit the spec with message `docs: add <topic> design spec`?" |
+
+Only proceed with each operation after receiving explicit confirmation.
 
 **Path:** `docs/specs/YYYY-MM-DD-<topic>.md`
 
@@ -123,12 +132,12 @@ Commit the spec:
 ```bash
 mkdir -p docs/specs
 git add docs/specs/YYYY-MM-DD-<topic>.md
-git commit -m "docs(specs): add <topic> design spec"
+git commit -m "docs: add <topic> design spec"
 ```
 
 Then ask the user to review the committed file before proceeding:
 
-> "Spec written and committed to `docs/specs/YYYY-MM-DD-<topic>.md`. Take a look and let me know if anything needs changing before we start implementing."
+> "Spec committed to `docs/specs/YYYY-MM-DD-<topic>.md`. Take a look and let me know if anything needs changing before we start implementing."
 
 ### 7. Transition to Implementation
 
