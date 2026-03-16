@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/Anras573/AIchemist/compare/v2.3.0...v2.4.0) (2026-03-16)
+
+
+### Features
+
+* add Copilot CLI component paths to plugin.json ([#50](https://github.com/Anras573/AIchemist/issues/50)) ([27dc06b](https://github.com/Anras573/AIchemist/commit/27dc06bd428b7a5a355b5fa0b2833382df9ee072))
+
 ## [2.3.0](https://github.com/Anras573/AIchemist/compare/v2.2.0...v2.3.0) (2026-03-06)
 
 
