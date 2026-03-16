@@ -28,7 +28,7 @@ Complete these steps in order:
 3. **Ask clarifying questions** — one at a time until you understand purpose, constraints, and success criteria
 4. **Propose 2–3 approaches** — with trade-offs and a clear recommendation
 5. **Present design** — section by section, get approval after each
-6. **Write and commit spec** — save to `docs/specs/YYYY-MM-DD-<topic>.md`, commit to git
+6. **Write and commit spec** — create `docs/specs/` if needed, save to `docs/specs/YYYY-MM-DD-<topic>.md`, commit to git
 7. **Transition to implementation** — hand off to the appropriate agent(s)
 
 ## Process
@@ -121,6 +121,7 @@ After the user approves the design, write the spec to disk and commit it.
 
 Commit the spec:
 ```bash
+mkdir -p docs/specs
 git add docs/specs/YYYY-MM-DD-<topic>.md
 git commit -m "docs(specs): add <topic> design spec"
 ```
