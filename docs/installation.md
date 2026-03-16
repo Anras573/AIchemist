@@ -2,8 +2,14 @@
 
 ## From Marketplace (Recommended)
 
+**Claude Code:**
 ```bash
 claude plugin install aichemist
+```
+
+**GitHub Copilot CLI:**
+```bash
+copilot plugin install aichemist
 ```
 
 ## From Local Path
@@ -16,8 +22,14 @@ claude plugin install aichemist
 
 2. Install the plugin:
 
+   **Claude Code:**
    ```bash
    claude plugin install ./AIchemist
+   ```
+
+   **GitHub Copilot CLI:**
+   ```bash
+   copilot plugin install ./AIchemist
    ```
 
 You can specify the installation scope with `--scope user`, `--scope project`, or `--scope local`.
