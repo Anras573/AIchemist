@@ -2,12 +2,18 @@
 
 _Transmuting raw AI capabilities into golden solutions_
 
-A Claude Code plugin with custom agents, skills, and commands for AI-assisted development.
+A plugin for Claude Code and GitHub Copilot CLI with custom agents, skills, and commands for AI-assisted development.
 
 ## Installation
 
+**Claude Code:**
 ```bash
 claude plugin install aichemist
+```
+
+**GitHub Copilot CLI:**
+```bash
+copilot plugin install aichemist
 ```
 
 See [docs/installation.md](docs/installation.md) for alternative installation methods and MCP server configuration.

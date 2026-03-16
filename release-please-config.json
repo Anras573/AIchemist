@@ -11,6 +11,11 @@
   },
   "extra-files": [
     {
+      "path": "plugin.json",
+      "type": "json",
+      "jsonpath": "version"
+    },
+    {
       "path": ".claude-plugin/plugin.json",
       "type": "json",
       "jsonpath": "version"

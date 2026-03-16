@@ -1,6 +1,9 @@
 # AIchemist – Copilot Instructions
 
-AIchemist is a Claude Code plugin that provides custom agents, skills, and commands for AI-assisted development. It is installed via `claude plugin install aichemist`.
+AIchemist is a plugin for Claude Code and GitHub Copilot CLI that provides custom agents, skills, and commands for AI-assisted development.
+
+**Claude Code:** `claude plugin install aichemist`
+**GitHub Copilot CLI:** `copilot plugin install aichemist`
 
 ## Repository Structure
 
