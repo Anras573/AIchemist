@@ -6,7 +6,7 @@ Skills are context-aware capabilities that load into the main conversation when 
 
 Structured design dialogue that ensures intent, requirements, and approach are understood before any implementation begins. Enforces a hard gate — no code is written until a design is approved.
 
-**Trigger phrases:** "I want to build", "let's add", "how should I implement", "I'm thinking of adding", "new feature", "let's create", "design this", "help me plan", "should I use X or Y".
+**Trigger phrases:** "I want to build", "let's add", "how should I implement", "I'm thinking of", "new feature", "let's create", "design this", "help me plan", "should I use X or Y".
 
 ### Behavior
 

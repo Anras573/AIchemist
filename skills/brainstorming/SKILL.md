@@ -36,7 +36,7 @@ Complete these steps in order:
 ### 1. Explore Project Context
 
 Before asking any questions, understand what exists:
-- Read relevant source files, `CLAUDE.md`, `AGENTS.md`, `README.md`
+- Read relevant source files and any project instruction files that are present: `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`, `README.md`
 - Check recent commits for context on current direction
 - Identify existing patterns and conventions to follow
 
