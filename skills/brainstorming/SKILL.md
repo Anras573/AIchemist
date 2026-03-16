@@ -1,5 +1,5 @@
 ---
-name: brainstorming
+name: Brainstorming
 description: |
   Use this BEFORE any creative work — creating features, building components, adding functionality, or modifying existing behavior. Explores user intent, requirements, and design through structured dialogue before any implementation begins.
 
@@ -7,7 +7,7 @@ description: |
 version: 1.0.0
 ---
 
-# Brainstorming
+# Brainstorming Skill
 
 Help turn ideas into fully-formed designs through structured dialogue. Understand what's being built, explore the right approach, then document the design before any implementation begins.
 
@@ -131,7 +131,7 @@ Then ask the user to review the committed file before proceeding:
 
 ### 7. Transition to Implementation
 
-Once the user approves the spec, proceed to implementation using the appropriate agents for the work ahead (e.g. `.NET Agent` for C# work, `TypeScript/React Agent` for frontend, `general-purpose` for mixed tasks).
+Once the user approves the spec, proceed to implementation using the appropriate agents for the work ahead (e.g. `.NET Agent` for C# work, `TypeScript/React Agent` for frontend, `DDD Agent` for domain modelling). For general tasks with no specialized agent, continue in the current conversation.
 
 Do NOT start implementation before reaching this step.
 
