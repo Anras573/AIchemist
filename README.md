@@ -29,10 +29,12 @@ See [docs/installation.md](docs/installation.md) for alternative installation me
 
 **Skills** — Context-aware capabilities:
 
+- **Brainstorming** — Structured design dialogue with a hard gate before any implementation
 - **Beads** — AI-native task tracking with automatic sidecar storage outside your repo
 - **Jira** — Issue management with confirmation gates for write operations
 - **PostgreSQL** — Safe database querying with blocked writes by default
 - **Obsidian** — Knowledge management with daily notes, capture, and research
+- **Graphiti** — Persistent graph memory across sessions
 - **Tool Preferences** — Consistent tool selection patterns
 
 **Commands** — Slash commands:
