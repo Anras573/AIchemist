@@ -54,7 +54,7 @@ Produce the Mermaid code block. Follow the validation checklist before presentin
 
 **Validation checklist:**
 - [ ] All arrows use correct syntax for the type (`-->`, `->>`, `-->|label|`, etc.)
-- [ ] All node/participant names are defined before use
+- [ ] Node/participant identifiers are spelled consistently throughout (implicit declaration on first use is valid)
 - [ ] Brackets and quotes are balanced and closed
 - [ ] No reserved keywords used as unquoted node labels
 - [ ] Direction specified for flowcharts (`TD`, `LR`, `BT`, `RL`)
