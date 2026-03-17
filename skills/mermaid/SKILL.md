@@ -58,7 +58,7 @@ Produce the Mermaid code block. Follow the validation checklist before presentin
 - [ ] Brackets and quotes are balanced and closed
 - [ ] No reserved keywords used as unquoted node labels
 - [ ] Direction specified for flowcharts (`TD`, `LR`, `BT`, `RL`)
-- [ ] Labels on edges are quoted if they contain spaces or special characters
+- [ ] Edge labels with special characters (e.g. `<`, `>`, `"`) are wrapped in quotes; plain text labels between `|...|` do not need quoting
 
 Present the diagram inline in the conversation as a fenced code block:
 
@@ -89,6 +89,8 @@ If the user wants the diagram saved, offer two options:
 | Embed in existing file | "Embed this diagram in `<file path>`?" |
 | Create new diagram file | "Write this to `docs/diagrams/<topic>.md`?" |
 
+When creating a new file, create the `docs/diagrams/` directory first if it does not exist.
+
 Only proceed after the user confirms.
 
 ## Integration with Brainstorming Skill
@@ -110,7 +112,7 @@ Example offer:
 
 **Diagram is too large to read:** Break it into multiple smaller diagrams focused on sub-systems, or use subgraphs to group related nodes.
 
-**C4 diagrams require `@C4Context` macros:** If the viewer does not support C4, offer a standard flowchart as a fallback.
+**C4 diagrams do not render in all viewers:** Mermaid's C4 support uses `C4Context` as the diagram keyword with `Person()`, `System()`, and `Rel()` macros — no `@` prefix. GitHub and VS Code render C4 correctly; some other viewers do not. If the user's target viewer does not support C4, offer a standard flowchart as a fallback.
 
 ## Additional Resources
 
