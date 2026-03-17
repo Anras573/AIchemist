@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.5.0](https://github.com/Anras573/AIchemist/compare/v2.4.0...v2.5.0) (2026-03-17)
+
+
+### Features
+
+* **skills:** add brainstorming skill ([#53](https://github.com/Anras573/AIchemist/issues/53)) ([7f2647d](https://github.com/Anras573/AIchemist/commit/7f2647d177aee4de62b043a3724bb8eb928aabaa))
+* **skills:** add MermaidJS diagramming skill ([#56](https://github.com/Anras573/AIchemist/issues/56)) ([a7e225c](https://github.com/Anras573/AIchemist/commit/a7e225cb4dd8d565e55d91c36b4c5dbcf017d5a7))
+
 ## [2.4.0](https://github.com/Anras573/AIchemist/compare/v2.3.0...v2.4.0) (2026-03-16)
 
 
