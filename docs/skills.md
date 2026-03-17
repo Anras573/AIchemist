@@ -2,6 +2,41 @@
 
 Skills are context-aware capabilities that load into the main conversation when triggered by relevant user requests. Unlike agents (which run as subprocesses via Task tool), skills extend the current conversation with specialized knowledge and workflows.
 
+## MermaidJS Diagrams Skill
+
+Generates MermaidJS diagrams as fenced code blocks in Markdown. Diagrams render natively in GitHub, VS Code, Obsidian, and most modern Markdown viewers — no external tooling required.
+
+**Trigger phrases:** "create a diagram", "draw a flowchart", "sequence diagram", "architecture diagram", "visualise this", "add a mermaid diagram", "diagram this flow", "draw a class diagram", "ER diagram", "state machine diagram", "C4 diagram".
+
+### Supported Diagram Types
+
+| Type | Use case |
+|------|----------|
+| Flowchart | Logic flows, decision trees, process maps |
+| Sequence diagram | API calls, service interactions, message flows |
+| Class diagram | Domain models, OOP structures |
+| Entity-relationship | Database schemas |
+| State diagram | State machines, lifecycles |
+| C4 context | System architecture overviews |
+
+### Behavior
+
+1. Asks one clarifying question at a time (skipped if the request is already specific)
+2. Selects the most appropriate diagram type
+3. Generates the diagram with a syntax validation pass before presenting
+4. Offers to embed in an existing file or save to `docs/diagrams/<topic>.md`
+
+### Operations
+
+| Type | Behavior |
+|------|----------|
+| Generate & preview | Automatic — shown inline in the conversation |
+| Embed in file / save to `docs/diagrams/` | Requires explicit confirmation |
+
+Integrates with the Brainstorming skill — offers to generate diagrams for architecture, data model, interaction flow, and state lifecycle sections of a spec.
+
+---
+
 ## Brainstorming Skill
 
 Structured design dialogue that ensures intent, requirements, and approach are understood before any implementation begins. Enforces a hard gate — no code is written until a design is approved.
