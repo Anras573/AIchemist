@@ -110,7 +110,7 @@ Example offer:
 
 **Diagram does not render (syntax error):** Re-read the validation checklist, correct the specific issue, and present the fixed version.
 
-**User says layout is wrong:** MermaidJS supports multiple direction keywords (`TD`, `LR`, `BT`, `RL`) for flowcharts and `direction` for other types. Try an alternative and present it.
+**User says layout is wrong:** For flowcharts, try a different direction keyword (`TD`, `LR`, `BT`, `RL`). For class and state diagrams, a `direction` statement (`direction LR`, etc.) can be added. Sequence and C4 diagrams do not support layout direction overrides.
 
 **Diagram is too large to read:** Break it into multiple smaller diagrams focused on sub-systems, or use subgraphs to group related nodes.
 

@@ -2,9 +2,9 @@
 
 Official documentation for each supported diagram type. Use these when generating or validating diagram syntax.
 
-| Type | Syntax keyword | Official docs |
-|------|---------------|---------------|
-| Flowchart | `flowchart TD` | https://mermaid.js.org/syntax/flowchart.html |
+| Type | Opening line | Official docs |
+|------|-------------|---------------|
+| Flowchart | `flowchart <direction>` | https://mermaid.js.org/syntax/flowchart.html |
 | Sequence diagram | `sequenceDiagram` | https://mermaid.js.org/syntax/sequenceDiagram.html |
 | Class diagram | `classDiagram` | https://mermaid.js.org/syntax/classDiagram.html |
 | Entity-relationship | `erDiagram` | https://mermaid.js.org/syntax/entityRelationshipDiagram.html |
