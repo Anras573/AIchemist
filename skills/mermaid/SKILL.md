@@ -20,7 +20,7 @@ Generate MermaidJS diagrams as fenced code blocks in Markdown. Diagrams render n
 | State diagram | `stateDiagram-v2` | State machines, lifecycles |
 | C4 context | `C4Context` | System architecture overviews |
 
-For syntax examples and common patterns for each type, see `references/diagram-types.md`.
+For official syntax documentation for each type, see `references/diagram-types.md`.
 
 ## Workflow
 
@@ -89,7 +89,9 @@ If the user wants the diagram saved, offer two options:
 | Embed in existing file | "Embed this diagram in `<file path>`?" |
 | Create new diagram file | "Write this to `docs/diagrams/<topic>.md`?" |
 
-When creating a new file, create the `docs/diagrams/` directory first if it does not exist.
+When creating a new file:
+- Create `docs/diagrams/` if it does not exist
+- If `docs/diagrams/<topic>.md` already exists, do not overwrite silently — ask: "That file already exists. Replace it, or choose a different filename?"
 
 Only proceed after the user confirms.
 
@@ -116,4 +118,4 @@ Example offer:
 
 ## Additional Resources
 
-For diagram type syntax, common patterns, and examples, see `references/diagram-types.md`.
+For official syntax documentation for each diagram type, see `references/diagram-types.md`.
