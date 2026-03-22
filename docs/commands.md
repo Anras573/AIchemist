@@ -1,5 +1,15 @@
 # Commands
 
+> **Deprecated:** Slash commands are no longer the recommended approach. Each command has been migrated to a [skill](skills.md), which can be invoked using natural language. Commands remain functional for backwards compatibility.
+>
+> | Command | Migrated To |
+> |---------|-------------|
+> | `/capture` | [Obsidian Knowledge Management Skill](skills.md#obsidian-knowledge-management-skill) |
+> | `/code-review` | [Code Review Skill](skills.md#code-review-skill) |
+> | `/daily-note` | [Obsidian Knowledge Management Skill](skills.md#obsidian-knowledge-management-skill) |
+> | `/jira-my-tickets` | [Jira Skill](skills.md#jira-skill) |
+> | `/research` | [Obsidian Knowledge Management Skill](skills.md#obsidian-knowledge-management-skill) |
+
 Slash commands are action-oriented operations invoked with `/command-name`.
 
 ## /jira-my-tickets

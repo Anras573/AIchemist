@@ -209,6 +209,53 @@ When enabled, write operations still require confirmation before execution.
 
 No configuration file needed — uses `POSTGRES_URL` environment variable directly.
 
+## Code Review Skill
+
+Comprehensive code review using parallel specialized agents, confidence-based filtering, Jira integration, and optional inline PR comments.
+
+**Trigger phrases:** "review my code", "do a code review", "review this PR", "review this pull request", "check my changes", "review changes against main", "review against develop", "post review comments", "review and comment on PR", "code review with Jira context", "review my branch".
+
+### Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--comment` | Post findings as inline PR comments | Off (local output only) |
+| `--base <branch>` | Base branch for comparison (ignored when PR exists) | `main` |
+| `--ticket <KEY>` | Manually specify Jira ticket | Auto-detect from branch/PR |
+
+### Features
+
+**Parallel Review Agents:**
+- Guidelines agents (×2) — check code style and project conventions
+- Bugs agent — identifies logic errors and potential bugs
+- Security agent — scans for security vulnerabilities
+
+**File-Triggered Agents:**
+- .NET agent — invoked for C#/F# files
+- DDD agent — invoked when domain model files are detected
+
+**Confidence Scoring:**
+- Each finding includes a confidence score (0–100)
+- Default threshold: 80 — findings below this are filtered out
+- Reduces false positives and noise
+
+**Jira Integration:**
+- Auto-detects Jira tickets from branch name or PR description
+- Links review context to ticket acceptance criteria
+
+**Inline PR Comments:**
+- With `--comment`, posts findings directly to the PR
+- Includes committable code suggestions where applicable
+
+### Behavior
+
+| Type | Operations | Behavior |
+|------|------------|----------|
+| **Read** | Fetch diff, gather guidelines, read PR details, fetch Jira ticket | Automatic |
+| **Write** | Post inline PR comments, post summary comment | Requires `--comment` option |
+
+---
+
 ## Tool Preferences Skill
 
 Guidance for selecting between equivalent tools when multiple options exist (e.g., `gh` CLI vs GitHub MCP tools).
@@ -294,37 +341,37 @@ Integrates Claude Code with Obsidian for knowledge management during coding sess
 
 ### Capabilities
 
-| Capability | Command | Description |
+| Capability | Trigger | Description |
 |------------|---------|-------------|
-| **Daily Note** | `/daily-note` | Retrieve, create, or append to daily notes |
-| **Capture** | `/capture` | Quick capture of thoughts, code snippets, insights |
-| **Research** | `/research` | Search vault for relevant context |
+| **Daily Note** | "check daily note", "show today's note", "create daily note", "add to daily note" | Retrieve, create, or append to daily notes |
+| **Capture** | "capture this", "save this to Obsidian", "add to my notes" | Quick capture of thoughts, code snippets, insights |
+| **Research** | "research in vault", "search my notes", "look up notes" | Search vault for relevant context |
 
 ### Daily Note Operations
 
-| Command | Action |
+| Request | Action |
 |---------|--------|
-| `/daily-note` | Retrieve today's note |
-| `/daily-note create` | Create today's note |
-| `/daily-note add "content"` | Append to today's note |
-| `/daily-note --date 2024-01-15` | Access specific date |
+| "show today's daily note" | Retrieve today's note |
+| "create today's daily note" | Create today's note |
+| "add 'content' to my daily note" | Append to today's note |
+| "check daily note for 2024-01-15" | Access specific date |
 
 ### Capture Operations
 
-| Command | Action |
+| Request | Action |
 |---------|--------|
-| `/capture This thought` | Append to daily note (default) |
-| `/capture --note "Name" content` | Capture to specific note |
-| `/capture --tag #tag content` | Include tags |
-| `/capture --code` | Capture current code context |
+| "capture this thought" | Append to daily note (default) |
+| "save this to my 'Note Name' note" | Capture to specific note |
+| "capture this with tag #tag" | Include tags |
+| "capture the current code context" | Capture current code context |
 
 ### Research Operations
 
-| Command | Action |
+| Request | Action |
 |---------|--------|
-| `/research query` | Full-text search |
-| `/research --folder Path/ query` | Search within folder |
-| `/research --limit 10 query` | Return more results |
+| "research authentication patterns" | Full-text search |
+| "search in Projects/ for caching" | Search within folder |
+| "find top 10 results for error handling" | Return more results |
 
 ### Configuration
 

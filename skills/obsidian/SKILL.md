@@ -9,9 +9,9 @@ version: 2.0.0
 
 This skill integrates Claude Code with Obsidian for knowledge management workflows during coding sessions using the Obsidian CLI. It provides three core capabilities:
 
-1. **Daily Note** (`/daily-note`) - Interact with today's daily note
-2. **Capture** (`/capture`) - Quick capture of thoughts, code snippets, or insights
-3. **Research** (`/research`) - Search vault for relevant context
+1. **Daily Note** — interact with today's daily note
+2. **Capture** — quick capture of thoughts, code snippets, or insights
+3. **Research** — search vault for relevant context
 
 ## Read vs Write Operations
 
@@ -142,12 +142,12 @@ Interact with today's daily note for journaling, task tracking, and session logg
 
 ### Operations
 
-| Command | Action |
+| Request | Action |
 |---------|--------|
-| `/daily-note` | Retrieve and display today's daily note |
-| `/daily-note create` | Create today's daily note |
-| `/daily-note add "content"` | Append content to today's daily note |
-| `/daily-note --date 2024-01-15` | Access a specific date's note |
+| "show today's daily note" | Retrieve and display today's daily note |
+| "create today's daily note" | Create today's daily note |
+| "add 'content' to my daily note" | Append content to today's daily note |
+| "check daily note for 2024-01-15" | Access a specific date's note |
 
 ### Daily Note Path Convention
 
@@ -201,12 +201,12 @@ Quick capture of thoughts, code snippets, and insights to Obsidian without leavi
 
 ### Operations
 
-| Command | Action |
+| Request | Action |
 |---------|--------|
-| `/capture This is my thought` | Append to daily note (default) |
-| `/capture --note "Note Name" content` | Create/append to specific note |
-| `/capture --tag #tag content` | Capture with tags |
-| `/capture --code` | Capture current code context |
+| "capture this thought" | Append to daily note (default) |
+| "save this to my 'Note Name' note" | Create/append to specific note |
+| "capture this with tag #tag" | Capture with tags |
+| "capture the current code context" | Capture current code context |
 
 ### Capture Targets
 
@@ -264,11 +264,11 @@ Search the vault for relevant context on a topic, leveraging past knowledge duri
 
 ### Operations
 
-| Command | Action |
+| Request | Action |
 |---------|--------|
-| `/research authentication patterns` | Full-text search for term |
-| `/research --folder Projects/ query` | Search within folder |
-| `/research --limit 10 query` | Return more results |
+| "research authentication patterns" | Full-text search for term |
+| "search in Projects/ for caching" | Search within folder |
+| "find top 10 results for error handling" | Return more results |
 
 ### Search Strategy
 
