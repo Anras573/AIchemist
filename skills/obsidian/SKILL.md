@@ -2,7 +2,6 @@
 name: Obsidian Knowledge Management
 description: |
   This skill should be used when the user asks to "capture to obsidian", "add to daily note", "research in vault", "search my notes", "save this insight", "query obsidian", "check daily note", "create daily note", "append to daily note", "find in obsidian", "look up notes", or mentions Obsidian-related knowledge management tasks. Provides three capabilities: daily notes, quick capture, and vault research.
-version: 2.0.0
 ---
 
 # Obsidian Knowledge Management Skill
