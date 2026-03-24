@@ -2,6 +2,7 @@
 name: Capture
 description: |
   This skill should be used when the user asks to "capture this", "save this to obsidian", "add to obsidian", "quick capture", "capture to vault", "capture this thought", "capture this insight", "capture this code", "save this insight", "jot this down", or wants to save a thought, snippet, or note to Obsidian without interrupting their workflow.
+version: 1.0.0
 ---
 
 # Capture Skill

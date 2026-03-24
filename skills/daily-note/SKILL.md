@@ -2,6 +2,7 @@
 name: Daily Note
 description: |
   This skill should be used when the user asks to "show my daily note", "open daily note", "check daily note", "create daily note", "create today's note", "view today's note", "add to daily note", "append to daily note", "what's in my daily note", or wants to interact with today's (or a specific date's) Obsidian daily note.
+version: 1.0.0
 ---
 
 # Daily Note Skill

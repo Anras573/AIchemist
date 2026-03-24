@@ -252,7 +252,7 @@ Comprehensive code review using parallel specialized agents, confidence-based fi
 | Type | Operations | Behavior |
 |------|------------|----------|
 | **Read** | Fetch diff, gather guidelines, read PR details, fetch Jira ticket | Automatic |
-| **Write** | Post inline PR comments, post summary comment | Requires `--comment` option |
+| **Write** | Post inline PR comments, post summary comment | Requires explicit confirmation (or `--comment` flag) |
 
 ---
 
@@ -329,7 +329,7 @@ The skill stores to memory automatically — without confirmation — when the u
 
 ## Daily Note Skill
 
-Interact with your Obsidian daily note for journaling, task tracking, and session logging. Invoke directly with `/daily-note`.
+Interact with your Obsidian daily note for journaling, task tracking, and session logging.
 
 **Trigger phrases:** "show my daily note", "open daily note", "check daily note", "create daily note", "create today's note", "view today's note", "add to daily note", "append to daily note", "what's in my daily note".
 
@@ -354,7 +354,7 @@ Interact with your Obsidian daily note for journaling, task tracking, and sessio
 
 ## Capture Skill
 
-Quick capture of thoughts, code snippets, and insights to Obsidian without leaving the coding flow. Invoke directly with `/capture`.
+Quick capture of thoughts, code snippets, and insights to Obsidian without leaving the coding flow.
 
 **Trigger phrases:** "capture this", "save this to obsidian", "add to obsidian", "quick capture", "capture this thought", "capture this insight", "capture this code", "save this insight", "jot this down".
 
@@ -381,7 +381,7 @@ Captures are formatted with a timestamp header, content, optional tags, and proj
 
 ## Research Skill
 
-Search your Obsidian vault for relevant context during coding sessions. Invoke directly with `/research`.
+Search your Obsidian vault for relevant context during coding sessions. Quickly surface past notes, decisions, and knowledge without leaving your workflow.
 
 **Trigger phrases:** "research in vault", "search my notes", "search obsidian", "find in obsidian", "look up notes", "find notes about", "what do I have on", "search my vault for".
 

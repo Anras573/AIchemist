@@ -2,9 +2,7 @@
 name: Code Review
 description: |
   This skill should be used when the user asks to "review my code", "do a code review", "review this PR", "review this pull request", "check my changes", "review changes against main", "review against develop", "post review comments", "review and comment on PR", "code review with Jira context", "review my branch", or asks for a review with specific options like "with --comment", "against base branch". Provides comprehensive code review using parallel specialized agents, confidence-based filtering, Jira integration, and optional inline PR comments.
-disable-model-invocation: true
-context: fork
-agent: general-purpose
+version: 1.0.0
 ---
 
 # Code Review Skill
@@ -16,7 +14,18 @@ Comprehensive code review using parallel specialized agents, Jira integration, a
 | Type | Operations | Behavior |
 |------|------------|----------|
 | **Read** | Fetch diff, gather guidelines, read PR details, fetch Jira ticket | Automatic — no confirmation needed |
-| **Write** | Post inline PR comments, post summary comment | Requires explicit user confirmation (or `--comment` flag) |
+| **Write** | Post inline PR comments, post summary comment | Requires explicit user confirmation — see **Write Operation Confirmation Prompts** below |
+
+## Write Operation Confirmation Prompts
+
+Before posting any PR comment or review, follow this confirmation flow. The `--comment` flag acts as prior authorization — it skips the yes/no prompt but still announces what will be posted.
+
+| Operation | Without `--comment` | With `--comment` |
+|-----------|---------------------|-----------------|
+| Post inline PR comments | "I found N issues. Post these as inline comments on PR #&lt;number&gt;? (yes/no)" | "Posting N inline comments to PR #&lt;number&gt; as requested with `--comment`." |
+| Post summary comment (no issues found) | "No issues found. Post a summary comment to PR #&lt;number&gt;? (yes/no)" | "Posting summary comment to PR #&lt;number&gt; as requested with `--comment`." |
+
+Never post to a PR without either explicit user confirmation or the `--comment` flag.
 
 ## Options
 
@@ -93,13 +102,13 @@ Combine all found files into unified context. These guidelines define what patte
 
 **If `--ticket` option provided:** use the specified ticket directly.
 
-**Otherwise, detect from two sources:**
+**Otherwise, detect from two sources using the configured default project key `{{DEFAULT_PROJECT_KEY}}`:**
 
-1. **Branch name**: Match patterns like `feature/PROJ-123-description` or `PROJ-123/description`
-   - Regex: `([A-Z]+-\d+)` to extract ticket key
+1. **Branch name**: Match patterns like `feature/{{DEFAULT_PROJECT_KEY}}-123-description` or `{{DEFAULT_PROJECT_KEY}}-123/description`
+   - Regex: `({{DEFAULT_PROJECT_KEY}}-\d+)` to extract ticket key
 
 2. **PR description** (if PR exists): Search for Jira ticket references
-   - Look for patterns like `PROJ-123`, `[PROJ-123]`, or Jira URLs containing the ticket key
+   - Look for patterns like `{{DEFAULT_PROJECT_KEY}}-123`, `[{{DEFAULT_PROJECT_KEY}}-123]`, or Jira URLs containing the ticket key
 
 **If both sources return different tickets:** ask the user which ticket is correct before proceeding.
 
