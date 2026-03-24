@@ -327,66 +327,91 @@ The skill stores to memory automatically — without confirmation — when the u
 
 ---
 
-## Obsidian Knowledge Management Skill
+## Daily Note Skill
 
-Integrates Claude Code with Obsidian for knowledge management during coding sessions.
+Interact with your Obsidian daily note for journaling, task tracking, and session logging. Invoke directly with `/daily-note`.
 
-**Trigger phrases:** "capture to obsidian", "add to daily note", "research in vault", "search my notes", "save this insight", "query obsidian", "check daily note", "create daily note", "append to daily note", "find in obsidian", "look up notes".
+**Trigger phrases:** "show my daily note", "open daily note", "check daily note", "create daily note", "create today's note", "view today's note", "add to daily note", "append to daily note", "what's in my daily note".
 
-### Prerequisites
+### Operations
 
-1. **Obsidian desktop app:** Version 1.5.0 or later (includes CLI)
+| Request | Action |
+|---------|--------|
+| "show today's daily note" | Retrieve and display today's note |
+| "create today's daily note" | Create today's note |
+| "add 'content' to my daily note" | Append content with timestamp |
+| "check daily note for 2024-01-15" | Access a specific date's note |
+
+### Behavior
+
+| Type | Behavior |
+|------|----------|
+| Read | Automatic — no confirmation needed |
+| Append/prepend | Automatic |
+| Create | Automatic if note doesn't exist; confirms before overwriting |
+
+---
+
+## Capture Skill
+
+Quick capture of thoughts, code snippets, and insights to Obsidian without leaving the coding flow. Invoke directly with `/capture`.
+
+**Trigger phrases:** "capture this", "save this to obsidian", "add to obsidian", "quick capture", "capture this thought", "capture this insight", "capture this code", "save this insight", "jot this down".
+
+### Operations
+
+| Request | Action |
+|---------|--------|
+| "capture this thought" | Append to today's daily note (default) |
+| "save this to my 'Note Name' note" | Capture to a specific note |
+| "capture this with tag #tag" | Capture with tags |
+| "capture the current code context" | Capture with code context |
+
+Captures are formatted with a timestamp header, content, optional tags, and project context.
+
+### Behavior
+
+| Type | Behavior |
+|------|----------|
+| Append to existing note | Automatic |
+| Create note (target doesn't exist) | Automatic |
+| Overwrite existing content | Requires explicit confirmation |
+
+---
+
+## Research Skill
+
+Search your Obsidian vault for relevant context during coding sessions. Invoke directly with `/research`.
+
+**Trigger phrases:** "research in vault", "search my notes", "search obsidian", "find in obsidian", "look up notes", "find notes about", "what do I have on", "search my vault for".
+
+### Operations
+
+| Request | Action |
+|---------|--------|
+| "research authentication patterns" | Full-text search across vault |
+| "search in Projects/ for caching" | Search within a specific folder |
+| "find top 10 results for error handling" | Return more results (default: 5) |
+
+Results show title, path, and a matching excerpt. Follow up with "read 1" to open the full note.
+
+### Behavior
+
+All research operations are read-only — no confirmation needed.
+
+---
+
+## Obsidian Prerequisites (all three skills)
+
+1. **Obsidian desktop app:** Version 1.5.0 or later (CLI included)
 2. **Obsidian running:** The CLI communicates with the running application
 3. **At least one vault:** Created and configured in Obsidian
 
-### Capabilities
+Vault preference is stored in `${CLAUDE_PLUGIN_ROOT}/config.json` on first use. All three skills read from the same config key (`obsidian.preferredVault`).
 
-| Capability | Trigger | Description |
-|------------|---------|-------------|
-| **Daily Note** | "check daily note", "show today's note", "create daily note", "add to daily note" | Retrieve, create, or append to daily notes |
-| **Capture** | "capture this", "save this to Obsidian", "add to my notes" | Quick capture of thoughts, code snippets, insights |
-| **Research** | "research in vault", "search my notes", "look up notes" | Search vault for relevant context |
+### AGENT.md (Recommended)
 
-### Daily Note Operations
-
-| Request | Action |
-|---------|--------|
-| "show today's daily note" | Retrieve today's note |
-| "create today's daily note" | Create today's note |
-| "add 'content' to my daily note" | Append to today's note |
-| "check daily note for 2024-01-15" | Access specific date |
-
-### Capture Operations
-
-| Request | Action |
-|---------|--------|
-| "capture this thought" | Append to daily note (default) |
-| "save this to my 'Note Name' note" | Capture to specific note |
-| "capture this with tag #tag" | Include tags |
-| "capture the current code context" | Capture current code context |
-
-### Research Operations
-
-| Request | Action |
-|---------|--------|
-| "research authentication patterns" | Full-text search |
-| "search in Projects/ for caching" | Search within folder |
-| "find top 10 results for error handling" | Return more results |
-
-### Configuration
-
-The skill automatically detects:
-- Vault selection (prompts if multiple vaults exist)
-- Daily note path (via `daily:path` command - returns today's path)
-- Vault structure (via `folders` command)
-
-No manual configuration required - preferences are inferred from your Obsidian setup.
-
-### AGENT.md (Best Practice)
-
-Create an `AGENT.md` file at your vault root to give Claude context about your vault conventions. This is optional but recommended - it helps Claude understand how you organize notes without repeated explanations.
-
-**Example AGENT.md:**
+Create an `AGENT.md` file at your vault root to give Claude context about your vault conventions — folder structure, daily note patterns, tagging taxonomy, capture preferences, etc. The skills read this file automatically on first vault interaction.
 
 ```markdown
 # Vault Context for AI Assistants
@@ -394,23 +419,13 @@ Create an `AGENT.md` file at your vault root to give Claude context about your v
 ## Folder Structure
 - `Daily Notes/` - Daily journal entries (YYYY-MM-DD.md format)
 - `Projects/` - Active project notes, one folder per project
-- `References/` - Permanent reference material
 - `Captures/` - Quick captures, inbox for processing
 
 ## Daily Note Conventions
 - Path: `Daily Notes/YYYY-MM-DD.md`
 - Sections: Tasks, Log, Reflections
-- Link to project notes when relevant
 
 ## Tagging System
-- `#status/active`, `#status/archived` - Note lifecycle
-- `#type/meeting`, `#type/decision` - Note categorization
-- `#project/[name]` - Project association
-
-## Preferences
-- Append captures to daily note under "## Captures" section
-- Use [[wikilinks]] for internal links
-- Include timestamps on log entries (HH:MM format)
+- `#status/active`, `#status/archived`
+- `#type/meeting`, `#type/decision`
 ```
-
-The skill reads this file automatically on first vault interaction - no configuration needed.
