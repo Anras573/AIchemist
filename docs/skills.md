@@ -156,6 +156,36 @@ On first use, the skill prompts to fetch and cache your Atlassian user info. Thi
 
 Config is stored at `${CLAUDE_PLUGIN_ROOT}/config.json` and excluded from version control.
 
+## Playwright Skill
+
+Browser automation and web testing using `playwright-cli` — token-efficient alternative to Playwright MCP.
+
+**Trigger phrases:** "test this page", "automate the browser", "take a screenshot of", "check this UI", "fill out this form", "test the flow on", "click through", "scrape this page", "use playwright", "browser test", "open a browser", "navigate to".
+
+### Why CLI over MCP
+
+`playwright-cli` avoids loading large tool schemas and accessibility trees into the model context. Use Playwright MCP only for exploratory automation or long-running autonomous workflows where persistent state matters more than token cost.
+
+### Prerequisites
+
+```bash
+npm install -g @playwright/cli@latest
+```
+
+### Operations
+
+| Type | Operations | Behavior |
+|------|------------|----------|
+| **Read** | snapshot, screenshot, console, network | Automatic |
+| **Write** | open, goto, click, fill, type, upload | Automatic for automation flows |
+| **Destructive** | cookie-clear, localstorage-clear, kill-all | Requires explicit confirmation |
+
+### Sessions
+
+playwright-cli keeps the browser in memory by default. Use named sessions (`-s=name`) for project isolation or parallel automation. Set `PLAYWRIGHT_CLI_SESSION` env var to default a session for the current workspace.
+
+---
+
 ## PostgreSQL Query Skill
 
 PostgreSQL database querying with safe defaults that block write operations.
@@ -223,12 +253,14 @@ Guidance for selecting between equivalent tools when multiple options exist (e.g
 | Git operations | Prefer native `git` commands |
 | Jira/Confluence | Use Atlassian MCP tools |
 | Documentation | Use MCP tools (Context7, Microsoft Learn) |
+| Browser automation | Prefer `playwright-cli` over Playwright MCP |
 
 ### Why These Preferences?
 
 - **`gh` CLI:** Already authenticated, uses local repo state, predictable output, better error messages
 - **Native git:** Respects local hooks (pre-commit, pre-push), maintains local/remote sync
 - **MCP for docs:** Curated, up-to-date content more reliable than web searches
+- **`playwright-cli`:** Token-efficient — avoids loading large tool schemas and accessibility trees into context
 
 ### Exceptions
 
@@ -236,6 +268,10 @@ Use GitHub MCP tools when CLI lacks functionality:
 - Inline PR review comments (line-specific)
 - Pending review management
 - File contents at specific ref without cloning
+
+Use Playwright MCP for:
+- Exploratory automation requiring persistent state and rich introspection
+- Long-running autonomous workflows where continuous browser context outweighs token cost
 
 ## Graphiti Graph Memory Skill
 
