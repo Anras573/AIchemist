@@ -7,7 +7,7 @@
 > | `/capture` | [Capture Skill](skills.md#capture-skill) |
 > | `/code-review` | [Code Review Skill](skills.md#code-review-skill) |
 > | `/daily-note` | [Daily Note Skill](skills.md#daily-note-skill) |
-> | `/jira-my-tickets` | [Jira Management Skill](skills.md#jira-management-skill) |
+> | `/jira-my-tickets` | [Jira Skill](skills.md#jira-skill) |
 > | `/research` | [Research Skill](skills.md#research-skill) |
 
 Slash commands are action-oriented operations invoked with `/command-name`.

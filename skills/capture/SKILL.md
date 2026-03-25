@@ -24,7 +24,13 @@ Quick capture of thoughts, code snippets, and insights to Obsidian without leavi
 |------|------------|----------|
 | **Write** | Append to existing note | Automatic — no confirmation needed |
 | **Write** | Create new note | Automatic when target doesn't exist |
-| **Destructive** | Overwrite existing content | **Requires explicit user confirmation** |
+| **Destructive** | Overwrite existing content | Requires explicit user confirmation — see below |
+
+## Destructive Operation Confirmation Prompts
+
+| Operation | Confirmation Prompt |
+|-----------|---------------------|
+| Overwrite existing note content | "This will overwrite the existing content of '<note-name>'. Are you sure? (yes/no)" |
 
 ## Prerequisites
 

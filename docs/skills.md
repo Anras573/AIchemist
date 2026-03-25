@@ -397,7 +397,7 @@ Results show title, path, and a matching excerpt. Follow up with "read 1" to ope
 
 ### Behavior
 
-All research operations are read-only — no confirmation needed.
+Search operations are read-only — no confirmation needed. Exception: on first use, the skill prompts you to select a vault and saves the preference to `${CLAUDE_PLUGIN_ROOT}/config.json`.
 
 ---
 

@@ -24,7 +24,13 @@ Interact with your Obsidian daily note for journaling, task tracking, and sessio
 |------|------------|----------|
 | **Read** | Read daily note contents | Automatic — no confirmation needed |
 | **Write** | Append/prepend content, create note | Automatic for append/prepend; confirm before overwriting |
-| **Destructive** | Overwrite existing content | **Requires explicit user confirmation** |
+| **Destructive** | Overwrite existing content | Requires explicit user confirmation — see below |
+
+## Destructive Operation Confirmation Prompts
+
+| Operation | Confirmation Prompt |
+|-----------|---------------------|
+| Overwrite existing daily note content | "This will overwrite the existing content of the daily note for <date>. Are you sure? (yes/no)" |
 
 ## Prerequisites
 
