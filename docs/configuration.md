@@ -13,7 +13,7 @@ AIchemist uses lazy configuration — settings are fetched and cached on first u
 
 ### Official Claude Code Integrations
 
-For **GitHub**, **Atlassian** (Jira/Confluence), and **Context7**, use the official MCP servers built into Claude Code. These are managed via Claude Code's integrations UI, not via `.mcp.json`.
+For **GitHub**, **Atlassian** (Jira/Confluence), **Context7**, and **Microsoft Learn**, use the official MCP servers built into Claude Code. These are managed via Claude Code's integrations UI, not via `.mcp.json`.
 
 To add them, run the following slash command inside Claude Code (not your system shell):
 
@@ -31,7 +31,6 @@ The `.mcp.json` file configures additional MCP servers not available as official
 
 | Server | Description | Auth Required |
 | ------ | ----------- | ------------- |
-| `microsoft-docs` | Microsoft Learn documentation (.NET, Azure, C#) | None |
 | `graphiti` | Graphiti graph memory for persistent agent knowledge | None (local Docker) |
 
 ## Skill-Specific Setup
