@@ -179,6 +179,8 @@ obsidian append path="<note-path>" content="<formatted-capture>" vault="<preferr
 Try asking in natural language, for example:
 - "Capture this thought: this approach handles edge cases better"
 - "Save this to my 'Ideas' note: new feature concept"
+
+Legacy (slash command): `/capture <your thought here>`
 ```
 
 ### CLI Not Found

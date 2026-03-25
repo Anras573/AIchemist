@@ -159,6 +159,8 @@ Display the complete note.
 Try asking in natural language, for example:
 - "Research authentication patterns"
 - "Search my notes in Projects/ for caching"
+
+Legacy (slash command): `/research <your query>`
 ```
 
 ### No Results Found
