@@ -217,8 +217,10 @@ playwright-cli show   # opens a live dashboard with all active sessions
 
 ## Read vs Write Operations
 
-| Type | Operations | Behavior |
-|------|------------|----------|
-| **Read** | snapshot, screenshot, console, network, tab-list, cookie-list, localstorage-list | Automatic — no confirmation needed |
-| **Write** | open, goto, click, fill, type, upload, state-save | Automatic for test/automation flows |
-| **Destructive** | cookie-clear, localstorage-clear, kill-all | Requires explicit user confirmation |
+| Type | Operation | Behavior | Confirmation Prompt |
+|------|-----------|----------|---------------------|
+| **Read** | snapshot, screenshot, console, network, tab-list, cookie-list, localstorage-list | Automatic — no confirmation needed | — |
+| **Write** | open, goto, click, fill, type, upload, state-save | Automatic for test/automation flows | — |
+| **Destructive** | cookie-clear | Requires explicit user confirmation | "Clear all cookies for the current session?" |
+| **Destructive** | localstorage-clear | Requires explicit user confirmation | "Clear all localStorage for the current session?" |
+| **Destructive** | kill-all | Requires explicit user confirmation | "Kill all browser processes?" |

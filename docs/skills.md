@@ -174,11 +174,13 @@ npm install -g @playwright/cli@latest
 
 ### Operations
 
-| Type | Operations | Behavior |
-|------|------------|----------|
-| **Read** | snapshot, screenshot, console, network | Automatic |
-| **Write** | open, goto, click, fill, type, upload | Automatic for automation flows |
-| **Destructive** | cookie-clear, localstorage-clear, kill-all | Requires explicit confirmation |
+| Type | Operation | Behavior | Confirmation Prompt |
+|------|-----------|----------|---------------------|
+| **Read** | snapshot, screenshot, console, network | Automatic | — |
+| **Write** | open, goto, click, fill, type, upload | Automatic for automation flows | — |
+| **Destructive** | cookie-clear | Requires explicit confirmation | "Clear all cookies for the current session?" |
+| **Destructive** | localstorage-clear | Requires explicit confirmation | "Clear all localStorage for the current session?" |
+| **Destructive** | kill-all | Requires explicit confirmation | "Kill all browser processes?" |
 
 ### Sessions
 
