@@ -19,7 +19,7 @@ Search your Obsidian vault for relevant context during coding sessions. Quickly 
 
 ## Read vs Write Operations
 
-Search operations are **read-only** — no confirmation needed. The one exception is first-use configuration: if no preferred vault is set, the skill will prompt you to select one and save it to `${CLAUDE_PLUGIN_ROOT}/config.json`.
+Search operations are **read-only** — no confirmation needed. The one exception is first-use configuration: if no preferred vault is set, the skill will prompt you to select one and ask for explicit confirmation before saving to `${CLAUDE_PLUGIN_ROOT}/config.json`.
 
 ## Prerequisites
 
@@ -83,7 +83,9 @@ Store the user's preferred vault in `${CLAUDE_PLUGIN_ROOT}/config.json`:
 **On first use**, if `obsidian.preferredVault` is not set:
 1. Run `obsidian vaults verbose` to list available vaults
 2. Prompt user to select one
-3. Save selection to config.json
+3. Before writing, ask for explicit confirmation:
+   > `I can remember your preferred Obsidian vault ("<vault-name>") for next time by saving it to config.json. Do you want me to save this preference? (yes/no)`
+4. If confirmed, save selection to config.json; otherwise use the selected vault for this request only
 
 ## Execution Steps
 

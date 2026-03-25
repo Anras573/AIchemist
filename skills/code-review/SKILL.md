@@ -249,34 +249,18 @@ Provide the validator with: issue description, relevant code context, PR title/d
 
 **If `--comment` option is set AND PR exists:**
 
-Post findings as inline PR review comments using the GitHub MCP tools. GitHub's review API is a **three-step process** — create a pending review, add comments to it, then submit:
+Post findings as **inline comments** on the PR using `mcp__github_inline_comment__create_inline_comment`. For each issue:
 
-**Step 8a — Create a pending review:**
-
-Use `mcp__plugin_github_github__pull_request_review_write` with `method: "create"` and no `event` parameter. This opens a pending review container that comments are attached to.
-
-**Step 8b — Add inline comments:**
-
-For each issue, use `mcp__plugin_github_github__add_comment_to_pending_review` with:
-- `path`: the file path where the issue is located
-- `line`: the line number in the diff
-- `side`: `"RIGHT"` for new code (additions), `"LEFT"` for removed code
-- `body`: the comment body (see format below)
-
-Comment body format:
-1. **Description**: Brief explanation of the issue and why it was flagged
-2. **Suggestion**: For small, self-contained fixes (< 6 lines), include a committable suggestion block:
+1. **Location**: Comment directly on the file and line where the issue exists
+2. **Description**: Brief explanation of the issue and why it was flagged
+3. **Suggestion**: For small, self-contained fixes (< 6 lines), include a committable suggestion block:
    ````
    ```suggestion
    // corrected code here
    ```
    ````
-3. **Larger fixes**: For changes spanning 6+ lines or multiple locations, describe the fix without a suggestion block
-4. Include confidence score (e.g., `Confidence: 92`) and link to the relevant guideline if it's a compliance issue
-
-**Step 8c — Submit the review:**
-
-Use `mcp__plugin_github_github__pull_request_review_write` with `method: "submit_pending"` and `event: "COMMENT"` (never `REQUEST_CHANGES` or `APPROVE` — the skill is informational only).
+4. **Larger fixes**: For changes spanning 6+ lines or multiple locations, describe the fix without a suggestion block
+5. Include confidence score (e.g., `Confidence: 92`) and link to the relevant guideline if it's a compliance issue
 
 **Guidelines for inline comments:**
 - Post only ONE comment per unique issue (no duplicates)

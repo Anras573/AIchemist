@@ -95,7 +95,9 @@ Store the user's preferred vault in `${CLAUDE_PLUGIN_ROOT}/config.json`:
 **On first use**, if `obsidian.preferredVault` is not set:
 1. Run `obsidian vaults verbose` to list available vaults
 2. Prompt user to select one
-3. Save selection to config.json
+3. Before writing, ask for explicit confirmation:
+   > `I can remember your preferred Obsidian vault ("<vault-name>") for next time by saving it to config.json. Do you want me to save this preference? (yes/no)`
+4. If confirmed, save selection to config.json; otherwise use the selected vault for this request only
 
 **Daily note path detection:**
 On first daily note interaction, run `obsidian daily:path vault="<preferredVault>"` to get the concrete path (e.g., `Daily Notes/2024-01-15.md`). Infer the folder/naming convention from this path for custom date operations.
