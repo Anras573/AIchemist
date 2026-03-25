@@ -96,6 +96,40 @@ Git operations should be local-first. Using MCP tools for git operations:
 
 The Atlassian MCP server (`atlassian/*` tools) is the preferred choice for Jira and Confluence operations in this environment. See the Jira skill for detailed guidance.
 
+## Browser Automation
+
+**Prefer `playwright-cli` (via Bash) over Playwright MCP.**
+
+| Reason | Detail |
+|--------|--------|
+| Token-efficient | Avoids loading large tool schemas and accessibility trees into context |
+| Better for coding agents | Concise CLI commands fit within limited context windows alongside codebases |
+
+### When Playwright MCP IS Appropriate
+
+- Exploratory automation requiring persistent state and rich introspection
+- Long-running autonomous workflows where continuous browser context outweighs token cost
+
+### Common playwright-cli Patterns
+
+```bash
+# Open a page and snapshot for element refs
+playwright-cli open https://example.com
+playwright-cli snapshot
+
+# Interact using refs from the snapshot
+playwright-cli fill e12 "text"
+playwright-cli click e5
+playwright-cli press Enter
+
+# Capture output
+playwright-cli screenshot --filename=result.png
+playwright-cli console error
+
+# Named sessions for parallel work
+playwright-cli -s=myapp open https://example.com
+```
+
 ## Documentation Lookups
 
 **Prefer MCP tools** for documentation:
