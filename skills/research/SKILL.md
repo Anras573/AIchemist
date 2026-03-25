@@ -19,7 +19,7 @@ Search your Obsidian vault for relevant context during coding sessions. Quickly 
 
 ## Read vs Write Operations
 
-All research operations are **read-only** — no confirmation needed.
+Search operations are **read-only** — no confirmation needed. The one exception is first-use configuration: if no preferred vault is set, the skill will prompt you to select one and save it to `${CLAUDE_PLUGIN_ROOT}/config.json`.
 
 ## Prerequisites
 
@@ -156,11 +156,9 @@ Display the complete note.
 ```markdown
 **No search query provided**
 
-Usage: `/research <your query>`
-
-Examples:
-- `/research authentication`
-- `/research --folder Projects/ caching`
+Try asking in natural language, for example:
+- "Research authentication patterns"
+- "Search my notes in Projects/ for caching"
 ```
 
 ### No Results Found

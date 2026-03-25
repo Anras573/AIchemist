@@ -176,11 +176,9 @@ obsidian append path="<note-path>" content="<formatted-capture>" vault="<preferr
 ```markdown
 **Nothing to capture**
 
-Usage: `/capture <your thought here>`
-
-Examples:
-- `/capture This approach handles edge cases better`
-- `/capture --note "Ideas" New feature concept`
+Try asking in natural language, for example:
+- "Capture this thought: this approach handles edge cases better"
+- "Save this to my 'Ideas' note: new feature concept"
 ```
 
 ### CLI Not Found
