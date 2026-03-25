@@ -154,7 +154,7 @@ Breaking changes: append `!` or add `BREAKING CHANGE:` footer → triggers major
 
 | File | Purpose |
 |------|---------|
-| `.mcp.json` | MCP server configuration (microsoft-docs, graphiti) |
+| `.mcp.json` | MCP server configuration (graphiti) |
 | `hooks/hooks.json` | Claude Code event hook definitions |
 | `.claude-plugin/` | Plugin manifest for the Claude marketplace |
 | `docs/configuration.md` | User setup guide for MCP servers and skills |
