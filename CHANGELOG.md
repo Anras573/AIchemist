@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.6.0](https://github.com/Anras573/AIchemist/compare/v2.5.0...v2.6.0) (2026-03-25)
+
+
+### Features
+
+* **skills:** add Playwright CLI skill, replace Playwright MCP ([#58](https://github.com/Anras573/AIchemist/issues/58)) ([9b9489a](https://github.com/Anras573/AIchemist/commit/9b9489a84417a3b051aa0bb7fd94a0342e70441d))
+* **skills:** migrate slash commands to skills ([#57](https://github.com/Anras573/AIchemist/issues/57)) ([afd62aa](https://github.com/Anras573/AIchemist/commit/afd62aa62f6c21de4f1a56050a18c7a5eb018d64))
+
 ## [2.5.0](https://github.com/Anras573/AIchemist/compare/v2.4.0...v2.5.0) (2026-03-17)
 
 
