@@ -19,9 +19,9 @@
     "obsidian",
     "knowledge-management"
   ],
-  "agents": "agents/",
-  "skills": "skills/",
-  "commands": "commands/",
-  "hooks": "hooks/hooks.json",
-  "mcpServers": ".mcp.json"
+  "agents": "./agents",
+  "skills": "./skills",
+  "commands": "./commands",
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json"
 }
