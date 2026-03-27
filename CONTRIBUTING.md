@@ -127,16 +127,20 @@ Update `hooks/hooks.json` for new event hooks.
 
 ## Plugin Manifests
 
-The plugin metadata is defined in two files that must stay in sync:
+The plugin metadata is spread across four files:
 
-| File | Used by |
-|------|---------|
-| `plugin.json` | GitHub Copilot CLI |
-| `.claude-plugin/plugin.json` | Claude Code |
+| File | Used by | Purpose |
+|------|---------|---------|
+| `plugin.json` | GitHub Copilot CLI | Plugin identity and metadata |
+| `.claude-plugin/plugin.json` | Claude Code | Plugin identity and metadata |
+| `.claude-plugin/marketplace.json` | Claude Code marketplace | Marketplace listing |
+| `.github/plugin/marketplace.json` | Copilot CLI marketplace | Marketplace listing |
 
-Both files are identical in content. **When updating plugin metadata** (description, keywords, author, etc.), update both files.
+**Note:** `.claude-plugin/plugin.json` does not need to declare component paths (`agents`, `skills`, `commands`, `hooks`, `mcpServers`) — Claude Code picks these up automatically from the default directories. The root `plugin.json` for Copilot CLI uses paths without the `./` prefix, as required by that schema.
 
-**Version numbers are managed automatically** by release-please — both files are listed in `extra-files` in `release-please-config.json` and will be bumped together on each release.
+**When updating plugin metadata** (description, keywords, author, etc.), update both `plugin.json` and `.claude-plugin/plugin.json`. The marketplace files have their own schemas and only need updating if the marketplace description changes.
+
+**Version numbers are managed automatically** by release-please — all four files are listed in `extra-files` in `release-please-config.json` and will be bumped together on each release.
 
 ## Questions?
 

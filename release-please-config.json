@@ -19,6 +19,16 @@
       "path": ".claude-plugin/plugin.json",
       "type": "json",
       "jsonpath": "version"
+    },
+    {
+      "path": ".claude-plugin/marketplace.json",
+      "type": "json",
+      "jsonpath": "metadata.version"
+    },
+    {
+      "path": ".github/plugin/marketplace.json",
+      "type": "json",
+      "jsonpath": "metadata.version"
     }
   ],
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
