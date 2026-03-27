@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.1](https://github.com/Anras573/AIchemist/compare/v2.6.0...v2.6.1) (2026-03-27)
+
+
+### Bug Fixes
+
+* update plugin manifests to pass schema validation ([#61](https://github.com/Anras573/AIchemist/issues/61)) ([e0230b3](https://github.com/Anras573/AIchemist/commit/e0230b3a0192494fdf8070cce079ce84459b644b))
+
 ## [2.6.0](https://github.com/Anras573/AIchemist/compare/v2.5.0...v2.6.0) (2026-03-25)
 
 
