@@ -127,20 +127,20 @@ Update `hooks/hooks.json` for new event hooks.
 
 ## Plugin Manifests
 
-The plugin metadata is spread across two files:
+The plugin metadata is spread across four files:
 
 | File | Used by | Purpose |
 |------|---------|---------|
+| `plugin.json` | GitHub Copilot CLI | Plugin identity and metadata |
 | `.claude-plugin/plugin.json` | Claude Code | Plugin identity and metadata |
 | `.claude-plugin/marketplace.json` | Claude Code marketplace | Marketplace listing |
+| `.github/plugin/marketplace.json` | Copilot CLI marketplace | Marketplace listing |
 
-The root `plugin.json` was removed — `.claude-plugin/plugin.json` is now the single source of truth for plugin metadata.
+**Note:** `.claude-plugin/plugin.json` does not need to declare component paths (`agents`, `skills`, `commands`, `hooks`, `mcpServers`) — Claude Code picks these up automatically from the default directories. The root `plugin.json` for Copilot CLI uses paths without the `./` prefix, as required by that schema.
 
-**Note:** `.claude-plugin/plugin.json` does not need to declare component paths (`agents`, `skills`, `commands`, `hooks`, `mcpServers`) — Claude Code picks these up automatically from the default directories.
+**When updating plugin metadata** (description, keywords, author, etc.), update both `plugin.json` and `.claude-plugin/plugin.json`. The marketplace files have their own schemas and only need updating if the marketplace description changes.
 
-**When updating plugin metadata** (description, keywords, author, etc.), update `.claude-plugin/plugin.json`. The `marketplace.json` has its own schema and only needs updating if the marketplace description changes.
-
-**Version numbers are managed automatically** by release-please — both files are listed in `extra-files` in `release-please-config.json` and will be bumped together on each release.
+**Version numbers are managed automatically** by release-please — all four files are listed in `extra-files` in `release-please-config.json` and will be bumped together on each release.
 
 ## Questions?
 
