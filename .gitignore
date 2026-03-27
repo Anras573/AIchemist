@@ -9,6 +9,9 @@ Thumbs.db
 # Claude Code local settings
 .claude/
 
+# Playwright MCP output
+.playwright-mcp/
+
 # Local configuration with secrets
 *.local.json
 config.json
