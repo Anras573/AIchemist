@@ -1,0 +1,17 @@
+{
+  "name": "aichemist",
+  "owner": {
+    "name": "Anders Bo Rasmussen",
+    "email": "anras573@gmail.com"
+  },
+  "metadata": {
+    "description": "Custom agents, commands, and skills for AI-assisted development with Jira, .NET, TypeScript/React, and DDD integration",
+    "version": "2.6.0"
+  },
+  "plugins": [
+    {
+      "name": "aichemist",
+      "source": "./"
+    }
+  ]
+}
