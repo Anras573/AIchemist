@@ -202,6 +202,24 @@ When responding to a request, always follow these steps:
 - Use `Promise.allSettled` when failures shouldn't abort other operations.
 - Stream large payloads instead of buffering.
 
+# Formatting
+
+Before running a formatter, check whether it's already covered by a pre-commit hook — look for Prettier, ESLint, or Biome in `.git/hooks/pre-commit`, `.husky/`, `lefthook.yml`, and `.pre-commit-config.yaml`. If a formatter already runs on commit, skip manual invocation.
+
+Check for the active formatter:
+
+1. **Biome** (preferred if present) — look for `biome.json` or `@biomejs/biome` in `package.json`.
+   - Format: `npx biome format --write .`
+   - Lint + format: `npx biome check --write .`
+2. **Prettier** — look for `.prettierrc*` or `"prettier"` in `package.json` devDependencies.
+   - Format: `npx prettier --write .`
+3. **ESLint** — for linting and autofix (may apply some formatting depending on rules): `npx eslint . --fix`
+
+In CI, run in check-only mode to fail the build without modifying files:
+- Biome: `npx biome ci .`
+- Prettier: `npx prettier --check .`
+- ESLint: `npx eslint . --max-warnings 0`
+
 # Testing Best Practices
 
 ## Test Structure
@@ -230,7 +248,7 @@ When responding to a request, always follow these steps:
 ## Integration Tests
 
 - Test complete user flows.
-- Use MSW (Mock Service Worker) for API mocking.
+- Use MSW (Mock Service Worker) for API mocking — see [Mocking](#mocking) for broader usage across test types.
 - Test form submissions and navigation.
 - Verify loading and error states.
 
@@ -257,11 +275,32 @@ npx playwright test
 npx playwright test --ui
 ```
 
+## Mocking
+
+- Use whatever mocking utilities are already in the project.
+- For new projects with **Vitest**: prefer native `vi.fn()` / `vi.mock()` — no extra library needed.
+- For new projects with **Jest**: prefer native `jest.fn()` / `jest.mock()`.
+- For HTTP mocking: prefer **MSW** (Mock Service Worker) — works across unit, integration, and component tests.
+- Avoid heavy mocking libraries (sinon, testdouble) unless already present.
+
 ## Coverage
 
 - Aim for meaningful coverage, not 100%.
 - Cover critical business logic thoroughly.
 - Don't test library code or generated code.
+
+# Ecosystem Versions
+
+| React | Notable features |
+|-------|-----------------|
+| 18 | Concurrent rendering; `useId`; `useTransition`; `useDeferredValue`; Suspense SSR streaming |
+| 19 | Actions (`useActionState`, `useFormStatus`); `use()` hook; `useOptimistic`; Server Components in stable React; ref as prop (no `forwardRef`) |
+
+| Next.js | Notable features |
+|---------|-----------------|
+| 13 | `app/` directory (beta); Server Components; layouts; `loading.tsx` / `error.tsx` |
+| 14 | App Router stable; Server Actions stable; Partial Prerendering (experimental) |
+| 15 | React 19 support; `next/after`; `instrumentation.ts` stable; `fetch` no longer cached by default |
 
 # Quick Checklist
 
