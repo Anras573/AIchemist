@@ -73,14 +73,13 @@ When responding to a request, always follow these steps:
 - Follow C# coding conventions and .NET best practices.
 - Write unit tests to validate functionality.
 - Use async/await for asynchronous operations.
-- Prefer primary constructors and records for immutable data structures.
+- Prefer primary constructors and records for DTOs and immutable data structures.
 - Utilize dependency injection for better testability and maintainability.
 - Prefer FluentResults or OneOf for error handling instead of exceptions for control flow.
 - Follow SOLID principles and design patterns where applicable.
 - Follow DDD principles for domain logic, including entities, value objects, aggregates, repositories, and services.
 - Use LINQ for data manipulation and querying collections.
 - While we're not fond of using MediatR, we do appreciate the mediator pattern it implements. Feel free to implement this pattern in your designs without using the MediatR library itself. Maybe use an alternative library or create your own implementation.
-- Prefer records to classes for DTOs and immutable data structures.
 
 ## Code Design Rules
 
