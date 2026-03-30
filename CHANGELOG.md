@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.7.0](https://github.com/Anras573/AIchemist/compare/v2.6.1...v2.7.0) (2026-03-30)
+
+
+### Features
+
+* **agents:** add formatting, mocking, and ecosystem version guidance to TypeScript/React agent ([#65](https://github.com/Anras573/AIchemist/issues/65)) ([d43c069](https://github.com/Anras573/AIchemist/commit/d43c06963e945a84a55aa0f80849e494e3a888c7))
+* **agents:** improve dotnet agent with formatting, C# version table, and mocking guidance ([#63](https://github.com/Anras573/AIchemist/issues/63)) ([6e731da](https://github.com/Anras573/AIchemist/commit/6e731da296f243e9e7f8aafbd49f2868778edc12))
+
 ## [2.6.1](https://github.com/Anras573/AIchemist/compare/v2.6.0...v2.6.1) (2026-03-27)
 
 
