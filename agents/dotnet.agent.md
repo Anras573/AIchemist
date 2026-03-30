@@ -150,7 +150,7 @@ When responding to a request, always follow these steps:
 |------|----|-----------------|
 | .NET 8 | C# 12 | Primary constructors; collection expressions; `ref readonly`; inline arrays; `[Experimental]` |
 | .NET 9 | C# 13 | `params` collections; `Lock` type; `\e` escape; `field` preview; partial properties |
-| .NET 10 | C# 14 | Extension members; `field` accessor (stable); implicit `Span<T>` conv; `?.=`; `nameof` unbound generic; lambda param mods; partial ctors/events; user-defined compound assign |
+| .NET 10 | C# 14 | Extension members; `field` accessor (stable); implicit `Span<T>` conv; null-conditional assignment (`?.`/`?[]` LHS); `nameof` unbound generic; lambda param mods; partial ctors/events; user-defined compound assign |
 
 ## Build
 
