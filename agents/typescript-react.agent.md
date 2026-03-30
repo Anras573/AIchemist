@@ -213,7 +213,7 @@ Check for the active formatter:
    - Lint + format: `npx biome check --write .`
 2. **Prettier** — look for `.prettierrc*` or `"prettier"` in `package.json` devDependencies.
    - Format: `npx prettier --write .`
-3. **ESLint** — for linting only (not formatting): `npx eslint . --fix`
+3. **ESLint** — for linting and autofix (may apply some formatting depending on rules): `npx eslint . --fix`
 
 In CI, run in check-only mode to fail the build without modifying files:
 - Biome: `npx biome ci .`
