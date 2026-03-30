@@ -80,6 +80,7 @@ When responding to a request, always follow these steps:
 - Follow DDD principles for domain logic, including entities, value objects, aggregates, repositories, and services.
 - Use LINQ for data manipulation and querying collections.
 - While we're not fond of using MediatR, we do appreciate the mediator pattern it implements. Feel free to implement this pattern in your designs without using the MediatR library itself. Maybe use an alternative library or create your own implementation.
+- Prefer records to classes for DTOs and immutable data structures.
 
 ## Code Design Rules
 
@@ -145,13 +146,32 @@ When responding to a request, always follow these steps:
 ## C# version
 
 - **Don't** set C# newer than TFM default.
-- C# 14 (NET 10+): extension members; `field` accessor; implicit `Span<T>` conv; `?.=`; `nameof` with unbound generic; lambda param mods w/o types; partial ctors/events; user-defined compound assign.
+
+| .NET | C# | Notable features |
+|------|----|-----------------|
+| .NET 8 | C# 12 | Primary constructors; collection expressions; `ref readonly`; inline arrays; `[Experimental]` |
+| .NET 9 | C# 13 | `params` collections; `Lock` type; `\e` escape; `field` preview; partial properties |
+| .NET 10 | C# 14 | Extension members; `field` accessor (stable); implicit `Span<T>` conv; `?.=`; `nameof` unbound generic; lambda param mods; partial ctors/events; user-defined compound assign |
 
 ## Build
 
 - .NET 5+: `dotnet build`, `dotnet publish`.
 - .NET Framework: May use `MSBuild` directly or require Visual Studio
 - Look for custom targets/scripts: `Directory.Build.targets`, `build.cmd/.sh`, `Build.ps1`.
+
+## Formatting
+
+Before running the formatter, check whether it's already covered by a pre-commit hook — look for CSharpier or `dotnet format` in `.git/hooks/pre-commit`, `.husky/`, `lefthook.yml`, and `.pre-commit-config.yaml`. If either tool already runs on commit, skip manual invocation.
+
+If formatting is not handled by a hook:
+
+1. **CSharpier** (preferred) — check for `.csharpierrc*` or an entry in `.config/dotnet-tools.json` / `.dotnet-tools.json` containing `csharpier`.
+   - If found: `dotnet csharpier format .`
+2. **Fallback** — if no CSharpier config is present: `dotnet format`
+
+In CI, run in check-only mode to fail the build without modifying files:
+- CSharpier: `dotnet csharpier check .`
+- dotnet format: `dotnet format --verify-no-changes`
 
 ## Good practice
 
@@ -170,10 +190,6 @@ When responding to a request, always follow these steps:
 - **`ValueTask`:** use only when measured to help; default to `Task`.
 - **Async dispose:** prefer `await using` for async resources; keep streams/readers properly owned.
 - **No pointless wrappers:** don’t add `async/await` if you just return the task.
-
-## Immutability
-
-- Prefer records to classes for DTOs
 
 # Testing best practices
 
@@ -259,3 +275,4 @@ When responding to a request, always follow these steps:
 - Avoid mocks/Fakes if possible
 - External dependencies can be mocked. Never mock code whose implementation is part of the solution under test.
 - Try to verify that the outputs (e.g. return values, exceptions) of the mock match the outputs of the dependency. You can write a test for this but leave it marked as skipped/explicit so that developers can verify it later.
+- **Library**: use whatever mocking library is already in the solution. For new projects, prefer **NSubstitute** over Moq.
