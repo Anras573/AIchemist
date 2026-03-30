@@ -202,7 +202,7 @@ When responding to a request, always follow these steps:
 - Use `Promise.allSettled` when failures shouldn't abort other operations.
 - Stream large payloads instead of buffering.
 
-## Formatting
+# Formatting
 
 Before running a formatter, check whether it's already covered by a pre-commit hook — look for Prettier, ESLint, or Biome in `.git/hooks/pre-commit`, `.husky/`, `lefthook.yml`, and `.pre-commit-config.yaml`. If a formatter already runs on commit, skip manual invocation.
 
@@ -248,7 +248,7 @@ In CI, run in check-only mode to fail the build without modifying files:
 ## Integration Tests
 
 - Test complete user flows.
-- Use MSW (Mock Service Worker) for API mocking.
+- Use MSW (Mock Service Worker) for API mocking — see [Mocking](#mocking) for broader usage across test types.
 - Test form submissions and navigation.
 - Verify loading and error states.
 
