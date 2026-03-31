@@ -1,7 +1,7 @@
 ---
 name: Markitdown
 description: |
-  This skill should be used when the user asks to "convert this URL to markdown", "fetch page as markdown", "get this page as markdown", "convert this webpage", "summarize this URL", "turn this page into markdown", "fetch and convert", or wants to extract clean markdown content from a remote URL or data URI.
+  This skill should be used when the user asks to "convert this URL to markdown", "fetch page as markdown", "get this page as markdown", "convert this webpage", "summarize this URL", "turn this page into markdown", "fetch and convert", "convert this file to markdown", "convert this PDF to markdown", "convert this document to markdown", "convert this DOCX to markdown", or wants to extract clean markdown content from a remote URL, data URI, or local file.
 version: 1.0.0
 ---
 

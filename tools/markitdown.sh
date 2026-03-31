@@ -43,6 +43,7 @@ FILE_NAME="$(basename "$FILE_PATH")"
 FILE_NAME_ENCODED="$(python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=''))" "$FILE_NAME")"
 
 docker run --rm -i \
+  --entrypoint markitdown \
   -v "${FILE_DIR}:/data:ro" \
   mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb \
   "file:///data/${FILE_NAME_ENCODED}"
