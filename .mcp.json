@@ -3,6 +3,15 @@
     "graphiti": {
       "type": "http",
       "url": "${GRAPHITI_MCP_URL}"
+    },
+    "markitdown": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "mcp/markitdown:latest"
+      ]
     }
   }
 }
