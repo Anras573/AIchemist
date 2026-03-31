@@ -40,10 +40,19 @@ The `uri` must be one of:
 | HTTPS URL | `https://docs.anthropic.com/en/docs/...` |
 | HTTP URL | `http://example.com` |
 | Data URI | `data:text/html;base64,<base64content>` |
+| Local file | Use `tools/markitdown.sh` (see below) |
 
-### What does NOT work
+### Local files — use the helper script
 
-`file://` paths from the host filesystem are **not supported**. The `markitdown` server runs inside a Docker container (`mcp/markitdown:latest`) with no volume mounts. Host paths are invisible to the container unless explicitly mounted. If a user asks to convert a local file, explain this constraint and suggest alternatives (e.g. read the file with the Read tool directly).
+The MCP server runs in a Docker container with no volume mounts, so `file://` URIs passed directly to `mcp__markitdown__convert_to_markdown` will fail. For local files, use the bundled script instead:
+
+```bash
+tools/markitdown.sh <path-to-file>
+```
+
+The script resolves the absolute path, mounts the file's parent directory into the container as `/data`, and passes `file:///data/<filename>` to markitdown. Output is printed to stdout.
+
+**Supported local file types include:** PDF, DOCX, PPTX, XLSX, HTML, CSV, JSON, XML, images with OCR, and plain text.
 
 ## Markitdown vs. WebFetch
 
@@ -65,16 +74,12 @@ Parse the URI from the user's request. If no URI is provided, ask for one.
 
 ### 2. Validate URI scheme
 
-Check the scheme is `https://`, `http://`, or `data:`. If the user provides a `file://` path, respond:
+Check the scheme is `https://`, `http://`, or `data:`.
 
-```markdown
-**Local files are not supported**
+If the user provides a local file path (or a `file://` URI), use the helper script instead of the MCP tool:
 
-The markitdown server runs in a Docker container and cannot access host filesystem paths.
-
-Alternatives:
-- Use the Read tool to read the file directly
-- Mount the file as a Docker volume (requires reconfiguring `.mcp.json`)
+```bash
+${CLAUDE_PLUGIN_ROOT}/tools/markitdown.sh <file-path>
 ```
 
 ### 3. Call the tool
