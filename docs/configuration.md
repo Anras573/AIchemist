@@ -55,6 +55,48 @@ Once running, the skill will automatically call `graphiti/get_status` if it enco
 
 ---
 
+### Markitdown
+
+The Markitdown skill converts remote URLs and local files to clean markdown using a Docker-based MCP server. No cloud account or API key is required.
+
+### Requirements
+
+1. **Docker** installed and running
+2. **markitdown image** available locally:
+   ```bash
+   docker pull mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb
+   ```
+
+### Verify the server is working
+
+Test a remote URL conversion directly:
+
+```bash
+docker run --rm -i --entrypoint markitdown mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb "https://example.com"
+```
+
+Test local file conversion via the bundled helper script:
+
+```bash
+tools/markitdown.sh /path/to/file.pdf
+```
+
+### Local File Conversion
+
+The MCP server runs in a sandboxed Docker container with no volume mounts, so `file://` URIs cannot be passed directly to `mcp__markitdown__convert_to_markdown`. For local files, use the bundled script instead:
+
+```bash
+tools/markitdown.sh <path-to-file>
+```
+
+The script mounts the file's **parent directory** (read-only) into the container. Avoid running it against files in sensitive directories such as `~` or `~/.ssh`.
+
+### Supported File Types
+
+PDF, DOCX, PPTX, XLSX, HTML, CSV, JSON, XML, images (OCR), and plain text.
+
+---
+
 ### Obsidian
 
 The Obsidian skill uses the Obsidian CLI (included with Obsidian v1.5.0+) to interact with your vault. No MCP server or API key is required.

@@ -440,6 +440,52 @@ Search operations are read-only — no confirmation needed. Exception: on first 
 
 ---
 
+## Markitdown Skill
+
+Convert remote web pages, documents, and local files to clean, structured markdown.
+
+**Trigger phrases:** "convert this URL to markdown", "fetch page as markdown", "get this page as markdown", "convert this webpage", "summarize this URL", "turn this page into markdown", "fetch and convert", "convert this file to markdown", "convert this PDF to markdown", "convert this document to markdown", "convert this DOCX to markdown".
+
+### Prerequisites
+
+1. **Docker** installed and running
+2. **markitdown image** pulled: `docker pull mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb`
+
+### Operations
+
+| Request | Action |
+|---------|--------|
+| "convert https://example.com to markdown" | Fetch and convert a remote URL |
+| "get the Anthropic docs page as markdown" | Fetch a docs page |
+| "convert this data URI to markdown" | Convert inline base64 content |
+| "convert /path/to/report.pdf to markdown" | Convert a local file via `tools/markitdown.sh` |
+
+### URI Support
+
+| Type | Example |
+|------|---------|
+| HTTPS URL | `https://docs.anthropic.com/...` |
+| HTTP URL | `http://example.com` |
+| Data URI | `data:text/html;base64,<content>` |
+| Local file | Use `tools/markitdown.sh <path>` |
+
+### Behavior
+
+| Type | Behavior |
+|------|----------|
+| Remote URL conversion | Automatic — no confirmation needed |
+| Local file conversion | Automatic via `tools/markitdown.sh` |
+
+### When to Prefer Markitdown Over WebFetch
+
+Use markitdown when the page contains tables (preserved as markdown), points to a PDF or Office document, or you need structured output for downstream processing. Use plain WebFetch for quick text extraction from simple HTML pages.
+
+### Integration
+
+Chains naturally with the **Capture** skill (save converted content to Obsidian) and the **Research** skill (find related vault notes after converting).
+
+---
+
 ## Obsidian Prerequisites (all three skills)
 
 1. **Obsidian desktop app:** Version 1.5.0 or later (CLI included)
