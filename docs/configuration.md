@@ -59,7 +59,7 @@ Once running, the skill will automatically call `graphiti/get_status` if it enco
 
 The Markitdown skill converts remote URLs and local files to clean markdown using a Docker-based MCP server. No cloud account or API key is required.
 
-#### Requirements
+### Requirements
 
 1. **Docker** installed and running
 2. **markitdown image** available locally:
@@ -67,7 +67,7 @@ The Markitdown skill converts remote URLs and local files to clean markdown usin
    docker pull mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb
    ```
 
-#### Verify the server is working
+### Verify the server is working
 
 Test a remote URL conversion directly:
 
@@ -81,7 +81,7 @@ Test local file conversion via the bundled helper script:
 tools/markitdown.sh /path/to/file.pdf
 ```
 
-#### Local File Conversion
+### Local File Conversion
 
 The MCP server runs in a sandboxed Docker container with no volume mounts, so `file://` URIs cannot be passed directly to `mcp__markitdown__convert_to_markdown`. For local files, use the bundled script instead:
 
@@ -91,7 +91,7 @@ tools/markitdown.sh <path-to-file>
 
 The script mounts the file's **parent directory** (read-only) into the container. Avoid running it against files in sensitive directories such as `~` or `~/.ssh`.
 
-#### Supported File Types
+### Supported File Types
 
 PDF, DOCX, PPTX, XLSX, HTML, CSV, JSON, XML, images (OCR), and plain text.
 

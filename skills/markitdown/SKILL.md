@@ -90,7 +90,7 @@ mcp__markitdown__convert_to_markdown(uri: "<uri>")
 
 ### 4. Present the result
 
-Return the markdown content. For long pages, summarise the structure first:
+Return the markdown content. For long pages, summarize the structure first:
 
 ```markdown
 **Converted:** https://example.com/page
@@ -107,7 +107,7 @@ _~320 lines of markdown • includes 3 tables and 8 headings_
 After a successful conversion, suggest relevant next steps based on context:
 
 - "Capture this to Obsidian" → use the capture skill
-- "Summarise this" → pass the markdown to a follow-up prompt
+- "Summarize this" → pass the markdown to a follow-up prompt
 - "Search my notes for related content" → use the research skill
 
 ## Error Handling
@@ -119,7 +119,7 @@ After a successful conversion, suggest relevant next steps based on context:
 
 The markitdown MCP server requires Docker. Please ensure:
 1. Docker Desktop is running
-2. The image is available: `docker pull mcp/markitdown:latest`
+2. The image is available: `docker pull mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb`
 3. Restart Claude Code to reconnect the MCP server
 ```
 
