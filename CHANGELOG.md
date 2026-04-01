@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.0](https://github.com/Anras573/AIchemist/compare/v2.7.0...v2.8.0) (2026-04-01)
+
+
+### Features
+
+* **skills:** add markitdown skill for converting URLs and local files to markdown ([#66](https://github.com/Anras573/AIchemist/issues/66)) ([76685e0](https://github.com/Anras573/AIchemist/commit/76685e0a126ee239f58d00a208c83e53dcdc51e4))
+
 ## [2.7.0](https://github.com/Anras573/AIchemist/compare/v2.6.1...v2.7.0) (2026-03-30)
 
 
