@@ -31,10 +31,13 @@ See [docs/installation.md](docs/installation.md) for alternative installation me
 
 - **Brainstorming** — Structured design dialogue with a hard gate before any implementation
 - **Beads** — AI-native task tracking with automatic sidecar storage outside your repo
+- **Code Review** — Parallel review agents with confidence scoring and Jira integration
 - **Jira** — Issue management with confirmation gates for write operations
 - **Mermaid** — Generate diagrams (flowcharts, sequence, ER, C4, and more) as markdown
 - **PostgreSQL** — Safe database querying with blocked writes by default
-- **Obsidian** — Knowledge management with daily notes, capture, and research
+- **Daily Note** — Interact with your Obsidian daily note for journaling and task tracking
+- **Capture** — Quick capture of thoughts and code snippets to Obsidian
+- **Research** — Search your Obsidian vault for context during coding sessions
 - **Playwright** — Browser automation and web testing via `playwright-cli`
 - **Markitdown** — Convert remote URLs and local files to clean markdown
 - **Graphiti** — Persistent graph memory across sessions
