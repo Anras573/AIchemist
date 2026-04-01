@@ -444,12 +444,12 @@ Search operations are read-only — no confirmation needed. Exception: on first 
 
 Convert remote web pages, documents, and local files to clean, structured markdown.
 
-**Trigger phrases:** "convert this URL to markdown", "fetch page as markdown", "get this page as markdown", "convert this webpage", "summarize this URL", "turn this page into markdown", "fetch and convert".
+**Trigger phrases:** "convert this URL to markdown", "fetch page as markdown", "get this page as markdown", "convert this webpage", "summarize this URL", "turn this page into markdown", "fetch and convert", "convert this file to markdown", "convert this PDF to markdown", "convert this document to markdown", "convert this DOCX to markdown".
 
 ### Prerequisites
 
 1. **Docker** installed and running
-2. **markitdown image** pulled: `docker pull mcp/markitdown:latest`
+2. **markitdown image** pulled: `docker pull mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb`
 
 ### Operations
 

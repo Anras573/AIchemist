@@ -64,7 +64,7 @@ The Markitdown skill converts remote URLs and local files to clean markdown usin
 1. **Docker** installed and running
 2. **markitdown image** available locally:
    ```bash
-   docker pull mcp/markitdown:latest
+   docker pull mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb
    ```
 
 #### Verify the server is working
@@ -72,7 +72,7 @@ The Markitdown skill converts remote URLs and local files to clean markdown usin
 Test a remote URL conversion directly:
 
 ```bash
-docker run --rm -i mcp/markitdown:latest "https://example.com"
+docker run --rm -i --entrypoint markitdown mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb "https://example.com"
 ```
 
 Test local file conversion via the bundled helper script:
