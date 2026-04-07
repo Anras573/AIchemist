@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.1](https://github.com/Anras573/AIchemist/compare/v2.8.0...v2.8.1) (2026-04-07)
+
+
+### Bug Fixes
+
+* **skills:** move vault= to first parameter in all Obsidian CLI commands ([#70](https://github.com/Anras573/AIchemist/issues/70)) ([c6d00d1](https://github.com/Anras573/AIchemist/commit/c6d00d1d76b0aa79b275cd0c0f8030df40cc63e4))
+
 ## [2.8.0](https://github.com/Anras573/AIchemist/compare/v2.7.0...v2.8.0) (2026-04-01)
 
 
