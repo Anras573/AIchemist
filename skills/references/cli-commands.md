@@ -24,7 +24,7 @@ Read file contents.
 **Options:**
 - `file=<name>` - File name (wikilink-style resolution)
 - `path=<path>` - Exact file path
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -46,7 +46,7 @@ Create a new file.
 - `overwrite` - Overwrite if file exists
 - `open` - Open file after creating
 - `newtab` - Open in new tab
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -65,7 +65,7 @@ Append content to a file.
 - `path=<path>` - File path
 - `content=<text>` - Content to append (required)
 - `inline` - Append without newline
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -84,7 +84,7 @@ Prepend content to a file.
 - `path=<path>` - File path
 - `content=<text>` - Content to prepend (required)
 - `inline` - Prepend without newline
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -102,7 +102,7 @@ Delete a file.
 - `file=<name>` - File name
 - `path=<path>` - File path
 - `permanent` - Skip trash, delete permanently
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -120,7 +120,7 @@ Move or rename a file.
 - `file=<name>` - Source file name
 - `path=<path>` - Source file path
 - `to=<path>` - Destination folder or full path (required)
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -136,7 +136,7 @@ Rename a file.
 - `file=<name>` - Current file name
 - `path=<path>` - Current file path
 - `name=<name>` - New file name (required)
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -155,7 +155,7 @@ Search vault for text.
 - `total` - Return match count only
 - `case` - Case sensitive search
 - `format=text|json` - Output format (default: text)
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -184,7 +184,7 @@ Search with matching line context.
 - `limit=<n>` - Max files to return
 - `case` - Case sensitive search
 - `format=text|json` - Output format (default: text)
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -212,7 +212,7 @@ List files in the vault.
 - `folder=<path>` - Filter by folder
 - `ext=<extension>` - Filter by extension (e.g., `md`, `pdf`)
 - `total` - Return file count only
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -229,7 +229,7 @@ List folders in the vault.
 **Options:**
 - `folder=<path>` - Filter by parent folder
 - `total` - Return folder count only
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -246,7 +246,7 @@ Show file info.
 **Options:**
 - `file=<name>` - File name
 - `path=<path>` - File path
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -263,7 +263,7 @@ Show folder info.
 **Options:**
 - `path=<path>` - Folder path (required)
 - `info=files|folders|size` - Return specific info only
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -276,7 +276,7 @@ obsidian vault="My Vault" folder path="Projects" info=files
 Read daily note contents.
 
 **Options:**
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -291,7 +291,7 @@ obsidian vault="My Vault" daily:read
 Get daily note path.
 
 **Options:**
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -310,7 +310,7 @@ Append content to daily note.
 - `inline` - Append without newline
 - `open` - Open file after adding
 - `paneType=tab|split|window` - Pane type to open in
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -327,7 +327,7 @@ Prepend content to daily note.
 - `inline` - Prepend without newline
 - `open` - Open file after adding
 - `paneType=tab|split|window` - Pane type to open in
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -341,7 +341,7 @@ Open daily note.
 
 **Options:**
 - `paneType=tab|split|window` - Pane type to open in
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -364,7 +364,7 @@ List tasks in the vault.
 - `format=json|tsv|csv` - Output format (default: text)
 - `active` - Show tasks for active file
 - `daily` - Show tasks from daily note
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -399,7 +399,7 @@ Show or update a task.
 - `todo` - Mark as todo
 - `daily` - Use daily note
 - `status="<char>"` - Set status character
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -419,7 +419,7 @@ List tags in the vault.
 - `sort=count` - Sort by count (default: name)
 - `format=json|tsv|csv` - Output format (default: tsv)
 - `active` - Show tags for active file
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -443,7 +443,7 @@ Get tag info.
 - `name=<tag>` - Tag name (required, include `#`)
 - `total` - Return occurrence count only
 - `verbose` - Include file list and count
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -459,7 +459,7 @@ Read a property value from a file.
 - `name=<name>` - Property name (required)
 - `file=<name>` - File name
 - `path=<path>` - File path
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -477,7 +477,7 @@ Set a property on a file.
 - `type=text|list|number|checkbox|date|datetime` - Property type
 - `file=<name>` - File name
 - `path=<path>` - File path
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -493,7 +493,7 @@ Remove a property from a file.
 - `name=<name>` - Property name (required)
 - `file=<name>` - File name
 - `path=<path>` - File path
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -514,7 +514,7 @@ List properties in the vault.
 - `counts` - Include occurrence counts
 - `format=yaml|json|tsv` - Output format (default: yaml)
 - `active` - Show properties for active file
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -530,7 +530,7 @@ Read template content.
 - `name=<template>` - Template name (required)
 - `resolve` - Resolve template variables
 - `title=<title>` - Title for variable resolution
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -544,7 +544,7 @@ List templates.
 
 **Options:**
 - `total` - Return template count only
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -558,7 +558,7 @@ Show vault info.
 
 **Options:**
 - `info=name|path|files|folders|size` - Return specific info only
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -604,7 +604,7 @@ List outgoing links from a file.
 - `file=<name>` - File name
 - `path=<path>` - File path
 - `total` - Return link count only
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -622,7 +622,7 @@ List backlinks to a file.
 - `counts` - Include link counts
 - `total` - Return backlink count only
 - `format=json|tsv|csv` - Output format (default: tsv)
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -637,7 +637,7 @@ List files with no incoming links.
 **Options:**
 - `total` - Return orphan count only
 - `all` - Include non-markdown files
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash
@@ -654,7 +654,7 @@ List unresolved links in vault.
 - `counts` - Include link counts
 - `verbose` - Include source files
 - `format=json|tsv|csv` - Output format (default: tsv)
-- `vault=<name>` - Target vault
+- `vault=<name>` - Target vault (**must be first parameter**)
 
 **Example:**
 ```bash

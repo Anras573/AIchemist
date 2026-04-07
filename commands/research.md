@@ -54,10 +54,10 @@ Use the Obsidian CLI search command:
 
 ```bash
 # Search with context (provides matching lines)
-obsidian search:context query="<query>" format=json vault="<preferredVault>"
+obsidian vault="<preferredVault>" search:context query="<query>" format=json
 
 # Or simple search (returns file list with match counts)
-obsidian search query="<query>" format=json vault="<preferredVault>"
+obsidian vault="<preferredVault>" search query="<query>" format=json
 ```
 
 Receive JSON array of matching results with file paths and match context.
@@ -68,7 +68,7 @@ If `--folder` specified, use the `path` parameter in the search command:
 
 ```bash
 # Search within specific folder
-obsidian search:context query="<query>" path="<folder-path>" format=json vault="<preferredVault>"
+obsidian vault="<preferredVault>" search:context query="<query>" path="<folder-path>" format=json
 ```
 
 This limits search to files within the specified folder.
@@ -132,7 +132,7 @@ If user responds with "read 1", "read 2", etc.:
 ```bash
 # Identify which result they want
 # Use the file path from the search result
-obsidian read path="<result-file-path>" vault="<preferredVault>"
+obsidian vault="<preferredVault>" read path="<result-file-path>"
 
 # Display the complete note
 ```
