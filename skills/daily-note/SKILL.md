@@ -64,7 +64,7 @@ On first vault interaction, check for an `AGENT.md` file at the vault root and r
 
 All commands follow the pattern:
 ```bash
-obsidian <command> [options] vault=<vault-name>
+obsidian vault=<vault-name> <command> [options]
 ```
 
 | Command | Purpose | Key Options |
@@ -100,7 +100,7 @@ Store the user's preferred vault in `${CLAUDE_PLUGIN_ROOT}/config.json`:
 4. If confirmed, save selection to config.json; otherwise use the selected vault for this request only
 
 **Daily note path detection:**
-On first daily note interaction, run `obsidian daily:path vault="<preferredVault>"` to get the concrete path (e.g., `Daily Notes/2024-01-15.md`). Infer the folder/naming convention from this path for custom date operations.
+On first daily note interaction, run `obsidian vault="<preferredVault>" daily:path` to get the concrete path (e.g., `Daily Notes/2024-01-15.md`). Infer the folder/naming convention from this path for custom date operations.
 
 ## Execution Steps
 
@@ -118,7 +118,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/config.json` for preferred vault. If missing, follow
 #### Retrieve (default)
 
 ```bash
-obsidian daily:read vault="<preferredVault>"
+obsidian vault="<preferredVault>" daily:read
 ```
 
 Display contents with clear formatting. If note doesn't exist, offer to create it.
@@ -137,21 +137,21 @@ _Path: Daily Notes/2024-01-15.md_
 
 ```bash
 # Check if note already exists
-obsidian daily:read vault="<preferredVault>" 2>/dev/null
+obsidian vault="<preferredVault>" daily:read 2>/dev/null
 
 # If exists: inform user, offer to show or append instead
 # If not exists: create with template (if configured) or default content
-obsidian create path="<daily-note-path>" template="daily" vault="<preferredVault>"
+obsidian vault="<preferredVault>" create path="<daily-note-path>" template="daily"
 
 # Or with default content:
-obsidian create path="<daily-note-path>" content="# $(date +%Y-%m-%d)\n\n## Tasks\n\n- [ ] \n\n## Notes\n\n" vault="<preferredVault>"
+obsidian vault="<preferredVault>" create path="<daily-note-path>" content="# $(date +%Y-%m-%d)\n\n## Tasks\n\n- [ ] \n\n## Notes\n\n"
 ```
 
 #### Append
 
 ```bash
 timestamp=$(date +%H:%M)
-obsidian daily:append content="\n\n## [$timestamp]\n\n<user-content>" vault="<preferredVault>"
+obsidian vault="<preferredVault>" daily:append content="\n\n## [$timestamp]\n\n<user-content>"
 ```
 
 **Append format:**

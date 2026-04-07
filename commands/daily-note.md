@@ -44,7 +44,7 @@ This command uses the Obsidian CLI to interact with daily notes. Configuration i
 2. Prompt user to select a vault
 3. Store selection in config.json
 
-The daily note path is automatically detected using `obsidian daily:path vault="<vault-name>"`.
+The daily note path is automatically detected using `obsidian vault="<vault-name>" daily:path`.
 
 Save their preference to config for future use.
 
@@ -73,7 +73,7 @@ Use the Obsidian CLI to get today's daily note path:
 
 ```bash
 # Get today's daily note path from Obsidian
-obsidian daily:path vault="<preferredVault>"
+obsidian vault="<preferredVault>" daily:path
 # Returns: Daily Notes/2024-01-15.md (example)
 ```
 
@@ -90,7 +90,7 @@ This returns the concrete path to today's daily note based on Obsidian's configu
 
 ```bash
 # Read daily note contents
-obsidian daily:read vault="<preferredVault>"
+obsidian vault="<preferredVault>" daily:read
 ```
 
 If found: Display contents with clear formatting
@@ -110,14 +110,14 @@ _Path: Daily Notes/2024-01-15.md_
 
 ```bash
 # Check if note exists first
-obsidian daily:read vault="<preferredVault>" 2>/dev/null
+obsidian vault="<preferredVault>" daily:read 2>/dev/null
 
 # If exists: Inform user and offer to append instead
 # If not exists: Create with template (if configured in Obsidian) or default content
-obsidian create path="<daily-note-path>" template="daily" vault="<preferredVault>"
+obsidian vault="<preferredVault>" create path="<daily-note-path>" template="daily"
 
 # Or create with default content:
-obsidian create path="<daily-note-path>" content="# $(date +%Y-%m-%d)\n\n## Tasks\n\n- [ ] \n\n## Notes\n\n" vault="<preferredVault>"
+obsidian vault="<preferredVault>" create path="<daily-note-path>" content="# $(date +%Y-%m-%d)\n\n## Tasks\n\n- [ ] \n\n## Notes\n\n"
 ```
 
 #### Append
@@ -128,7 +128,7 @@ obsidian create path="<daily-note-path>" content="# $(date +%Y-%m-%d)\n\n## Task
 
 # Format content with timestamp and append
 timestamp=$(date +%H:%M)
-obsidian daily:append content="\n\n## [$timestamp]\n\n<user-content>" vault="<preferredVault>"
+obsidian vault="<preferredVault>" daily:append content="\n\n## [$timestamp]\n\n<user-content>"
 ```
 
 **Append format:**

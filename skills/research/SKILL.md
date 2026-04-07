@@ -53,7 +53,7 @@ On first vault interaction, check for an `AGENT.md` file at the vault root and r
 
 All commands follow the pattern:
 ```bash
-obsidian <command> [options] vault=<vault-name>
+obsidian vault=<vault-name> <command> [options]
 ```
 
 | Command | Purpose | Key Options |
@@ -104,10 +104,10 @@ Read `${CLAUDE_PLUGIN_ROOT}/config.json` for preferred vault. If missing, follow
 
 ```bash
 # Search with context (provides matching lines — preferred)
-obsidian search:context query="<query>" format=json vault="<preferredVault>"
+obsidian vault="<preferredVault>" search:context query="<query>" format=json
 
 # With folder filter:
-obsidian search:context query="<query>" path="<folder-path>" format=json vault="<preferredVault>"
+obsidian vault="<preferredVault>" search:context query="<query>" path="<folder-path>" format=json
 ```
 
 ### 4. Rank and Limit Results
@@ -146,7 +146,7 @@ _Say "read 1" to see the full note, or refine your search._
 If the user responds with "read 1", "read 2", etc.:
 
 ```bash
-obsidian read path="<result-file-path>" vault="<preferredVault>"
+obsidian vault="<preferredVault>" read path="<result-file-path>"
 ```
 
 Display the complete note.

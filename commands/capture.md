@@ -53,7 +53,7 @@ Uses settings from `${CLAUDE_PLUGIN_ROOT}/config.json`:
 2. Prompt user to select a vault
 3. Store selection in config.json
 
-The daily note path is automatically detected using `obsidian daily:path vault="<vault-name>"`.
+The daily note path is automatically detected using `obsidian vault="<vault-name>" daily:path`.
 The capture folder defaults to `Captures/` but can be customized based on user preference.
 
 ## Execution Steps
@@ -128,12 +128,12 @@ If `--code` flag is set:
 **Check if target note exists:**
 ```bash
 # For daily note
-obsidian daily:read vault="<preferredVault>" 2>/dev/null
+obsidian vault="<preferredVault>" daily:read 2>/dev/null
 # If exists (exit code 0) → proceed to append
 # If not found → create new note
 
 # For named note
-obsidian read path="<note-path>" vault="<preferredVault>" 2>/dev/null
+obsidian vault="<preferredVault>" read path="<note-path>" 2>/dev/null
 # If exists → proceed to append
 # If not found → create new note
 ```
@@ -141,10 +141,10 @@ obsidian read path="<note-path>" vault="<preferredVault>" 2>/dev/null
 **If target note exists:**
 ```bash
 # For daily note
-obsidian daily:append content="<formatted-capture>" vault="<preferredVault>"
+obsidian vault="<preferredVault>" daily:append content="<formatted-capture>"
 
 # For named note
-obsidian append path="<note-path>" content="<formatted-capture>" vault="<preferredVault>"
+obsidian vault="<preferredVault>" append path="<note-path>" content="<formatted-capture>"
 ```
 
 **If target note doesn't exist:**
@@ -152,17 +152,17 @@ obsidian append path="<note-path>" content="<formatted-capture>" vault="<preferr
 For daily note:
 ```bash
 # Create with template (if configured in Obsidian)
-obsidian create path="<daily-note-path>" template="daily" vault="<preferredVault>"
+obsidian vault="<preferredVault>" create path="<daily-note-path>" template="daily"
 # Then append the capture
-obsidian daily:append content="<formatted-capture>" vault="<preferredVault>"
+obsidian vault="<preferredVault>" daily:append content="<formatted-capture>"
 ```
 
 For named note (`--note`):
 ```bash
 # Create minimal note with title
-obsidian create path="<note-path>" content="# <note-title>\n\n" vault="<preferredVault>"
+obsidian vault="<preferredVault>" create path="<note-path>" content="# <note-title>\n\n"
 # Then append the capture
-obsidian append path="<note-path>" content="<formatted-capture>" vault="<preferredVault>"
+obsidian vault="<preferredVault>" append path="<note-path>" content="<formatted-capture>"
 ```
 
 **Note:** The `append` command is safe — it only adds content. The `create` command with `overwrite` flag would replace content.
