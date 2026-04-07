@@ -64,7 +64,7 @@ On first vault interaction, check for an `AGENT.md` file at the vault root and r
 
 All commands follow the pattern:
 ```bash
-obsidian <command> [options] vault=<vault-name>
+obsidian vault=<vault-name> <command> [options]
 ```
 
 | Command | Purpose | Key Options |
@@ -157,16 +157,16 @@ Format the entry consistently:
 
 ```bash
 # Check if target exists
-obsidian daily:read vault="<preferredVault>" 2>/dev/null   # for daily note
-obsidian read path="<note-path>" vault="<preferredVault>" 2>/dev/null  # for named note
+obsidian vault="<preferredVault>" daily:read 2>/dev/null   # for daily note
+obsidian vault="<preferredVault>" read path="<note-path>" 2>/dev/null  # for named note
 
 # If exists → append
-obsidian daily:append content="<formatted-capture>" vault="<preferredVault>"
-obsidian append path="<note-path>" content="<formatted-capture>" vault="<preferredVault>"
+obsidian vault="<preferredVault>" daily:append content="<formatted-capture>"
+obsidian vault="<preferredVault>" append path="<note-path>" content="<formatted-capture>"
 
 # If not exists → create, then append
-obsidian create path="<note-path>" content="# <note-title>\n\n" vault="<preferredVault>"
-obsidian append path="<note-path>" content="<formatted-capture>" vault="<preferredVault>"
+obsidian vault="<preferredVault>" create path="<note-path>" content="# <note-title>\n\n"
+obsidian vault="<preferredVault>" append path="<note-path>" content="<formatted-capture>"
 ```
 
 ### 6. Confirm Capture

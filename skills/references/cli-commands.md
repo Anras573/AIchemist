@@ -5,14 +5,14 @@ This reference documents the Obsidian CLI commands relevant to this skill. The C
 ## Command Syntax
 
 ```bash
-obsidian <command> [options] vault=<vault-name>
+obsidian vault=<vault-name> <command> [options]
 ```
 
 **Key Points:**
+- `vault=<name>` must be the **first parameter** (before the command) when targeting a specific vault
 - Options use `key=value` format (e.g., `path="Note.md"`)
 - Quote values with spaces: `content="My content"`
 - Use `\n` for newlines, `\t` for tabs in content
-- `vault=<name>` targets a specific vault (optional if only one vault)
 - `file=<name>` resolves by name (like wikilinks)
 - `path=<path>` uses exact path (e.g., `folder/note.md`)
 
@@ -28,7 +28,7 @@ Read file contents.
 
 **Example:**
 ```bash
-obsidian read path="Daily Notes/2024-01-15.md" vault="My Vault"
+obsidian vault="My Vault" read path="Daily Notes/2024-01-15.md"
 ```
 
 **Returns:** File content as text
@@ -50,7 +50,7 @@ Create a new file.
 
 **Example:**
 ```bash
-obsidian create path="Projects/New Note.md" content="# New Note\n\nContent here" vault="My Vault"
+obsidian vault="My Vault" create path="Projects/New Note.md" content="# New Note\n\nContent here"
 ```
 
 **Returns:** Success confirmation
@@ -69,7 +69,7 @@ Append content to a file.
 
 **Example:**
 ```bash
-obsidian append path="Daily Notes/Today.md" content="\n## New Section\n\nContent" vault="My Vault"
+obsidian vault="My Vault" append path="Daily Notes/Today.md" content="\n## New Section\n\nContent"
 ```
 
 **Returns:** Success confirmation
@@ -88,7 +88,7 @@ Prepend content to a file.
 
 **Example:**
 ```bash
-obsidian prepend path="TODO.md" content="- New urgent task\n" vault="My Vault"
+obsidian vault="My Vault" prepend path="TODO.md" content="- New urgent task\n"
 ```
 
 **Returns:** Success confirmation
@@ -106,7 +106,7 @@ Delete a file.
 
 **Example:**
 ```bash
-obsidian delete path="Temp/Old Note.md" vault="My Vault"
+obsidian vault="My Vault" delete path="Temp/Old Note.md"
 ```
 
 **Warning:** Use with caution. Requires confirmation.
@@ -124,7 +124,7 @@ Move or rename a file.
 
 **Example:**
 ```bash
-obsidian move path="Old Folder/Note.md" to="New Folder/Note.md" vault="My Vault"
+obsidian vault="My Vault" move path="Old Folder/Note.md" to="New Folder/Note.md"
 ```
 
 ---
@@ -140,7 +140,7 @@ Rename a file.
 
 **Example:**
 ```bash
-obsidian rename path="Projects/Old Name.md" name="New Name" vault="My Vault"
+obsidian vault="My Vault" rename path="Projects/Old Name.md" name="New Name"
 ```
 
 ## Search Operations
@@ -159,7 +159,7 @@ Search vault for text.
 
 **Example:**
 ```bash
-obsidian search query="authentication" format=json limit=10 vault="My Vault"
+obsidian vault="My Vault" search query="authentication" format=json limit=10
 ```
 
 **JSON Output Format:**
@@ -188,7 +188,7 @@ Search with matching line context.
 
 **Example:**
 ```bash
-obsidian search:context query="JWT" format=json vault="My Vault"
+obsidian vault="My Vault" search:context query="JWT" format=json
 ```
 
 **JSON Output Format:**
@@ -216,7 +216,7 @@ List files in the vault.
 
 **Example:**
 ```bash
-obsidian files folder="Daily Notes" ext=md vault="My Vault"
+obsidian vault="My Vault" files folder="Daily Notes" ext=md
 ```
 
 **Returns:** List of file paths, one per line
@@ -233,7 +233,7 @@ List folders in the vault.
 
 **Example:**
 ```bash
-obsidian folders vault="My Vault"
+obsidian vault="My Vault" folders
 ```
 
 **Returns:** List of folder paths, one per line
@@ -250,7 +250,7 @@ Show file info.
 
 **Example:**
 ```bash
-obsidian file path="Projects/Note.md" vault="My Vault"
+obsidian vault="My Vault" file path="Projects/Note.md"
 ```
 
 **Returns:** File metadata (path, size, modified date, etc.)
@@ -267,7 +267,7 @@ Show folder info.
 
 **Example:**
 ```bash
-obsidian folder path="Projects" info=files vault="My Vault"
+obsidian vault="My Vault" folder path="Projects" info=files
 ```
 
 ## Daily Note Operations
@@ -280,7 +280,7 @@ Read daily note contents.
 
 **Example:**
 ```bash
-obsidian daily:read vault="My Vault"
+obsidian vault="My Vault" daily:read
 ```
 
 **Returns:** Daily note content
@@ -295,7 +295,7 @@ Get daily note path.
 
 **Example:**
 ```bash
-obsidian daily:path vault="My Vault"
+obsidian vault="My Vault" daily:path
 ```
 
 **Returns:** Path to today's daily note (e.g., `Daily Notes/2024-01-15.md`)
@@ -314,7 +314,7 @@ Append content to daily note.
 
 **Example:**
 ```bash
-obsidian daily:append content="\n## 15:30 Meeting Notes\n\nDiscussed authentication approach" vault="My Vault"
+obsidian vault="My Vault" daily:append content="\n## 15:30 Meeting Notes\n\nDiscussed authentication approach"
 ```
 
 ---
@@ -331,7 +331,7 @@ Prepend content to daily note.
 
 **Example:**
 ```bash
-obsidian daily:prepend content="## 🎯 Today's Priority\n\nFinish auth feature\n\n" vault="My Vault"
+obsidian vault="My Vault" daily:prepend content="## 🎯 Today's Priority\n\nFinish auth feature\n\n"
 ```
 
 ---
@@ -345,7 +345,7 @@ Open daily note.
 
 **Example:**
 ```bash
-obsidian daily vault="My Vault"
+obsidian vault="My Vault" daily
 ```
 
 ## Task Operations
@@ -368,7 +368,7 @@ List tasks in the vault.
 
 **Example:**
 ```bash
-obsidian tasks todo format=json vault="My Vault"
+obsidian vault="My Vault" tasks todo format=json
 ```
 
 **JSON Output Format:**
@@ -403,7 +403,7 @@ Show or update a task.
 
 **Example:**
 ```bash
-obsidian task path="Projects/API.md" line=15 done vault="My Vault"
+obsidian vault="My Vault" task path="Projects/API.md" line=15 done
 ```
 
 ## Tag Operations
@@ -423,7 +423,7 @@ List tags in the vault.
 
 **Example:**
 ```bash
-obsidian tags counts sort=count format=json vault="My Vault"
+obsidian vault="My Vault" tags counts sort=count format=json
 ```
 
 **JSON Output Format:**
@@ -447,7 +447,7 @@ Get tag info.
 
 **Example:**
 ```bash
-obsidian tag name="#dev" verbose vault="My Vault"
+obsidian vault="My Vault" tag name="#dev" verbose
 ```
 
 ## Properties (Frontmatter)
@@ -463,7 +463,7 @@ Read a property value from a file.
 
 **Example:**
 ```bash
-obsidian property:read name="status" path="Projects/API.md" vault="My Vault"
+obsidian vault="My Vault" property:read name="status" path="Projects/API.md"
 ```
 
 ---
@@ -481,7 +481,7 @@ Set a property on a file.
 
 **Example:**
 ```bash
-obsidian property:set name="status" value="in-progress" type=text path="Projects/API.md" vault="My Vault"
+obsidian vault="My Vault" property:set name="status" value="in-progress" type=text path="Projects/API.md"
 ```
 
 ---
@@ -497,7 +497,7 @@ Remove a property from a file.
 
 **Example:**
 ```bash
-obsidian property:remove name="draft" path="Projects/API.md" vault="My Vault"
+obsidian vault="My Vault" property:remove name="draft" path="Projects/API.md"
 ```
 
 ---
@@ -518,7 +518,7 @@ List properties in the vault.
 
 **Example:**
 ```bash
-obsidian properties counts format=json vault="My Vault"
+obsidian vault="My Vault" properties counts format=json
 ```
 
 ## Template Operations
@@ -534,7 +534,7 @@ Read template content.
 
 **Example:**
 ```bash
-obsidian template:read name="daily" resolve title="2024-01-15" vault="My Vault"
+obsidian vault="My Vault" template:read name="daily" resolve title="2024-01-15"
 ```
 
 ---
@@ -548,7 +548,7 @@ List templates.
 
 **Example:**
 ```bash
-obsidian templates vault="My Vault"
+obsidian vault="My Vault" templates
 ```
 
 ## Vault Operations
@@ -562,7 +562,7 @@ Show vault info.
 
 **Example:**
 ```bash
-obsidian vault info=path vault="My Vault"
+obsidian vault="My Vault" vault info=path
 ```
 
 **Returns:** Vault metadata (name, path, stats)
@@ -608,7 +608,7 @@ List outgoing links from a file.
 
 **Example:**
 ```bash
-obsidian links path="Architecture/Auth.md" vault="My Vault"
+obsidian vault="My Vault" links path="Architecture/Auth.md"
 ```
 
 ---
@@ -626,7 +626,7 @@ List backlinks to a file.
 
 **Example:**
 ```bash
-obsidian backlinks path="Architecture/Auth.md" format=json vault="My Vault"
+obsidian vault="My Vault" backlinks path="Architecture/Auth.md" format=json
 ```
 
 ---
@@ -641,7 +641,7 @@ List files with no incoming links.
 
 **Example:**
 ```bash
-obsidian orphans vault="My Vault"
+obsidian vault="My Vault" orphans
 ```
 
 ---
@@ -658,7 +658,7 @@ List unresolved links in vault.
 
 **Example:**
 ```bash
-obsidian unresolved format=json vault="My Vault"
+obsidian vault="My Vault" unresolved format=json
 ```
 
 ## Common Patterns
@@ -666,7 +666,7 @@ obsidian unresolved format=json vault="My Vault"
 ### Check if File Exists
 
 ```bash
-if obsidian read path="Note.md" vault="My Vault" >/dev/null 2>&1; then
+if obsidian vault="My Vault" read path="Note.md" >/dev/null 2>&1; then
   echo "File exists"
 else
   echo "File not found"
@@ -676,10 +676,10 @@ fi
 ### Create or Append
 
 ```bash
-if ! obsidian read path="Note.md" vault="My Vault" >/dev/null 2>&1; then
-  obsidian create path="Note.md" content="# Note\n\n" vault="My Vault"
+if ! obsidian vault="My Vault" read path="Note.md" >/dev/null 2>&1; then
+  obsidian vault="My Vault" create path="Note.md" content="# Note\n\n"
 else
-  obsidian append path="Note.md" content="\nNew content" vault="My Vault"
+  obsidian vault="My Vault" append path="Note.md" content="\nNew content"
 fi
 ```
 
@@ -687,7 +687,7 @@ fi
 
 ```bash
 # Get search results as JSON
-results=$(obsidian search query="test" format=json vault="My Vault")
+results=$(obsidian vault="My Vault" search query="test" format=json)
 
 # Parse with jq
 echo "$results" | jq -r '.[] | "\(.file): \(.matches) matches"'
@@ -696,7 +696,7 @@ echo "$results" | jq -r '.[] | "\(.file): \(.matches) matches"'
 ### Get Vault Path
 
 ```bash
-vault_path=$(obsidian vault info=path vault="My Vault")
+vault_path=$(obsidian vault="My Vault" vault info=path)
 echo "Vault is at: $vault_path"
 ```
 
@@ -705,17 +705,17 @@ echo "Vault is at: $vault_path"
 ```bash
 # Use files command and sort by modification time
 # Get vault path first
-vault_path=$(obsidian vault info=path vault="My Vault")
+vault_path=$(obsidian vault="My Vault" vault info=path)
 
 # Note: stat syntax differs between macOS/BSD and Linux
 if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "freebsd"* ]]; then
   # macOS/BSD
-  obsidian files vault="My Vault" | while read -r file; do
+  obsidian vault="My Vault" files | while read -r file; do
     stat -f "%m %N" "$vault_path/$file"
   done | sort -rn | head -10
 else
   # Linux
-  obsidian files vault="My Vault" | while read -r file; do
+  obsidian vault="My Vault" files | while read -r file; do
     stat -c "%Y %n" "$vault_path/$file"
   done | sort -rn | head -10
 fi
@@ -735,7 +735,7 @@ fi
 Errors are printed to stderr. Capture them:
 
 ```bash
-error=$(obsidian read path="nonexistent.md" vault="My Vault" 2>&1)
+error=$(obsidian vault="My Vault" read path="nonexistent.md" 2>&1)
 if [[ $? -ne 0 ]]; then
   echo "Error: $error"
 fi
