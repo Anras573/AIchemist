@@ -10,7 +10,7 @@
           },
           {
             "type": "command",
-            "command": "command -v mempalace >/dev/null 2>&1 || exit 0; tmpdir=$(mktemp -d /tmp/mp-stop-XXXXXX) && cat > \"$tmpdir/session.jsonl\" && mempalace mine \"$tmpdir\" --mode convos 2>/dev/null; rm -rf \"$tmpdir\" 2>/dev/null; exit 0"
+            "command": "command -v mempalace >/dev/null 2>&1 || exit 0; tmpdir=$(mktemp -d \"${TMPDIR:-/tmp}/mp-stop-XXXXXX\") || exit 0; trap 'rm -rf \"$tmpdir\" 2>/dev/null' EXIT HUP INT TERM; cat > \"$tmpdir/session.jsonl\" && mempalace mine \"$tmpdir\" --mode convos 2>/dev/null; exit 0"
           }
         ]
       }
