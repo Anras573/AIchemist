@@ -7,6 +7,21 @@
           {
             "type": "command",
             "command": "\"${CLAUDE_PLUGIN_ROOT}/tools/notify.sh\" 'Claude Code' 'Awaiting your input'"
+          },
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); echo \"$INPUT\" | python3 -m mempalace hook run --hook stop --harness claude-code"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); echo \"$INPUT\" | python3 -m mempalace hook run --hook precompact --harness claude-code"
           }
         ]
       }
