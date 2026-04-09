@@ -366,9 +366,9 @@ The skill stores to memory automatically — without confirmation — when the u
 
 | Type | Operations | Behavior | Confirmation |
 |------|------------|----------|--------------|
-| **Read** | `mempalace_search`, `mempalace_kg_query`, `mempalace_status`, `mempalace_list_wings`, `mempalace_list_rooms` | Automatic | — |
-| **Write** | `mempalace_add_drawer` | Auto-store: automatic; explicit user request: confirmation required | "Store this in memory?" with content summary, target wing, and room |
-| **Destructive** | `mempalace_delete_drawer` | Confirmation required | "Delete this from memory?" with drawer ID, wing, and room |
+| **Read** | `mcp__mempalace__mempalace_search`, `mcp__mempalace__mempalace_kg_query`, `mcp__mempalace__mempalace_status`, `mcp__mempalace__mempalace_list_wings`, `mcp__mempalace__mempalace_list_rooms` | Automatic | — |
+| **Write** | `mcp__mempalace__mempalace_add_drawer` | Auto-store: automatic; explicit user request: confirmation required | "Store this in memory?" with content summary, target wing, and room |
+| **Destructive** | `mcp__mempalace__mempalace_delete_drawer` | Confirmation required | "Delete this from memory?" with drawer ID, wing, and room |
 
 ---
 
