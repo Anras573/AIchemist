@@ -27,7 +27,7 @@ These are maintained by Anthropic and provide the best integration experience. T
 
 The `.mcp.json` file configures additional MCP servers not available as official integrations.
 
-#### Local Servers (stdio)
+### Local Servers (stdio)
 
 | Server | Description | Auth Required |
 | ------ | ----------- | ------------- |
