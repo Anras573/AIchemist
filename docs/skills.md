@@ -331,10 +331,10 @@ Persistent local memory backed by ChromaDB (vector search) and a SQLite knowledg
 
 ### Prerequisites
 
-1. **Python 3** installed
+1. **`uv`** installed ([install guide](https://docs.astral.sh/uv/getting-started/installation/))
 2. **`mempalace` package** installed:
    ```bash
-   pip install mempalace
+   uv tool install mempalace
    ```
 3. **Initialise a palace directory** (one-time setup):
    ```bash

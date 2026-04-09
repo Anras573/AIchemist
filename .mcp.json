@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "mempalace": {
-      "command": "python3",
-      "args": ["-m", "mempalace.mcp_server"]
+      "command": "uvx",
+      "args": ["--from", "mempalace", "python", "-m", "mempalace.mcp_server"]
     },
     "markitdown": {
       "command": "docker",
