@@ -1,10 +1,16 @@
 {
   "mcpServers": {
     "mempalace": {
-      "command": "python3",
+      "command": "uv",
       "args": [
+        "run",
+        "--with",
+        "mempalace",
+        "python3",
         "-m",
-        "mempalace.mcp_server"
+        "mempalace.mcp_server",
+        "--palace",
+        "${HOME}/.mempalace"
       ]
     },
     "markitdown": {

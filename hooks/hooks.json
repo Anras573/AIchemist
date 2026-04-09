@@ -10,7 +10,7 @@
           },
           {
             "type": "command",
-            "command": "INPUT=$(cat); echo \"$INPUT\" | python3 -m mempalace hook run --hook stop --harness claude-code"
+            "command": "INPUT=$(cat); echo \"$INPUT\" | uv run --with mempalace python3 -m mempalace hook run --hook stop --harness claude-code"
           }
         ]
       }
@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); echo \"$INPUT\" | python3 -m mempalace hook run --hook precompact --harness claude-code"
+            "command": "INPUT=$(cat); echo \"$INPUT\" | uv run --with mempalace python3 -m mempalace hook run --hook precompact --harness claude-code"
           }
         ]
       }
