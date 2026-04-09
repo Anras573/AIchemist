@@ -2,7 +2,7 @@
 
 ## READ Tools (Automatic — No Confirmation Needed)
 
-### `mempalace_status`
+### `mcp__mempalace__mempalace_status`
 Palace overview — total drawers, wing and room counts. Also returns the AAAK dialect spec and memory protocol. **Call this on wake-up.**
 
 ```
@@ -11,7 +11,7 @@ Palace overview — total drawers, wing and room counts. Also returns the AAAK d
 
 ---
 
-### `mempalace_search`
+### `mcp__mempalace__mempalace_search`
 Semantic vector search over palace contents.
 
 ```
@@ -25,7 +25,7 @@ room    string  optional  Filter to a specific room
 
 ---
 
-### `mempalace_list_wings`
+### `mcp__mempalace__mempalace_list_wings`
 List all wings with drawer counts.
 
 ```
@@ -34,7 +34,7 @@ List all wings with drawer counts.
 
 ---
 
-### `mempalace_list_rooms`
+### `mcp__mempalace__mempalace_list_rooms`
 List rooms within a wing (or all rooms).
 
 ```
@@ -43,7 +43,7 @@ wing  string  optional  Wing to inspect
 
 ---
 
-### `mempalace_get_taxonomy`
+### `mcp__mempalace__mempalace_get_taxonomy`
 Full taxonomy: wing → room → drawer count.
 
 ```
@@ -52,7 +52,7 @@ Full taxonomy: wing → room → drawer count.
 
 ---
 
-### `mempalace_check_duplicate`
+### `mcp__mempalace__mempalace_check_duplicate`
 Check if content already exists before filing.
 
 ```
@@ -64,7 +64,7 @@ threshold  number  optional  Similarity threshold 0–1 (default: 0.9)
 
 ---
 
-### `mempalace_kg_query`
+### `mcp__mempalace__mempalace_kg_query`
 Query the knowledge graph for an entity's relationships. Returns typed facts with temporal validity.
 
 ```
@@ -75,7 +75,7 @@ direction  string  optional  'outgoing', 'incoming', or 'both' (default: 'both')
 
 ---
 
-### `mempalace_kg_timeline`
+### `mcp__mempalace__mempalace_kg_timeline`
 Chronological timeline of facts for an entity (or all entities).
 
 ```
@@ -84,7 +84,7 @@ entity  string  optional  Entity to get timeline for
 
 ---
 
-### `mempalace_kg_stats`
+### `mcp__mempalace__mempalace_kg_stats`
 Knowledge graph overview: entities, triples, relationship types.
 
 ```
@@ -93,7 +93,7 @@ Knowledge graph overview: entities, triples, relationship types.
 
 ---
 
-### `mempalace_diary_read`
+### `mcp__mempalace__mempalace_diary_read`
 Read an agent's recent diary entries.
 
 ```
@@ -105,7 +105,7 @@ last_n      int     optional  Number of entries to return (default: 10)
 
 ## WRITE Tools (Auto-store: no confirmation; explicit request: confirmation required)
 
-### `mempalace_add_drawer`
+### `mcp__mempalace__mempalace_add_drawer`
 File content into a wing/room. Checks for duplicates first (idempotent by content hash).
 
 ```
@@ -118,7 +118,7 @@ added_by     string  optional  Who is filing this (default: 'mcp')
 
 ---
 
-### `mempalace_kg_add`
+### `mcp__mempalace__mempalace_kg_add`
 Add a fact to the knowledge graph (subject → predicate → object).
 
 ```
@@ -131,7 +131,7 @@ source_closet  string  optional  Source drawer ID
 
 ---
 
-### `mempalace_kg_invalidate`
+### `mcp__mempalace__mempalace_kg_invalidate`
 Mark a fact as no longer true (set end date).
 
 ```
@@ -143,7 +143,7 @@ ended      string  optional  When it stopped being true (YYYY-MM-DD, default: to
 
 ---
 
-### `mempalace_diary_write`
+### `mcp__mempalace__mempalace_diary_write`
 Write a diary entry for an agent in AAAK format.
 
 ```
@@ -156,7 +156,7 @@ topic       string  optional  Topic tag (default: 'general')
 
 ## DESTRUCTIVE Tools (Confirmation Required)
 
-### `mempalace_delete_drawer`
+### `mcp__mempalace__mempalace_delete_drawer`
 Delete a single drawer by ID. **Irreversible.**
 
 ```

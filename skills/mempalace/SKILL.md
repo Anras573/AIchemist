@@ -50,7 +50,7 @@ Memory is organised spatially — wings are broad domains, rooms are specific to
 
 ### Auto-Fetch (search before acting)
 
-Call `mempalace_search` or `mempalace_kg_query` automatically when:
+Call `mcp__mempalace__mempalace_search` or `mcp__mempalace__mempalace_kg_query` automatically when:
 
 - **Starting any non-trivial task** — before implementing a feature, fixing a bug, or refactoring
 - **About to make a recommendation** — check if the user has a stored preference first
@@ -62,7 +62,7 @@ When results are found, silently incorporate them. Only surface them explicitly 
 
 ### Auto-Store (save without asking)
 
-Call `mempalace_add_drawer` directly — no confirmation needed — when:
+Call `mcp__mempalace__mempalace_add_drawer` directly — no confirmation needed — when:
 
 - **User states a preference** — any phrase like "I prefer", "I always use", "I never want"
 - **User corrects the agent** — any correction worth persisting to avoid recurrence
@@ -77,19 +77,19 @@ Call `mempalace_add_drawer` directly — no confirmation needed — when:
 
 ### On Wake-Up
 
-Call `mempalace_status` first. This loads the palace overview and the AAAK dialect spec, which the AI uses for efficient storage.
+Call `mcp__mempalace__mempalace_status` first. This loads the palace overview and the AAAK dialect spec, which the AI uses for efficient storage.
 
 ### Searching Memory
 
 ```
-1. mempalace_search(query, wing="wing_user")        — user preferences
-2. mempalace_search(query, wing="wing_code")        — codebase context
-3. mempalace_kg_query(entity)                       — structured facts about an entity
+1. mcp__mempalace__mempalace_search(query, wing="wing_user")        — user preferences
+2. mcp__mempalace__mempalace_search(query, wing="wing_code")        — codebase context
+3. mcp__mempalace__mempalace_kg_query(entity)                       — structured facts about an entity
 ```
 
 ### Storing a Memory
 
-**Auto-store triggers** (see above): call `mempalace_add_drawer` directly — no confirmation needed.
+**Auto-store triggers** (see above): call `mcp__mempalace__mempalace_add_drawer` directly — no confirmation needed.
 
 **Explicit user request** (e.g. "store this", "save this to memory"): use `AskUserQuestion` first:
 
@@ -101,7 +101,7 @@ Call `mempalace_status` first. This loads the palace overview and the AAAK diale
 
 ### Deleting a Drawer (Confirmation Required)
 
-Before calling `mempalace_delete_drawer`:
+Before calling `mcp__mempalace__mempalace_delete_drawer`:
 
 | Field | Value |
 |-------|-------|
@@ -122,4 +122,4 @@ mempalace init ~/.mempalace
 
 **Empty search results:** Broaden the query or omit the wing filter. The palace may not have relevant data yet.
 
-**Duplicate detected:** `mempalace_check_duplicate` returns `is_duplicate: true`. Skip storing or confirm with the user.
+**Duplicate detected:** `mcp__mempalace__mempalace_check_duplicate` returns `is_duplicate: true`. Skip storing or confirm with the user.
