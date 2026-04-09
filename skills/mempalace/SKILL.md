@@ -60,9 +60,13 @@ Call `mcp__mempalace__mempalace_search` or `mcp__mempalace__mempalace_kg_query` 
 
 When results are found, silently incorporate them. Only surface them explicitly if they materially affect the response.
 
-### Auto-Store (save without asking)
+### Auto-Store (assistant-initiated save, no confirmation needed)
 
-Call `mcp__mempalace__mempalace_add_drawer` directly — no confirmation needed — when:
+Use this flow only when the assistant is proactively storing durable context discovered during normal task execution. In these cases, call `mcp__mempalace__mempalace_add_drawer` directly without an extra confirmation prompt.
+
+Do **not** use this flow when the user explicitly asks to save something with phrases like "remember this", "store this", or "save this to memory" — those requests follow the separate confirmation-required flow below.
+
+Auto-store when:
 
 - **User states a preference** — any phrase like "I prefer", "I always use", "I never want"
 - **User corrects the agent** — any correction worth persisting to avoid recurrence
@@ -70,9 +74,9 @@ Call `mcp__mempalace__mempalace_add_drawer` directly — no confirmation needed 
 - **A codebase discovery is made** — file responsibilities, module boundaries, non-obvious conventions
 - **A task is completed that revealed something new** — e.g. a bug fix that exposed a pattern
 
-### Explicit User Request (confirmation required)
+### Explicit User Request (user asks to save, confirmation required)
 
-When the user explicitly asks to save something — phrases like "remember this", "store this", or "save this to memory" — follow the explicit user request workflow and prompt for confirmation first (see **Storing a Memory** below).
+When the user explicitly asks to save something — phrases like "remember this", "store this", or "save this to memory" — treat that as a separate flow. Prompt for confirmation first, then call `mcp__mempalace__mempalace_add_drawer` only after the user confirms (see **Storing a Memory** below).
 
 ---
 
