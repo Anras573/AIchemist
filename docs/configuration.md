@@ -32,6 +32,7 @@ The `.mcp.json` file configures additional MCP servers not available as official
 | Server | Description | Auth Required |
 | ------ | ----------- | ------------- |
 | `mempalace` | Local vector + knowledge graph memory | None |
+| `markitdown` | Local document-to-Markdown conversion server | None |
 
 ## Skill-Specific Setup
 
