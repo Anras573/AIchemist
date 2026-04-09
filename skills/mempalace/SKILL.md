@@ -3,7 +3,6 @@ name: MemPalace Memory
 description: |
   Use this skill to interact with the MemPalace memory system. Activates when the user says "remember this", "store in memory", "what do you know about X", "search memory", "forget this", or "clear memory". Also auto-triggers to store and retrieve context during tasks — see Auto-Trigger Behavior below.
 version: 1.0.0
-allowed-tools: Bash, mcp__mempalace__mempalace_status, mcp__mempalace__mempalace_search, mcp__mempalace__mempalace_add_drawer, mcp__mempalace__mempalace_delete_drawer, mcp__mempalace__mempalace_check_duplicate, mcp__mempalace__mempalace_kg_query, mcp__mempalace__mempalace_kg_add, mcp__mempalace__mempalace_kg_invalidate, mcp__mempalace__mempalace_kg_timeline, mcp__mempalace__mempalace_kg_stats, mcp__mempalace__mempalace_list_wings, mcp__mempalace__mempalace_list_rooms, mcp__mempalace__mempalace_get_taxonomy, mcp__mempalace__mempalace_diary_write, mcp__mempalace__mempalace_diary_read
 ---
 
 # MemPalace Memory Skill
@@ -94,26 +93,21 @@ Call `mempalace_status` first. This loads the palace overview and the AAAK diale
 
 **Explicit user request** (e.g. "store this", "save this to memory"): use `AskUserQuestion` first:
 
-```
-Question: "Store this in memory?"
-Show: the content summary, target wing, and room
-Options:
-  - "Yes, store it" — proceed
-  - "Store in a different wing" — adjust wing
-  - "Cancel" — abort
-```
+| Field | Value |
+|-------|-------|
+| Question | "Store this in memory?" |
+| Show | Content summary, target wing, and room |
+| Options | "Yes, store it" / "Store in a different wing" / "Cancel" |
 
 ### Deleting a Drawer (Confirmation Required)
 
 Before calling `mempalace_delete_drawer`:
 
-```
-Question: "Delete this from memory?"
-Show: the drawer ID and its wing/room
-Options:
-  - "Yes, delete it" — proceed
-  - "Cancel" — abort
-```
+| Field | Value |
+|-------|-------|
+| Question | "Delete this from memory?" |
+| Show | Drawer ID and its wing/room |
+| Options | "Yes, delete it" / "Cancel" |
 
 ---
 

@@ -1,15 +1,8 @@
 {
   "mcpServers": {
     "mempalace": {
-      "command": "uv",
-      "args": [
-        "run",
-        "--with",
-        "mempalace",
-        "python3",
-        "-m",
-        "mempalace.mcp_server"
-      ]
+      "command": "python3",
+      "args": ["-m", "mempalace.mcp_server"]
     },
     "markitdown": {
       "command": "docker",

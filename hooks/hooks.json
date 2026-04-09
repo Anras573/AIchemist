@@ -10,7 +10,7 @@
           },
           {
             "type": "command",
-            "command": "INPUT=$(cat); echo \"$INPUT\" | uv run --with mempalace python3 -m mempalace hook run --hook stop --harness claude-code"
+            "command": "tmpdir=$(mktemp -d /tmp/mp-stop-XXXXXX) && cat > \"$tmpdir/session.jsonl\" && mempalace mine \"$tmpdir\" --mode convos 2>/dev/null; rm -rf \"$tmpdir\""
           }
         ]
       }
@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); echo \"$INPUT\" | uv run --with mempalace python3 -m mempalace hook run --hook precompact --harness claude-code"
+            "command": "tmpdir=$(mktemp -d /tmp/mp-compact-XXXXXX) && cat > \"$tmpdir/session.jsonl\" && mempalace mine \"$tmpdir\" --mode convos 2>/dev/null; rm -rf \"$tmpdir\""
           }
         ]
       }
