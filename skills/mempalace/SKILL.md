@@ -69,7 +69,7 @@ Call `mcp__mempalace__mempalace_add_drawer` directly — no confirmation needed 
 - **An architectural decision is made** — technology choices, design patterns, approaches rejected
 - **A codebase discovery is made** — file responsibilities, module boundaries, non-obvious conventions
 - **A task is completed that revealed something new** — e.g. a bug fix that exposed a pattern
-- **User explicitly says "remember this"** — store immediately, no confirmation
+- **User explicitly asks to save something** — phrases like "remember this", "store this", or "save this to memory" should follow the explicit user request workflow and prompt for confirmation first
 
 ---
 
