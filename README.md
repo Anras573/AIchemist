@@ -40,7 +40,7 @@ See [docs/installation.md](docs/installation.md) for alternative installation me
 - **Research** — Search your Obsidian vault for context during coding sessions
 - **Playwright** — Browser automation and web testing via `playwright-cli`
 - **Markitdown** — Convert remote URLs and local files to clean markdown
-- **Graphiti** — Persistent graph memory across sessions
+- **MemPalace** — Persistent local memory (vector + knowledge graph) across sessions
 - **Tool Preferences** — Consistent tool selection patterns
 
 **Commands** — Slash commands:

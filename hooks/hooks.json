@@ -7,6 +7,21 @@
           {
             "type": "command",
             "command": "\"${CLAUDE_PLUGIN_ROOT}/tools/notify.sh\" 'Claude Code' 'Awaiting your input'"
+          },
+          {
+            "type": "command",
+            "command": "command -v mempalace >/dev/null 2>&1 || exit 0; tmpdir=$(mktemp -d \"${TMPDIR:-/tmp}/mp-stop-XXXXXX\") || exit 0; trap 'rm -rf \"$tmpdir\" 2>/dev/null' EXIT HUP INT TERM; cat > \"$tmpdir/session.jsonl\" && mempalace mine \"$tmpdir\" --mode convos 2>/dev/null; exit 0"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v mempalace >/dev/null 2>&1 || exit 0; tmpdir=$(mktemp -d \"${TMPDIR:-/tmp}/mp-compact-XXXXXX\") || exit 0; trap 'rm -rf \"$tmpdir\" 2>/dev/null' EXIT HUP INT TERM; cat > \"$tmpdir/session.jsonl\" && mempalace mine \"$tmpdir\" --mode convos 2>/dev/null; exit 0"
           }
         ]
       }

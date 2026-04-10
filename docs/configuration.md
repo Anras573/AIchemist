@@ -27,31 +27,37 @@ These are maintained by Anthropic and provide the best integration experience. T
 
 The `.mcp.json` file configures additional MCP servers not available as official integrations.
 
-#### HTTP Servers (Hosted)
+### Local Servers (stdio)
 
 | Server | Description | Auth Required |
 | ------ | ----------- | ------------- |
-| `graphiti` | Graphiti graph memory for persistent agent knowledge | None (local Docker) |
+| `mempalace` | Local vector + knowledge graph memory | None |
+| `markitdown` | Local document-to-Markdown conversion server | None |
 
 ## Skill-Specific Setup
 
-### Graphiti
+### MemPalace
 
-The Graphiti skill uses a locally-running Docker container as its MCP server. No cloud account or API key is required.
+MemPalace stores memories locally using ChromaDB and SQLite. No Docker, no cloud account, no API key required.
 
 ### Requirements
 
-1. **Docker** installed and running
-2. **Graphiti container** running — see the [Graphiti documentation](https://github.com/getzep/graphiti) for setup
-3. **`GRAPHITI_MCP_URL` environment variable** set to the container's MCP endpoint:
+1. **`uv`** installed ([install guide](https://docs.astral.sh/uv/getting-started/installation/))
+2. **`mempalace` package** installed:
    ```bash
-   export GRAPHITI_MCP_URL=http://localhost:8123/mcp
+   uv tool install mempalace
    ```
-   Add this to your shell profile (`.zshrc`, `.bashrc`) for persistence.
+3. **Initialise a palace directory** (one-time setup):
+   ```bash
+   mempalace init ~/.mempalace
+   ```
 
-### Verify the server is reachable
+### Verify the server is working
 
-Once running, the skill will automatically call `graphiti/get_status` if it encounters connection errors. You can also ask Claude directly: *"check graphiti status"*.
+```bash
+mempalace --version
+mempalace status
+```
 
 ---
 

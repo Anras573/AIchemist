@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "graphiti": {
-      "type": "http",
-      "url": "${GRAPHITI_MCP_URL}"
+    "mempalace": {
+      "command": "uvx",
+      "args": ["--from", "mempalace", "python", "-m", "mempalace.mcp_server"]
     },
     "markitdown": {
       "command": "docker",

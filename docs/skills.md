@@ -323,29 +323,36 @@ Use Playwright MCP for:
 - Exploratory automation requiring persistent state and rich introspection
 - Long-running autonomous workflows where continuous browser context outweighs token cost
 
-## Graphiti Graph Memory Skill
+## MemPalace Memory Skill
 
-Persistent knowledge graph memory for AI agents. Automatically stores and retrieves context across sessions using a two-layer architecture.
+Persistent local memory backed by ChromaDB (vector search) and a SQLite knowledge graph. No Docker, no API key, no cloud account required. Automatically stores and retrieves context across sessions.
 
 **Trigger phrases:** "remember this", "store in memory", "what do you know about X", "search memory", "forget this", "clear memory". Also activates automatically during tasks — see below.
 
 ### Prerequisites
 
-1. **Docker** installed and running
-2. **Graphiti container** running locally
-3. **`GRAPHITI_MCP_URL`** environment variable set:
+1. **`uv`** installed ([install guide](https://docs.astral.sh/uv/getting-started/installation/))
+2. **`mempalace` package** installed:
    ```bash
-   export GRAPHITI_MCP_URL=http://localhost:8123/mcp
+   uv tool install mempalace
+   ```
+3. **Initialise a palace directory** (one-time setup):
+   ```bash
+   mempalace init ~/.mempalace
    ```
 
-### Two-Layer Memory Architecture
+### Wing/Room Architecture
 
-| Layer | `group_id` | Stores |
-|-------|-----------|--------|
-| **Global** | `aichemist` | User preferences, corrections, recurring patterns, cross-project conventions |
-| **Project** | `<repo-name>` | Architectural decisions, codebase patterns, file responsibilities, known quirks |
+Memory is organised spatially — wings are broad domains, rooms are specific topics within them.
 
-The project `group_id` is derived automatically from the current git repo name. Both layers are always searched together.
+| Wing | Stores |
+|------|--------|
+| `wing_user` | User preferences, corrections, personal conventions |
+| `wing_code` | Codebase-specific discoveries, architectural decisions, file responsibilities, known quirks |
+| `wing_agent` | Agent observations and diary entries |
+| `wing_team` | Team and project context |
+
+Both `wing_user` and `wing_code` are always searched together when fetching context.
 
 ### Auto-Fetch Behavior
 
@@ -353,16 +360,15 @@ The skill searches memory automatically — without being asked — before any n
 
 ### Auto-Store Behavior
 
-The skill stores to memory automatically — without confirmation — when the user states a preference, corrects the agent, makes an architectural decision, or when a codebase discovery is made. The guiding principle is: save too much rather than too little.
+The skill stores to memory automatically — without confirmation — when the user states a preference, corrects the agent, makes an architectural decision, or when a codebase discovery is made.
 
 ### Operations
 
-| Type | Operations | Behavior |
-|------|------------|----------|
-| **Read** | `search_nodes`, `search_memory_facts`, `get_entity_edge`, `get_episodes`, `get_status` | Automatic |
-| **Write** | `add_memory` | Auto-store: no confirmation; explicit user request: confirmation required |
-| **Destructive** | `delete_episode`, `delete_entity_edge` | Confirmation required |
-| **Destructive** | `clear_graph` | Strong confirmation with preview of data to be lost |
+| Type | Operations | Behavior | Confirmation |
+|------|------------|----------|--------------|
+| **Read** | `mcp__mempalace__mempalace_search`, `mcp__mempalace__mempalace_kg_query`, `mcp__mempalace__mempalace_status`, `mcp__mempalace__mempalace_list_wings`, `mcp__mempalace__mempalace_list_rooms` | Automatic | — |
+| **Write** | `mcp__mempalace__mempalace_add_drawer` | Auto-store: automatic; explicit user request: confirmation required | "Store this in memory?" with content summary, target wing, and room |
+| **Destructive** | `mcp__mempalace__mempalace_delete_drawer` | Confirmation required | "Delete this from memory?" with drawer ID, wing, and room |
 
 ---
 
