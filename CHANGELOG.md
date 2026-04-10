@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.0](https://github.com/Anras573/AIchemist/compare/v2.8.1...v2.9.0) (2026-04-10)
+
+
+### Features
+
+* **memory:** replace graphiti with mempalace ([#72](https://github.com/Anras573/AIchemist/issues/72)) ([ffc79eb](https://github.com/Anras573/AIchemist/commit/ffc79eb94bd09894fc38caabde40a76c35874939))
+
 ## [2.8.1](https://github.com/Anras573/AIchemist/compare/v2.8.0...v2.8.1) (2026-04-07)
 
 
