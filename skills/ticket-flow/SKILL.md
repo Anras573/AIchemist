@@ -74,21 +74,21 @@ Do NOT write any implementation code until Phase 3 (assumptions check) is comple
 Do not check runtime-specific plugin cache paths or shell out to inspect agent files. Instead, use an environment-agnostic fallback:
 
 1. First, attempt to launch 2 `code-explorer` agents in parallel with the goals below.
-2. If the runtime reports that `code-explorer` is unavailable, unsupported, or the launch fails because the agent cannot be resolved, immediately fall back to 2 general-purpose `Explore` agents with the same goals.
+2. If the runtime reports that `code-explorer` is unavailable, unsupported, or the launch fails because the agent cannot be resolved, immediately fall back to performing the same 2 exploration tracks directly in the main conversation instead of spawning another named agent.
 3. Do not treat unrelated task failures as proof the agent is unavailable; only fall back when the failure is specifically about agent availability/resolution.
 
 **Preferred path:** Launch 2 `code-explorer` agents in parallel when available.
 
-**Fallback path:** Launch 2 general-purpose `Explore` agents in parallel with the same goals below when `code-explorer` cannot be launched in the current runtime.
+**Fallback path:** Perform the two exploration tracks below in the main conversation when `code-explorer` cannot be launched in the current runtime. Keep the tracks distinct and cover both before proceeding; execute them in parallel if the available tools/runtime support that, otherwise complete them sequentially.
 
-Either way, launch **in parallel** with these goals:
+In either path, cover these two goals:
 
-| Agent | Focus |
+| Track | Focus |
 |-------|-------|
 | Explorer A | Find existing features or patterns similar to what this ticket requires. Trace implementation and return 5–8 key files. |
 | Explorer B | Map the architecture of the area this ticket touches. Identify entry points, data flow, and extension points. Return 5–8 key files. |
 
-After agents complete:
+After exploration completes:
 1. Read all files identified by the agents
 2. Present findings:
 
