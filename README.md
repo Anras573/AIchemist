@@ -29,6 +29,7 @@ See [docs/installation.md](docs/installation.md) for alternative installation me
 
 **Skills** — Context-aware capabilities:
 
+- **Ticket Flow** — End-to-end workflow for taking a Jira ticket from definition to reviewed implementation
 - **Brainstorming** — Structured design dialogue with a hard gate before any implementation
 - **Beads** — AI-native task tracking with automatic sidecar storage outside your repo
 - **Code Review** — Parallel review agents with confidence scoring and Jira integration

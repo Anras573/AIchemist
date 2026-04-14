@@ -37,6 +37,36 @@ Integrates with the Brainstorming skill — offers to generate diagrams for arch
 
 ---
 
+## Ticket Flow Skill
+
+End-to-end workflow for taking a Jira ticket from definition to reviewed implementation. Combines codebase exploration, assumptions checking, and code review into a single guided flow with explicit approval gates.
+
+**Trigger phrases:** "work on ticket", "start ticket", "implement ticket", "pick up PROJ-123", "let's do PROJ-123", or any Jira issue key with intent to implement.
+
+### Phases
+
+| Phase | Goal | Gate |
+|-------|------|------|
+| **1. Load Ticket** | Fetch Jira ticket + search Obsidian vault for related notes | Confirm understanding before exploring |
+| **2. Codebase Exploration** | Parallel agents trace existing patterns and architecture | Confirm findings before checking assumptions |
+| **3. Assumptions Check** | Surface what the ticket doesn't say; decompose scope if needed | All `[CONFIRM]` items resolved before implementing |
+| **4. Implement** | Build following patterns discovered in Phase 2 | Explicit approval required to start |
+| **5. Review** | `/code-review` against the changes | Explicit approval required to push |
+
+### Behavior
+
+| Type | Operations | Behavior |
+|------|------------|----------|
+| **Read** | Fetch Jira ticket, explore codebase, search Obsidian | Automatic — no confirmation needed |
+| **Write** | Create/update files, run implementation | Requires explicit approval at phase gate |
+| **Destructive** | Overwriting existing logic | Requires explicit confirmation |
+
+### How it relates to other skills
+
+Ticket Flow orchestrates existing skills rather than replacing them — it calls the Jira skill to load the ticket, the Research skill to search Obsidian, and the Code Review skill as a hard gate in Phase 5. Think of it as the glue between your tools for the specific case of working a ticket end-to-end.
+
+---
+
 ## Brainstorming Skill
 
 Structured design dialogue that ensures intent, requirements, and approach are understood before any implementation begins. Enforces a hard gate — no code is written until a design is approved.
