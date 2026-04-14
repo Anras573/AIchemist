@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.10.0](https://github.com/Anras573/AIchemist/compare/v2.9.0...v2.10.0) (2026-04-14)
+
+
+### Features
+
+* **skills:** add ticket-flow skill ([#74](https://github.com/Anras573/AIchemist/issues/74)) ([20f5ea4](https://github.com/Anras573/AIchemist/commit/20f5ea42f873d9ee4bef6bbd092e822b3c8c828f))
+
 ## [2.9.0](https://github.com/Anras573/AIchemist/compare/v2.8.1...v2.9.0) (2026-04-10)
 
 
