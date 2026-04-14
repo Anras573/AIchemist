@@ -36,6 +36,8 @@ Do NOT write any implementation code until Phase 3 (assumptions check) is comple
    - Acceptance criteria (look in description for "Acceptance Criteria", "AC", or checklist items)
    - Labels, type, priority
 3. Search Obsidian for any notes related to this ticket or feature area using the Research skill
+   - Optionally, also search for the ticket key itself to find any direct references
+   - Optionally, use the mempalace skill to find related concepts or context in the vault
 4. Present a structured summary:
 
 ```markdown
@@ -97,16 +99,24 @@ After agents complete:
 
 **Goal**: Surface what the ticket does NOT say before any design begins.
 
-<!-- TODO: Define your assumptions check here.
-     This is the phase that replaces "it felt clear so I skipped brainstorming".
-     Consider: what questions would you wish you'd asked before you started?
-     Examples to think about:
-     - What does the ticket leave unspecified that you're filling in yourself?
-     - Are there edge cases the AC doesn't cover?
-     - Does your intended approach match how the rest of the codebase does it?
-     - Are there integration points or consumers that could break?
-     - What's the failure mode if this goes wrong?
--->
+Before asking detailed questions, assess whether the request is appropriately scoped.
+
+If the request covers multiple independent subsystems (e.g. "build a platform with auth, billing, notifications, and a dashboard"), flag it immediately:
+
+> "This covers several independent pieces. Let's decompose before diving into any one part. The main components I see are: [list]. What order should we tackle them?"
+
+Ask **one question at a time**. Prefer multiple choice where possible — easier to answer than open-ended.
+
+Focus on:
+- **Purpose** — what problem does this solve, and for whom?
+- **Constraints** — performance, compatibility, existing patterns to follow
+- **Success criteria** — how will you know it's working?
+- **Scope edges** — what is explicitly out of scope?
+
+Also surface codebase-specific risks from Phase 2 findings:
+- Existing callers or consumers of the area being changed
+- Divergence between the intended approach and the patterns found in Phase 2
+- Missing error handling or failure paths not covered by the AC
 
 Present findings as a numbered list. For each assumption:
 - State what is assumed
