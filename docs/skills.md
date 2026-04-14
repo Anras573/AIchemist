@@ -63,7 +63,7 @@ End-to-end workflow for taking a Jira ticket from definition to reviewed impleme
 
 ### How it relates to other skills
 
-Ticket Flow orchestrates existing skills rather than replacing them — it calls the Jira skill to load the ticket, the Research skill to search Obsidian, and the Code Review skill as a hard gate in Phase 5. Think of it as the glue between your tools for the specific case of working a ticket end-to-end.
+Ticket Flow orchestrates existing skills rather than replacing them — it calls the Jira skill to load the ticket, the Research skill to search Obsidian, and the `/code-review` command as a hard gate in Phase 5. Think of it as the glue between your tools for the specific case of working a ticket end-to-end.
 
 ---
 
