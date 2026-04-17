@@ -5,7 +5,7 @@ description: |
 version: 1.0.0
 ---
 
-# Jira Management Skill
+# Jira Skill
 
 This skill provides Jira integration for searching, viewing, creating, and managing issues. **Read operations execute automatically. Write operations require explicit user confirmation.**
 
