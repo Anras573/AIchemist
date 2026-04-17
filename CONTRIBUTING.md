@@ -55,7 +55,7 @@ Breaking changes trigger a **major** version bump.
 feat(agents): add Python code review agent
 
 # Bug fix
-fix(commands): correct date parsing in jira-my-tickets
+fix(skills): correct date parsing in jira
 
 # Documentation
 docs: update MCP configuration instructions
@@ -74,7 +74,6 @@ BREAKING CHANGE: Agent files moved from agents/ to agents/v2/
 Common scopes for this project:
 
 - `agents` - Custom AI agents
-- `commands` - Slash commands
 - `skills` - Reusable skills
 - `prompts` - Prompt templates
 - `tools` - Custom tools
@@ -132,7 +131,7 @@ The plugin metadata is spread across four files:
 | `.claude-plugin/marketplace.json` | Claude Code marketplace | Marketplace listing |
 | `.github/plugin/marketplace.json` | Copilot CLI marketplace | Marketplace listing |
 
-**Note:** `.claude-plugin/plugin.json` does not need to declare component paths (`agents`, `skills`, `commands`, `hooks`, `mcpServers`) — Claude Code picks these up automatically from the default directories. The root `plugin.json` for Copilot CLI uses paths without the `./` prefix, as required by that schema.
+**Note:** `.claude-plugin/plugin.json` does not need to declare component paths (`agents`, `skills`, `hooks`, `mcpServers`) — Claude Code picks these up automatically from the default directories. The root `plugin.json` for Copilot CLI uses paths without the `./` prefix, as required by that schema.
 
 **When updating plugin metadata** (description, keywords, author, etc.), update both `plugin.json` and `.claude-plugin/plugin.json`. The marketplace files have their own schemas and only need updating if the marketplace description changes.
 

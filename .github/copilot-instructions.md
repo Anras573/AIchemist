@@ -1,6 +1,6 @@
 # AIchemist – Copilot Instructions
 
-AIchemist is a plugin for Claude Code and GitHub Copilot CLI that provides custom agents, skills, and commands for AI-assisted development.
+AIchemist is a plugin for Claude Code and GitHub Copilot CLI that provides custom agents and skills for AI-assisted development.
 
 **Claude Code:** `claude plugin install aichemist`
 **GitHub Copilot CLI:** `copilot plugin install aichemist`
@@ -96,7 +96,7 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/). 
 
 | Type | When |
 |------|------|
-| `feat` | New agent, command, skill, or capability |
+| `feat` | New agent, skill, or capability |
 | `fix` | Bug fix in existing component |
 | `docs` | Documentation changes only |
 | `refactor` | Restructuring without behavior change |
@@ -110,7 +110,7 @@ Breaking changes: append `!` or add `BREAKING CHANGE:` footer → triggers major
 
 - **Composable**: Components work independently and in combination. Commands orchestrate agents; agents load skills.
 - **Explicit over implicit**: Write operations always confirm before executing. Agents state what they're doing.
-- **Minimal permissions**: `allowed-tools` in commands should be as narrow as possible.
+- **Minimal permissions**: `allowed-tools` in skills should be as narrow as possible.
 - **Self-documenting**: Every agent and skill must have a description that explains when and why to use it.
 
 ## Adding a New Component
