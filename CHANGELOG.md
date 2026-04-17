@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/Anras573/AIchemist/compare/v2.10.0...v3.0.0) (2026-04-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* **skills:** migrate commands to skills and normalize skill names ([#77](https://github.com/Anras573/AIchemist/issues/77))
+
+### Code Refactoring
+
+* **skills:** migrate commands to skills and normalize skill names ([#77](https://github.com/Anras573/AIchemist/issues/77)) ([69723e2](https://github.com/Anras573/AIchemist/commit/69723e20247067e800c99f928469e16055b29aa4))
+
 ## [2.10.0](https://github.com/Anras573/AIchemist/compare/v2.9.0...v2.10.0) (2026-04-14)
 
 
