@@ -1,5 +1,5 @@
 ---
-name: Code Review
+name: code-review
 description: |
   This skill should be used when the user asks to "review my code", "do a code review", "review this PR", "review this pull request", "check my changes", "review changes against main", "review against develop", "post review comments", "review and comment on PR", "code review with Jira context", "review my branch", or asks for a review with specific options like "with --comment", "against base branch". Provides comprehensive code review using parallel specialized agents, confidence-based filtering, Jira integration, and optional inline PR comments.
 version: 1.0.0

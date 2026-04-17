@@ -1,6 +1,6 @@
 {
   "name": "aichemist",
-  "description": "Custom agents, commands, and skills for AI-assisted development",
+  "description": "Custom agents and skills for AI-assisted development",
   "version": "2.10.0",
   "author": {
     "name": "Anders Bo Rasmussen",
@@ -22,7 +22,6 @@
   ],
   "agents": "agents/",
   "skills": "skills/",
-  "commands": "commands/",
   "hooks": "hooks/hooks.json",
   "mcpServers": ".mcp.json"
 }

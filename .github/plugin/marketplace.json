@@ -5,7 +5,7 @@
     "email": "anras573@gmail.com"
   },
   "metadata": {
-    "description": "Custom agents, commands, and skills for AI-assisted development with Jira, .NET, TypeScript/React, and DDD integration",
+    "description": "Custom agents and skills for AI-assisted development with Jira, .NET, TypeScript/React, and DDD integration",
     "version": "2.10.0"
   },
   "plugins": [

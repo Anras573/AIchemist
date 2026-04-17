@@ -1,5 +1,5 @@
 ---
-name: Tool Preferences
+name: tool-preferences
 description: |
   Guidance for selecting between equivalent tools when multiple options exist. Inject this skill into agents that may interact with GitHub, git, or other systems where both CLI tools and MCP servers are available. This skill ensures consistent, efficient tool selection across all agents.
 version: 1.0.0

@@ -1,5 +1,5 @@
 ---
-name: Brainstorming
+name: brainstorming
 description: |
   Use this BEFORE any creative work — creating features, building components, adding functionality, or modifying existing behavior. Explores user intent, requirements, and design through structured dialogue before any implementation begins.
 

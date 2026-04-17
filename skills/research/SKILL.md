@@ -1,5 +1,5 @@
 ---
-name: Research
+name: research
 description: |
   This skill should be used when the user asks to "research in vault", "search my notes", "search obsidian", "find in obsidian", "look up notes", "find notes about", "what do I have on", "search my vault for", or wants to search their Obsidian vault for relevant context, past knowledge, or notes on a topic.
 version: 1.0.0

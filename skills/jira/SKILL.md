@@ -1,11 +1,11 @@
 ---
-name: Jira Management
+name: jira
 description: |
   This skill should be used when the user asks to "search Jira tickets", "get ticket details", "check ticket status", "find my tickets", "what am I working on", "create a Jira issue", "update a ticket", "add a comment to ticket", "transition ticket status", "move ticket to done", or mentions Jira issue keys like "PROJ-123". Provides Jira integration for issue management with automatic read operations and confirmed write operations.
 version: 1.0.0
 ---
 
-# Jira Management Skill
+# Jira Skill
 
 This skill provides Jira integration for searching, viewing, creating, and managing issues. **Read operations execute automatically. Write operations require explicit user confirmation.**
 
