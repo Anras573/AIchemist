@@ -108,7 +108,7 @@ Breaking changes: append `!` or add `BREAKING CHANGE:` footer → triggers major
 
 ## Design Principles
 
-- **Composable**: Components work independently and in combination. Commands orchestrate agents; agents load skills.
+- **Composable**: Components work independently and in combination. Skills can trigger or orchestrate agents; agents can load supporting skills.
 - **Explicit over implicit**: Write operations always confirm before executing. Agents state what they're doing.
 - **Minimal permissions**: `allowed-tools` in skills should be as narrow as possible.
 - **Self-documenting**: Every agent and skill must have a description that explains when and why to use it.
