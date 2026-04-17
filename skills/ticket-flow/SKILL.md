@@ -184,7 +184,7 @@ Track acceptance criteria status as you go:
 
 **This phase is not optional.**
 
-Run the `/code-review` command against the changes. The review will:
+Run the `/code-review` skill against the changes. The review will:
 - Check for bugs, logic errors, security issues
 - Validate against project guidelines
 - Validate against the Jira ticket's acceptance criteria
