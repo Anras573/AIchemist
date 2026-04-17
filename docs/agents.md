@@ -13,7 +13,7 @@ Expert code reviewer with parallel agent support, Jira integration, and confiden
 - Auto-detects Jira tickets from branch name or PR description
 - Inline PR comments with committable suggestions
 
-**Invoked by:** `/code-review` slash-skill or Task tool
+**Invoked by:** `/code-review` skill or Task tool
 
 ## TypeScript/React Agent
 
