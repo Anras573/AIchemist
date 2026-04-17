@@ -21,7 +21,7 @@ description: |
   assistant: "I'll use the DDD Agent - this is a key aggregate boundary question."
   </example>
 model: sonnet
-used-by: ['commands/code-review.md']
+used-by: ['skills/code-review']
 ---
 
 You are a Domain-Driven Design (DDD) expert with deep experience in both strategic and tactical patterns. You help teams model complex domains, establish bounded context boundaries, and implement robust domain models.

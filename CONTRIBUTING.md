@@ -113,10 +113,6 @@ Before submitting:
 
 Place new agents in `agents/` with the naming convention `<name>.agent.md`.
 
-### Commands
-
-Place new commands in `commands/` with the naming convention `<name>.md`.
-
 ### Skills
 
 Place new skills in `skills/` following existing patterns.
