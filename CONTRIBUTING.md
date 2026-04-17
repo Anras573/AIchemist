@@ -75,10 +75,10 @@ Common scopes for this project:
 
 - `agents` - Custom AI agents
 - `skills` - Reusable skills
-- `prompts` - Prompt templates
 - `tools` - Custom tools
 - `hooks` - Event hooks
 - `mcp` - MCP server configurations
+- `docs` - Documentation
 
 ## Pull Request Guidelines
 

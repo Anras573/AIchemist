@@ -2,7 +2,7 @@
 
 _Transmuting raw AI capabilities into golden solutions_
 
-A plugin for Claude Code and GitHub Copilot CLI with custom agents, skills, and commands for AI-assisted development.
+A plugin for Claude Code and GitHub Copilot CLI with custom agents and skills for AI-assisted development.
 
 ## Installation
 
@@ -44,24 +44,16 @@ See [docs/installation.md](docs/installation.md) for alternative installation me
 - **MemPalace** — Persistent local memory (vector + knowledge graph) across sessions
 - **Tool Preferences** — Consistent tool selection patterns
 
-**Commands** — Slash commands:
-
-- `/jira-my-tickets [date]` — List your assigned/created tickets
-- `/code-review [options]` — Run comprehensive code review
-- `/daily-note [operation]` — Interact with Obsidian daily notes
-- `/capture <text>` — Quick capture to Obsidian
-- `/research <query>` — Search Obsidian vault
-
 See [docs/](docs/) for detailed documentation.
 
 ## Quick Start
 
 ```bash
-# Review your current branch
-/code-review
+# Review your current branch (skill auto-invoked by natural language)
+# "Do a code review" or /code-review
 
 # See your recent Jira tickets
-/jira-my-tickets last week
+# "Show my Jira tickets from last week" or /jira
 
 # The agents work automatically via Task tool
 # e.g., "Review this PR for DDD patterns" invokes the DDD agent

@@ -127,7 +127,7 @@ Do not guess or rely on potentially outdated knowledge. Look it up.
 
 ## Jira Integration
 
-> **Note**: When used by the `/code-review` command, Jira context is fetched by the command and provided to you. Skip steps 1-3 below and use the provided context directly.
+> **Note**: When used by the `/code-review` skill, Jira context is fetched by the skill and provided to you. Skip steps 1-3 below and use the provided context directly.
 
 **When running standalone**, check the current git branch name for Jira ticket patterns like `feature/PROJ-1234` or `bugfix/ABC-5678`:
 
