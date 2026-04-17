@@ -1,5 +1,5 @@
 ---
-name: PostgreSQL Query
+name: postgresql
 description: |
   This skill should be used when the user asks to "query postgres", "run SQL", "check database", "show tables", "describe table", "query database", "execute SQL query", "list tables", "show indexes", "database schema", or mentions PostgreSQL/Postgres operations. Provides PostgreSQL database querying with automatic read operations and blocked write operations by default.
 version: 1.0.0

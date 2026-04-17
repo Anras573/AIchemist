@@ -1,5 +1,5 @@
 ---
-name: Playwright
+name: playwright
 description: |
   Use this skill for browser automation, web testing, and UI interaction tasks. Prefer this over Playwright MCP — it uses the token-efficient playwright-cli instead of loading large MCP tool schemas and accessibility trees into context.
   Trigger phrases: "test this page", "automate the browser", "take a screenshot of", "check this UI", "fill out this form", "test the flow on", "click through", "scrape this page", "use playwright", "browser test", "open a browser", "navigate to".

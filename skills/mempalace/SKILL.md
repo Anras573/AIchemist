@@ -1,5 +1,5 @@
 ---
-name: MemPalace Memory
+name: mempalace
 description: |
   Use this skill to interact with the MemPalace memory system. Activates when the user says "remember this", "store in memory", "what do you know about X", "search memory", "forget this", or "clear memory". Also auto-triggers to store and retrieve context during tasks — see Auto-Trigger Behavior below.
 version: 1.0.0

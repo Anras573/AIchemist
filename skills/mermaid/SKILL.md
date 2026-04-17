@@ -1,5 +1,5 @@
 ---
-name: MermaidJS Diagrams
+name: mermaid
 description: |
   This skill should be used when the user asks to "create a diagram", "draw a flowchart", "sequence diagram", "architecture diagram", "visualise this", "add a mermaid diagram", "diagram this flow", "draw a class diagram", "ER diagram", "state machine diagram", "C4 diagram", or any request to visually represent a system, process, or data model.
 version: 1.0.0

@@ -1,5 +1,5 @@
 ---
-name: Beads Task Tracking
+name: beads
 description: |
   This skill should be used when the user asks to "track tasks with beads", "use bd", "add a beads task", "show ready tasks", "claim a task", "list bd tasks", "create a bd issue", "show my tasks", "what's ready to work on", "update task status", or mentions beads task IDs like "bd-a1b2". Provides beads (bd) integration for AI-native task tracking with automatic sidecar storage outside the repo by default.
 version: 1.0.0

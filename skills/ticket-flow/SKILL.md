@@ -1,5 +1,5 @@
 ---
-name: Ticket Flow
+name: ticket-flow
 description: |
   This skill should be used when the user wants to work on a Jira ticket end-to-end. Trigger phrases: "work on ticket", "start ticket", "implement ticket", "pick up PROJ-123", "let's do PROJ-123", "work on [issue key]", or any mention of a Jira issue key alongside intent to implement.
 
