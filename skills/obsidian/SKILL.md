@@ -28,7 +28,7 @@ General-purpose Obsidian vault management via the CLI. Covers task tracking, tag
 | **Write** | Update task status (toggle / done / todo / custom status) | Requires explicit user confirmation |
 | **Write** | Set or remove properties | Requires explicit user confirmation |
 | **Write** | Move or rename notes | Requires explicit user confirmation |
-| **Destructive** | Delete notes, permanently remove properties | Requires explicit user confirmation |
+| **Destructive** | Delete notes | Requires explicit user confirmation |
 
 ## Confirmation Prompts
 

@@ -107,10 +107,10 @@ Read `${CLAUDE_PLUGIN_ROOT}/config.json` for preferred vault. If missing, follow
 obsidian vault="<preferredVault>" search:context query="<query>" format=json
 
 # With folder filter:
-obsidian vault="<preferredVault>" search:context query="<query>" path="<folder-path>" format=json
+obsidian vault="<preferredVault>" search:context query="<query>" path="<folder>" format=json
 
 # With explicit result limit:
-obsidian vault="<preferredVault>" search:context query="<query>" limit=<n> format=json
+obsidian vault="<preferredVault>" search:context query="<query>" limit=<limit> format=json
 ```
 
 ### 4. Rank and Limit Results

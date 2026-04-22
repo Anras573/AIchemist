@@ -161,10 +161,15 @@ Meeting notes from standup...
 
 ```bash
 # 1. Get today's path to infer the naming pattern
-obsidian vault="<preferredVault>" daily:path
+obsidian vault="$preferredVault" daily:path
 
 # 2. Substitute the target date into the pattern and read
-obsidian vault="<preferredVault>" read path="<inferred-path>"
+if obsidian vault="$preferredVault" read path="<inferred-path>"; then
+  # Display the note contents
+  :
+else
+  echo "No note found for that date. Would you like me to create one?"
+fi
 ```
 
 ## Error Handling
