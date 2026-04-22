@@ -2,7 +2,7 @@
 name: research
 description: |
   This skill should be used when the user asks to "research in vault", "search my notes", "search obsidian", "find in obsidian", "look up notes", "find notes about", "what do I have on", "search my vault for", or wants to search their Obsidian vault for relevant context, past knowledge, or notes on a topic.
-version: 1.0.0
+version: 1.1.0
 ---
 
 # Research Skill
@@ -13,9 +13,9 @@ Search your Obsidian vault for relevant context during coding sessions. Quickly 
 
 | Request | Action |
 |---------|--------|
-| "research authentication patterns" | Full-text search |
-| "search in Projects/ for caching" | Search within a specific folder |
-| "find top 10 results for error handling" | Return more results |
+| "research authentication patterns" | Full-text search across the vault |
+| "search in my Projects folder for caching" | Search within a specific folder |
+| "find the top 10 results for error handling" | Search with an increased result limit |
 
 ## Read vs Write Operations
 
@@ -93,8 +93,8 @@ Store the user's preferred vault in `${CLAUDE_PLUGIN_ROOT}/config.json`:
 
 Extract from user input:
 - `query`: The search terms
-- `--folder <path>`: Optional folder filter
-- `--limit <n>`: Max results (default: 5)
+- `folder`: Optional — a folder path to restrict the search scope
+- `limit`: Optional — max results to return (default: 5)
 
 ### 2. Load Configuration
 
@@ -103,11 +103,14 @@ Read `${CLAUDE_PLUGIN_ROOT}/config.json` for preferred vault. If missing, follow
 ### 3. Execute Search
 
 ```bash
-# Search with context (provides matching lines — preferred)
+# Default search — returns matching lines for result previews
 obsidian vault="<preferredVault>" search:context query="<query>" format=json
 
 # With folder filter:
 obsidian vault="<preferredVault>" search:context query="<query>" path="<folder-path>" format=json
+
+# With explicit result limit:
+obsidian vault="<preferredVault>" search:context query="<query>" limit=<n> format=json
 ```
 
 ### 4. Rank and Limit Results
@@ -160,9 +163,7 @@ Display the complete note.
 
 Try asking in natural language, for example:
 - "Research authentication patterns"
-- "Search my notes in Projects/ for caching"
-
-Legacy (slash command): `/research <your query>`
+- "Search my notes in my Projects folder for caching"
 ```
 
 ### No Results Found
@@ -173,7 +174,7 @@ Legacy (slash command): `/research <your query>`
 Suggestions:
 - Try broader terms: "encryption" instead of "quantum encryption"
 - Check spelling
-- Search in a specific folder: `--folder Projects/`
+- If you filtered by folder, verify the folder name is correct
 ```
 
 ### CLI Not Found
@@ -185,17 +186,6 @@ Please verify:
 1. Obsidian desktop app is installed (v1.5.0+)
 2. On macOS, CLI is at: `/Applications/Obsidian.app/Contents/MacOS/obsidian`
 3. Consider adding an alias: `alias obsidian="/Applications/Obsidian.app/Contents/MacOS/obsidian"`
-```
-
-### Folder Not Found
-
-```markdown
-**Folder not found:** `Projects/OldProject/`
-
-Available top-level folders:
-- Projects/
-- Archive/
-- Daily Notes/
 ```
 
 ## Platform Compatibility

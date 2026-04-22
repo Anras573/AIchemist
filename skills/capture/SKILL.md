@@ -2,7 +2,7 @@
 name: capture
 description: |
   This skill should be used when the user asks to "capture this", "save this to obsidian", "add to obsidian", "quick capture", "capture to vault", "capture this thought", "capture this insight", "capture this code", "save this insight", "jot this down", or wants to save a thought, snippet, or note to Obsidian without interrupting their workflow.
-version: 1.0.0
+version: 1.1.0
 ---
 
 # Capture Skill
@@ -69,11 +69,10 @@ obsidian vault=<vault-name> <command> [options]
 
 | Command | Purpose | Key Options |
 |---------|---------|-------------|
-| `daily:append` | Append to daily note | `content=<text>`, `inline` |
-| `daily:read` | Read daily note (existence check) | — |
-| `append` | Append to specific note | `path=<path>`, `content=<text>`, `inline` |
-| `create` | Create a new note | `path=<path>`, `content=<text>` |
-| `read` | Read a note (existence check) | `path=<path>` |
+| `daily:append` | Append to daily note (creates with template if missing) | `content=<text>`, `inline` |
+| `append` | Append to a specific note (file must exist) | `path=<path>`, `content=<text>`, `inline` |
+| `create` | Create a new note with content | `path=<path>`, `content=<text>` |
+| `read` | Check if a named note exists | `path=<path>` |
 | `vaults` | List available vaults | `verbose` |
 
 **Notes:**
@@ -139,7 +138,7 @@ Format the entry consistently:
 
 **For code captures (`--code`):**
 
-```markdown
+````markdown
 
 ## [HH:MM] - Code Capture
 
@@ -151,22 +150,26 @@ Format the entry consistently:
 ```
 
 **Context:** ProjectName
-```
+````
 
 ### 5. Append to Target
 
+**Daily note target** — `daily:append` creates the note if it doesn't exist, so no existence check is needed:
+
 ```bash
-# Check if target exists
-obsidian vault="<preferredVault>" daily:read 2>/dev/null   # for daily note
-obsidian vault="<preferredVault>" read path="<note-path>" 2>/dev/null  # for named note
-
-# If exists → append
 obsidian vault="<preferredVault>" daily:append content="<formatted-capture>"
-obsidian vault="<preferredVault>" append path="<note-path>" content="<formatted-capture>"
+```
 
-# If not exists → create, then append
-obsidian vault="<preferredVault>" create path="<note-path>" content="# <note-title>\n\n"
-obsidian vault="<preferredVault>" append path="<note-path>" content="<formatted-capture>"
+**Named note target** — `append` requires the file to exist, so check first:
+
+```bash
+if obsidian vault="<preferredVault>" read path="<note-path>" >/dev/null 2>&1; then
+  # Note exists — append
+  obsidian vault="<preferredVault>" append path="<note-path>" content="<formatted-capture>"
+else
+  # Note doesn't exist — create with full content (header + capture entry)
+  obsidian vault="<preferredVault>" create path="<note-path>" content="# <note-title>\n\n<formatted-capture>"
+fi
 ```
 
 ### 6. Confirm Capture
@@ -187,8 +190,6 @@ obsidian vault="<preferredVault>" append path="<note-path>" content="<formatted-
 Try asking in natural language, for example:
 - "Capture this thought: this approach handles edge cases better"
 - "Save this to my 'Ideas' note: new feature concept"
-
-Legacy (slash command): `/capture <your thought here>`
 ```
 
 ### CLI Not Found
