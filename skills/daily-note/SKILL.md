@@ -2,28 +2,31 @@
 name: daily-note
 description: |
   This skill should be used when the user asks to "show my daily note", "open daily note", "check daily note", "create daily note", "create today's note", "view today's note", "add to daily note", "append to daily note", "what's in my daily note", or wants to interact with today's (or a specific date's) Obsidian daily note.
-version: 1.0.0
+version: 1.1.0
 ---
 
 # Daily Note Skill
 
 Interact with your Obsidian daily note for journaling, task tracking, and session logging.
 
+## How daily note commands work
+
+`daily:read` and `daily:append` both **automatically create today's daily note** (using the user's configured template) if it does not yet exist. There is no need to check for existence or create the note manually — just run the command.
+
 ## Operations
 
 | Request | Action |
 |---------|--------|
-| "show today's daily note" | Retrieve and display today's daily note |
-| "create today's daily note" | Create today's daily note |
-| "add 'content' to my daily note" | Append content to today's daily note |
-| "check daily note for 2024-01-15" | Access a specific date's note |
+| "show today's daily note" / "create today's daily note" | `daily:read` — creates with template if needed, reads if it exists |
+| "add 'content' to my daily note" | `daily:append` — creates with template if needed, then appends |
+| "check daily note for 2024-01-15" | Infer path pattern from `daily:path`, substitute date, use `read path=` |
 
-## Read vs Write Operations
+## Safety Rules
 
 | Type | Operations | Behavior |
 |------|------------|----------|
 | **Read** | Read daily note contents | Automatic — no confirmation needed |
-| **Write** | Append/prepend content, create note | Automatic for append/prepend; confirm before overwriting |
+| **Write** | Append/prepend content | Automatic — no confirmation needed |
 | **Destructive** | Overwrite existing content | Requires explicit user confirmation — see below |
 
 ## Destructive Operation Confirmation Prompts
@@ -62,19 +65,21 @@ On first vault interaction, check for an `AGENT.md` file at the vault root and r
 
 ## CLI Command Reference
 
-All commands follow the pattern:
+Vault-targeted commands follow the pattern:
 ```bash
 obsidian vault=<vault-name> <command> [options]
 ```
 
+Global commands (like `vaults`) do **not** use `vault=` and are run standalone.
+
 | Command | Purpose | Key Options |
 |---------|---------|-------------|
-| `daily:read` | Read today's daily note | — |
-| `daily:append` | Append to daily note | `content=<text>`, `inline` |
-| `daily:prepend` | Prepend to daily note | `content=<text>`, `inline` |
-| `daily:path` | Get today's daily note path | — |
-| `create` | Create a new note | `path=<path>`, `content=<text>`, `template=<name>` |
-| `vaults` | List available vaults | `verbose` |
+| `daily:read` | Read today's note (creates with template if missing) | — |
+| `daily:append` | Append to today's note (creates with template if missing) | `content=<text>`, `inline` |
+| `daily:prepend` | Prepend to today's note (creates with template if missing) | `content=<text>`, `inline` |
+| `daily:path` | Get today's daily note path (use to infer date pattern) | — |
+| `read` | Read a file by exact path (used for specific dates) | `path=<path>` |
+| `vaults` | List available vaults (**global command** — no `vault=`) | `verbose` |
 
 **Notes:**
 - Quote values with spaces: `content="My content here"`
@@ -99,9 +104,6 @@ Store the user's preferred vault in `${CLAUDE_PLUGIN_ROOT}/config.json`:
    > `I can remember your preferred Obsidian vault ("<vault-name>") for next time by saving it to config.json. Do you want me to save this preference? (yes/no)`
 4. If confirmed, save selection to config.json; otherwise use the selected vault for this request only
 
-**Daily note path detection:**
-On first daily note interaction, run `obsidian vault="<preferredVault>" daily:path` to get the concrete path (e.g., `Daily Notes/2024-01-15.md`). Infer the folder/naming convention from this path for custom date operations.
-
 ## Execution Steps
 
 ### 1. Load Configuration
@@ -110,56 +112,66 @@ Read `${CLAUDE_PLUGIN_ROOT}/config.json` for preferred vault. If missing, follow
 
 ### 2. Determine Target Date
 
-- Default: today (use `daily:path` / `daily:read` directly)
-- With specific date: infer path pattern from `daily:path` and substitute the target date
+- **Today** (default): use `daily:read` or `daily:append` directly — no path needed
+- **Specific date**: run `daily:path` to get today's path, infer the folder/filename pattern, substitute the target date
+
+**Example:** if `daily:path` returns `Daily Notes/2026-04-21.md`, the pattern is `Daily Notes/YYYY-MM-DD.md`. For April 10th: `Daily Notes/2026-04-10.md`.
 
 ### 3. Execute Operation
 
-#### Retrieve (default)
+#### Read / Create today's note
+
+`daily:read` creates the note with the user's configured template if it doesn't exist, then returns the contents. No existence check needed.
 
 ```bash
 obsidian vault="<preferredVault>" daily:read
 ```
 
-Display contents with clear formatting. If note doesn't exist, offer to create it.
-
 **Output format:**
 ```markdown
-## Daily Note: 2024-01-15
+## Daily Note: 2026-04-21
 
 [note contents]
 
 ---
-_Path: Daily Notes/2024-01-15.md_
+_Path: Daily Notes/2026-04-21.md_
 ```
 
-#### Create
+#### Append to today's note
 
-```bash
-# Check if note already exists
-obsidian vault="<preferredVault>" daily:read 2>/dev/null
+`daily:append` also creates the note with the user's configured template if it doesn't exist. No existence check needed.
 
-# If exists: inform user, offer to show or append instead
-# If not exists: create with template (if configured) or default content
-obsidian vault="<preferredVault>" create path="<daily-note-path>" template="daily"
-
-# Or with default content:
-obsidian vault="<preferredVault>" create path="<daily-note-path>" content="# $(date +%Y-%m-%d)\n\n## Tasks\n\n- [ ] \n\n## Notes\n\n"
-```
-
-#### Append
+**Content safety:** Do not interpolate user-supplied content directly into the shell `content="..."` argument — special characters (`"`, `$`, `` ` ``, `\`) will break shell quoting or allow command injection. Write the content to a temp file first:
 
 ```bash
 timestamp=$(date +%H:%M)
-obsidian vault="<preferredVault>" daily:append content="\n\n## [$timestamp]\n\n<user-content>"
+TMPFILE=$(mktemp /tmp/daily-append.XXXXXX)
+printf '\n\n## [%s]\n\n%s' "$timestamp" "<user-content>" > "$TMPFILE"
+obsidian vault="$preferredVault" daily:append content="$(cat "$TMPFILE")"
+rm -f "$TMPFILE"
 ```
 
 **Append format:**
 ```markdown
 
-## 14:30
+## [14:30]
 
 Meeting notes from standup...
+```
+
+#### Read a specific date's note
+
+```bash
+# 1. Get today's path to infer the naming pattern
+obsidian vault="$preferredVault" daily:path
+
+# 2. Substitute the target date into the pattern and read
+if obsidian vault="$preferredVault" read path="<inferred-path>"; then
+  # Display the note contents
+  :
+else
+  echo "No note found for that date. Would you like me to create one?"
+fi
 ```
 
 ## Error Handling
@@ -175,24 +187,6 @@ Please verify:
 3. Consider adding an alias: `alias obsidian="/Applications/Obsidian.app/Contents/MacOS/obsidian"`
 ```
 
-### Note Not Found (on retrieve)
-
-```markdown
-**Daily note not found:** `Daily Notes/2024-01-15.md`
-
-Would you like me to create it?
-```
-
-### Note Already Exists (on create)
-
-```markdown
-**Daily note already exists:** `Daily Notes/2024-01-15.md`
-
-Would you like me to:
-- Show the existing note
-- Append content to it instead
-```
-
 ## Platform Compatibility
 
 Detect platform and use the appropriate CLI path:
@@ -202,7 +196,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   OBSIDIAN_CLI="/Applications/Obsidian.app/Contents/MacOS/obsidian"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
   OBSIDIAN_CLI="obsidian"
-elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+elif [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "cygwin"* ]]; then
   OBSIDIAN_CLI="obsidian.exe"
 fi
 ```

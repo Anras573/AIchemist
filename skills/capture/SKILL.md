@@ -2,7 +2,7 @@
 name: capture
 description: |
   This skill should be used when the user asks to "capture this", "save this to obsidian", "add to obsidian", "quick capture", "capture to vault", "capture this thought", "capture this insight", "capture this code", "save this insight", "jot this down", or wants to save a thought, snippet, or note to Obsidian without interrupting their workflow.
-version: 1.0.0
+version: 1.1.0
 ---
 
 # Capture Skill
@@ -62,19 +62,20 @@ On first vault interaction, check for an `AGENT.md` file at the vault root and r
 
 ## CLI Command Reference
 
-All commands follow the pattern:
+Vault-targeted commands follow the pattern:
 ```bash
 obsidian vault=<vault-name> <command> [options]
 ```
 
+Global commands (like `vaults`) do **not** use `vault=` and are run standalone.
+
 | Command | Purpose | Key Options |
 |---------|---------|-------------|
-| `daily:append` | Append to daily note | `content=<text>`, `inline` |
-| `daily:read` | Read daily note (existence check) | — |
-| `append` | Append to specific note | `path=<path>`, `content=<text>`, `inline` |
-| `create` | Create a new note | `path=<path>`, `content=<text>` |
-| `read` | Read a note (existence check) | `path=<path>` |
-| `vaults` | List available vaults | `verbose` |
+| `daily:append` | Append to daily note (creates with template if missing) | `content=<text>`, `inline` |
+| `append` | Append to a specific note (file must exist) | `path=<path>`, `content=<text>`, `inline` |
+| `create` | Create a new note with content | `path=<path>`, `content=<text>` |
+| `read` | Check if a named note exists | `path=<path>` |
+| `vaults` | List available vaults (**global command** — no `vault=`) | `verbose` |
 
 **Notes:**
 - Quote values with spaces: `content="My content here"`
@@ -139,7 +140,7 @@ Format the entry consistently:
 
 **For code captures (`--code`):**
 
-```markdown
+````markdown
 
 ## [HH:MM] - Code Capture
 
@@ -151,22 +152,39 @@ Format the entry consistently:
 ```
 
 **Context:** ProjectName
-```
+````
 
 ### 5. Append to Target
 
+**Content safety:** Do not interpolate user-supplied content directly into the shell `content="..."` argument — special characters (`"`, `$`, `` ` ``, `\`) will break shell quoting or allow command injection. Instead, write the formatted capture to a temporary file and read it back via command substitution:
+
 ```bash
-# Check if target exists
-obsidian vault="<preferredVault>" daily:read 2>/dev/null   # for daily note
-obsidian vault="<preferredVault>" read path="<note-path>" 2>/dev/null  # for named note
+TMPFILE=$(mktemp /tmp/capture.XXXXXX)
+printf '%s' "<formatted-capture>" > "$TMPFILE"
+```
 
-# If exists → append
-obsidian vault="<preferredVault>" daily:append content="<formatted-capture>"
-obsidian vault="<preferredVault>" append path="<note-path>" content="<formatted-capture>"
+**Daily note target** — `daily:append` creates the note if it doesn't exist, so no existence check is needed:
 
-# If not exists → create, then append
-obsidian vault="<preferredVault>" create path="<note-path>" content="# <note-title>\n\n"
-obsidian vault="<preferredVault>" append path="<note-path>" content="<formatted-capture>"
+```bash
+obsidian vault="$preferredVault" daily:append content="$(cat "$TMPFILE")"
+rm -f "$TMPFILE"
+```
+
+**Named note target** — `append` requires the file to exist, so check first:
+
+```bash
+if obsidian vault="$preferredVault" read path="<note-path>" >/dev/null 2>&1; then
+  # Note exists — append
+  obsidian vault="$preferredVault" append path="<note-path>" content="$(cat "$TMPFILE")"
+else
+  # Note doesn't exist — create with full content (header + capture entry)
+  FULLFILE=$(mktemp /tmp/capture-full.XXXXXX)
+  printf '%s\n\n' "# <note-title>" > "$FULLFILE"
+  cat "$TMPFILE" >> "$FULLFILE"
+  obsidian vault="$preferredVault" create path="<note-path>" content="$(cat "$FULLFILE")"
+  rm -f "$FULLFILE"
+fi
+rm -f "$TMPFILE"
 ```
 
 ### 6. Confirm Capture
@@ -187,8 +205,6 @@ obsidian vault="<preferredVault>" append path="<note-path>" content="<formatted-
 Try asking in natural language, for example:
 - "Capture this thought: this approach handles edge cases better"
 - "Save this to my 'Ideas' note: new feature concept"
-
-Legacy (slash command): `/capture <your thought here>`
 ```
 
 ### CLI Not Found
