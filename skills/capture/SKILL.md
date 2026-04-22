@@ -154,30 +154,33 @@ Format the entry consistently:
 
 ### 5. Append to Target
 
-**Content safety:** Do not interpolate user-supplied content directly into the shell `content="..."` argument — special characters (`"`, `$`, `` ` ``, `\`) will break shell quoting or allow command injection. Instead, write the formatted capture to a temporary file and pass the path:
+**Content safety:** Do not interpolate user-supplied content directly into the shell `content="..."` argument — special characters (`"`, `$`, `` ` ``, `\`) will break shell quoting or allow command injection. Instead, write the formatted capture to a temporary file and read it back via command substitution:
 
 ```bash
-TMPFILE=$(mktemp /tmp/capture.XXXXXX.md)
+TMPFILE=$(mktemp /tmp/capture.XXXXXX)
 printf '%s' "<formatted-capture>" > "$TMPFILE"
 ```
 
 **Daily note target** — `daily:append` creates the note if it doesn't exist, so no existence check is needed:
 
 ```bash
-obsidian vault="<preferredVault>" daily:append content="$(cat "$TMPFILE")"
+obsidian vault="$preferredVault" daily:append content="$(cat "$TMPFILE")"
 rm -f "$TMPFILE"
 ```
 
 **Named note target** — `append` requires the file to exist, so check first:
 
 ```bash
-if obsidian vault="<preferredVault>" read path="<note-path>" >/dev/null 2>&1; then
+if obsidian vault="$preferredVault" read path="<note-path>" >/dev/null 2>&1; then
   # Note exists — append
-  obsidian vault="<preferredVault>" append path="<note-path>" content="$(cat "$TMPFILE")"
+  obsidian vault="$preferredVault" append path="<note-path>" content="$(cat "$TMPFILE")"
 else
   # Note doesn't exist — create with full content (header + capture entry)
-  HEADER="# <note-title>"$'\n\n'
-  printf '%s' "$HEADER" | cat - "$TMPFILE" | obsidian vault="<preferredVault>" create path="<note-path>" content="$(cat -)"
+  FULLFILE=$(mktemp /tmp/capture-full.XXXXXX)
+  printf '%s\n\n' "# <note-title>" > "$FULLFILE"
+  cat "$TMPFILE" >> "$FULLFILE"
+  obsidian vault="$preferredVault" create path="<note-path>" content="$(cat "$FULLFILE")"
+  rm -f "$FULLFILE"
 fi
 rm -f "$TMPFILE"
 ```

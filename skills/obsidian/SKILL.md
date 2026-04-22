@@ -121,7 +121,7 @@ Store the user's preferred vault in `${CLAUDE_PLUGIN_ROOT}/config.json`:
    > `I can remember your preferred Obsidian vault ("<vault-name>") for next time by saving it to config.json. Do you want me to save this preference? (yes/no)`
 4. If confirmed, save selection to config.json; otherwise use the selected vault for this request only
 
-**Vault name safety:** Always wrap the vault name in double quotes when interpolating into shell commands: `vault="<preferredVault>"`. If the vault name contains double quotes or other shell metacharacters (`$`, `` ` ``, `\`), refuse to proceed and ask the user to rename the vault.
+**Vault name safety:** Always pass the vault name as a quoted variable expansion: `vault="$preferredVault"`. Characters such as `$`, backticks, and `"` inside the vault name are safe when the variable is expanded inside double quotes. Only refuse and ask the user to rename the vault if the name contains an embedded newline, which cannot be safely handled by standard shell quoting.
 
 ## Execution Steps
 

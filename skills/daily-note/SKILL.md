@@ -143,9 +143,9 @@ _Path: Daily Notes/2026-04-21.md_
 
 ```bash
 timestamp=$(date +%H:%M)
-TMPFILE=$(mktemp /tmp/daily-append.XXXXXX.md)
+TMPFILE=$(mktemp /tmp/daily-append.XXXXXX)
 printf '\n\n## [%s]\n\n%s' "$timestamp" "<user-content>" > "$TMPFILE"
-obsidian vault="<preferredVault>" daily:append content="$(cat "$TMPFILE")"
+obsidian vault="$preferredVault" daily:append content="$(cat "$TMPFILE")"
 rm -f "$TMPFILE"
 ```
 
