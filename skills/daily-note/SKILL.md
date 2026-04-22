@@ -152,7 +152,7 @@ rm -f "$TMPFILE"
 **Append format:**
 ```markdown
 
-## 14:30
+## [14:30]
 
 Meeting notes from standup...
 ```

@@ -172,27 +172,36 @@ Retain the file and line internally for each numbered item to use in toggle comm
 
 Use `ref=<path:line>` — constructed from the JSON output above — for precise targeting:
 
+Map user intent to the correct command:
+
+| User says | Command to use | Reason |
+|-----------|---------------|--------|
+| "mark done", "complete task" | `done` | Idempotent — already-done tasks stay done |
+| "mark todo", "reopen task" | `todo` | Idempotent — already-open tasks stay open |
+| "toggle task" | `toggle` | Explicit flip — only when the user specifically asks to toggle |
+| "defer task", "cancel task" | `status=">"` / `status="-"` | Custom status character |
+
 ```bash
-# Toggle a task (done → todo or todo → done)
-obsidian vault="<preferredVault>" task ref="<file>:<line>" toggle
+# Idempotent mark done (preferred for "mark done" requests)
+obsidian vault="$preferredVault" task ref="<file>:<line>" done
 
-# Explicitly mark done
-obsidian vault="<preferredVault>" task ref="<file>:<line>" done
+# Idempotent mark todo (preferred for "reopen" requests)
+obsidian vault="$preferredVault" task ref="<file>:<line>" todo
 
-# Explicitly mark todo
-obsidian vault="<preferredVault>" task ref="<file>:<line>" todo
+# Toggle (only when user explicitly says "toggle")
+obsidian vault="$preferredVault" task ref="<file>:<line>" toggle
 
-# Set a custom status character (e.g. > for deferred, - for cancelled)
-obsidian vault="<preferredVault>" task ref="<file>:<line>" status=">"
+# Custom status character (e.g. > for deferred, - for cancelled)
+obsidian vault="$preferredVault" task ref="<file>:<line>" status=">"
 ```
 
 Check the exit code and report accordingly:
 
 ```bash
-if obsidian vault="<preferredVault>" task ref="<file>:<line>" toggle; then
-  echo "✓ Task toggled."
+if obsidian vault="$preferredVault" task ref="<file>:<line>" done; then
+  echo "✓ Task marked as done."
 else
-  echo "✗ Toggle failed — check that Obsidian is running and the ref is valid."
+  echo "✗ Failed — check that Obsidian is running and the ref is valid."
 fi
 ```
 
