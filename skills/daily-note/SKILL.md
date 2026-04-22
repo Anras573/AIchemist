@@ -139,9 +139,14 @@ _Path: Daily Notes/2026-04-21.md_
 
 `daily:append` also creates the note with the user's configured template if it doesn't exist. No existence check needed.
 
+**Content safety:** Do not interpolate user-supplied content directly into the shell `content="..."` argument — special characters (`"`, `$`, `` ` ``, `\`) will break shell quoting or allow command injection. Write the content to a temp file first:
+
 ```bash
 timestamp=$(date +%H:%M)
-obsidian vault="<preferredVault>" daily:append content="\n\n## [$timestamp]\n\n<user-content>"
+TMPFILE=$(mktemp /tmp/daily-append.XXXXXX.md)
+printf '\n\n## [%s]\n\n%s' "$timestamp" "<user-content>" > "$TMPFILE"
+obsidian vault="<preferredVault>" daily:append content="$(cat "$TMPFILE")"
+rm -f "$TMPFILE"
 ```
 
 **Append format:**

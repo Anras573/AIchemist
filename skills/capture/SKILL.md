@@ -154,10 +154,18 @@ Format the entry consistently:
 
 ### 5. Append to Target
 
+**Content safety:** Do not interpolate user-supplied content directly into the shell `content="..."` argument — special characters (`"`, `$`, `` ` ``, `\`) will break shell quoting or allow command injection. Instead, write the formatted capture to a temporary file and pass the path:
+
+```bash
+TMPFILE=$(mktemp /tmp/capture.XXXXXX.md)
+printf '%s' "<formatted-capture>" > "$TMPFILE"
+```
+
 **Daily note target** — `daily:append` creates the note if it doesn't exist, so no existence check is needed:
 
 ```bash
-obsidian vault="<preferredVault>" daily:append content="<formatted-capture>"
+obsidian vault="<preferredVault>" daily:append content="$(cat "$TMPFILE")"
+rm -f "$TMPFILE"
 ```
 
 **Named note target** — `append` requires the file to exist, so check first:
@@ -165,11 +173,13 @@ obsidian vault="<preferredVault>" daily:append content="<formatted-capture>"
 ```bash
 if obsidian vault="<preferredVault>" read path="<note-path>" >/dev/null 2>&1; then
   # Note exists — append
-  obsidian vault="<preferredVault>" append path="<note-path>" content="<formatted-capture>"
+  obsidian vault="<preferredVault>" append path="<note-path>" content="$(cat "$TMPFILE")"
 else
   # Note doesn't exist — create with full content (header + capture entry)
-  obsidian vault="<preferredVault>" create path="<note-path>" content="# <note-title>\n\n<formatted-capture>"
+  HEADER="# <note-title>"$'\n\n'
+  printf '%s' "$HEADER" | cat - "$TMPFILE" | obsidian vault="<preferredVault>" create path="<note-path>" content="$(cat -)"
 fi
+rm -f "$TMPFILE"
 ```
 
 ### 6. Confirm Capture

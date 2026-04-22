@@ -25,13 +25,19 @@ General-purpose Obsidian vault management via the CLI. Covers task tracking, tag
 | Type | Operations | Behavior |
 |------|------------|----------|
 | **Read** | List tasks/tags/links, read properties, read templates | Automatic — no confirmation needed |
-| **Write** | Toggle task status, set properties | Automatic — no confirmation needed |
+| **Write** | Toggle task status | Requires explicit user confirmation |
+| **Write** | Set or remove properties | Requires explicit user confirmation |
 | **Destructive** | Delete notes, permanently remove properties | Requires explicit user confirmation |
 
-## Destructive Operation Confirmation Prompts
+## Confirmation Prompts
+
+Show the prompt, then **stop and wait for the user's reply before proceeding**. Do not assume, infer, or supply the answer yourself.
 
 | Operation | Confirmation Prompt |
 |-----------|---------------------|
+| Toggle a task | "Toggle task: '<task-text>'? (yes/no)" |
+| Set a property | "Set property '<name>' to '<value>' on '<note-name>'? (yes/no)" |
+| Remove a property | "Remove property '<name>' from '<note-name>'? (yes/no)" |
 | Delete a note | "This will delete '<note-name>'. Are you sure? (yes/no)" |
 | Permanently delete (skip trash) | "This will permanently delete '<note-name>' and cannot be undone. Are you sure? (yes/no)" |
 
@@ -115,6 +121,8 @@ Store the user's preferred vault in `${CLAUDE_PLUGIN_ROOT}/config.json`:
    > `I can remember your preferred Obsidian vault ("<vault-name>") for next time by saving it to config.json. Do you want me to save this preference? (yes/no)`
 4. If confirmed, save selection to config.json; otherwise use the selected vault for this request only
 
+**Vault name safety:** Always wrap the vault name in double quotes when interpolating into shell commands: `vault="<preferredVault>"`. If the vault name contains double quotes or other shell metacharacters (`$`, `` ` ``, `\`), refuse to proceed and ask the user to rename the vault.
+
 ## Execution Steps
 
 ### 1. Load Configuration
@@ -175,10 +183,14 @@ obsidian vault="<preferredVault>" task ref="<file>:<line>" todo
 obsidian vault="<preferredVault>" task ref="<file>:<line>" status=">"
 ```
 
-Report success without reading back the task:
+Check the exit code and report accordingly:
 
-```markdown
-✓ Task marked as done.
+```bash
+if obsidian vault="<preferredVault>" task ref="<file>:<line>" toggle; then
+  echo "✓ Task toggled."
+else
+  echo "✗ Toggle failed — check that Obsidian is running and the ref is valid."
+fi
 ```
 
 **Filtering by status character**

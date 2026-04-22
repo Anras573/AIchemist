@@ -522,13 +522,45 @@ Chains naturally with the **Capture** skill (save converted content to Obsidian)
 
 ---
 
-## Obsidian Prerequisites (all three skills)
+## Obsidian Vault Management Skill
+
+General-purpose Obsidian vault management for tasks, tags, properties, file operations, templates, and link analysis.
+
+**Trigger phrases:** "list my tasks", "show incomplete tasks", "mark task done", "list all tags", "find notes tagged", "set the status property", "read frontmatter", "move this note", "rename this file", "delete this note", "list templates", "show backlinks", "find orphaned notes".
+
+> Does **not** handle daily notes, quick capture, or vault search — those are the Daily Note, Capture, and Research skills.
+
+### Operations
+
+| Request | Action |
+|---------|--------|
+| "list my tasks" / "show incomplete tasks" | List tasks from today's daily note (default) |
+| "mark task 2 done" | Toggle a specific task |
+| "list all tags" / "find notes tagged #auth" | Tag lookup |
+| "set the status property to done" | Set frontmatter property |
+| "move this note to Archive" | Move or rename a file |
+| "delete this note" | Delete (to trash, with confirmation) |
+| "show backlinks for this note" | Link analysis |
+
+### Behavior
+
+| Type | Operations | Behavior |
+|------|------------|----------|
+| **Read** | List tasks/tags/links, read properties, read templates | Automatic — no confirmation needed |
+| **Write** | Toggle task status | Requires explicit user confirmation |
+| **Write** | Set or remove properties | Requires explicit user confirmation |
+| **Destructive** | Delete notes | Requires explicit user confirmation |
+| **Destructive** | Permanently delete notes | Requires explicit user confirmation with stricter prompt |
+
+---
+
+## Obsidian Prerequisites (all Obsidian skills)
 
 1. **Obsidian desktop app:** Version 1.5.0 or later (CLI included)
 2. **Obsidian running:** The CLI communicates with the running application
 3. **At least one vault:** Created and configured in Obsidian
 
-Vault preference is stored in `${CLAUDE_PLUGIN_ROOT}/config.json` on first use. All three skills read from the same config key (`obsidian.preferredVault`).
+Vault preference is stored in `${CLAUDE_PLUGIN_ROOT}/config.json` on first use. All Obsidian skills read from the same config key (`obsidian.preferredVault`).
 
 ### AGENT.md (Recommended)
 
