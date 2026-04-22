@@ -273,7 +273,7 @@ obsidian vault="My Vault" folder path="Projects" info=files
 ## Daily Note Operations
 
 ### daily:read
-Read daily note contents.
+Read today's daily note contents. **Auto-creates the note using the configured daily note template if it does not yet exist.**
 
 **Options:**
 - `vault=<name>` - Target vault (**must be first parameter**)
@@ -303,7 +303,7 @@ obsidian vault="My Vault" daily:path
 ---
 
 ### daily:append
-Append content to daily note.
+Append content to today's daily note. **Auto-creates the note using the configured daily note template if it does not yet exist.**
 
 **Options:**
 - `content=<text>` - Content to append (required)
@@ -320,7 +320,7 @@ obsidian vault="My Vault" daily:append content="\n## 15:30 Meeting Notes\n\nDisc
 ---
 
 ### daily:prepend
-Prepend content to daily note.
+Prepend content to today's daily note. **Auto-creates the note using the configured daily note template if it does not yet exist.**
 
 **Options:**
 - `content=<text>` - Content to prepend (required)
