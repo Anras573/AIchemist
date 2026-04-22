@@ -158,8 +158,8 @@ obsidian vault="<preferredVault>" tasks todo format=json
 ```markdown
 **Tasks — Daily Note (2026-04-22)**
 
-1. [ ] Implement JWT refresh  ← Projects/API.md:15
-2. [ ] Write tests for auth middleware  ← Projects/API.md:22
+1. [ ] Implement JWT refresh  ← Daily Notes/2026-04-22.md:6
+2. [ ] Write tests for auth middleware  ← Daily Notes/2026-04-22.md:7
 3. [x] Update README  ← Daily Notes/2026-04-22.md:8
 ```
 
@@ -293,7 +293,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   OBSIDIAN_CLI="/Applications/Obsidian.app/Contents/MacOS/obsidian"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
   OBSIDIAN_CLI="obsidian"
-elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+elif [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "cygwin"* ]]; then
   OBSIDIAN_CLI="obsidian.exe"
 fi
 ```
