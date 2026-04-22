@@ -547,7 +547,7 @@ General-purpose Obsidian vault management for tasks, tags, properties, file oper
 | Type | Operations | Behavior |
 |------|------------|----------|
 | **Read** | List tasks/tags/links, read properties, read templates | Automatic — no confirmation needed |
-| **Write** | Toggle task status | Requires explicit user confirmation |
+| **Write** | Update task status (toggle / done / todo / custom status) | Requires explicit user confirmation |
 | **Write** | Set or remove properties | Requires explicit user confirmation |
 | **Destructive** | Delete notes | Requires explicit user confirmation |
 | **Destructive** | Permanently delete notes | Requires explicit user confirmation with stricter prompt |

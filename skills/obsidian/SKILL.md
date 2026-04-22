@@ -25,7 +25,7 @@ General-purpose Obsidian vault management via the CLI. Covers task tracking, tag
 | Type | Operations | Behavior |
 |------|------------|----------|
 | **Read** | List tasks/tags/links, read properties, read templates | Automatic — no confirmation needed |
-| **Write** | Toggle task status | Requires explicit user confirmation |
+| **Write** | Update task status (toggle / done / todo / custom status) | Requires explicit user confirmation |
 | **Write** | Set or remove properties | Requires explicit user confirmation |
 | **Write** | Move or rename notes | Requires explicit user confirmation |
 | **Destructive** | Delete notes, permanently remove properties | Requires explicit user confirmation |
@@ -36,7 +36,7 @@ Show the prompt, then **stop and wait for the user's reply before proceeding**. 
 
 | Operation | Confirmation Prompt |
 |-----------|---------------------|
-| Toggle a task | "Toggle task: '<task-text>'? (yes/no)" |
+| Update task status | "Update task '<task-text>' — mark as <done/todo/toggle/status>? (yes/no)" |
 | Set a property | "Set property '<name>' to '<value>' on '<note-name>'? (yes/no)" |
 | Remove a property | "Remove property '<name>' from '<note-name>'? (yes/no)" |
 | Move a note | "Move '<note-name>' to '<destination>'? (yes/no)" |
