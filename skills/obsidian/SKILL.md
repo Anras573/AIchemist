@@ -27,6 +27,7 @@ General-purpose Obsidian vault management via the CLI. Covers task tracking, tag
 | **Read** | List tasks/tags/links, read properties, read templates | Automatic — no confirmation needed |
 | **Write** | Toggle task status | Requires explicit user confirmation |
 | **Write** | Set or remove properties | Requires explicit user confirmation |
+| **Write** | Move or rename notes | Requires explicit user confirmation |
 | **Destructive** | Delete notes, permanently remove properties | Requires explicit user confirmation |
 
 ## Confirmation Prompts
@@ -38,6 +39,8 @@ Show the prompt, then **stop and wait for the user's reply before proceeding**. 
 | Toggle a task | "Toggle task: '<task-text>'? (yes/no)" |
 | Set a property | "Set property '<name>' to '<value>' on '<note-name>'? (yes/no)" |
 | Remove a property | "Remove property '<name>' from '<note-name>'? (yes/no)" |
+| Move a note | "Move '<note-name>' to '<destination>'? (yes/no)" |
+| Rename a note | "Rename '<note-name>' to '<new-name>'? (yes/no)" |
 | Delete a note | "This will delete '<note-name>'. Are you sure? (yes/no)" |
 | Permanently delete (skip trash) | "This will permanently delete '<note-name>' and cannot be undone. Are you sure? (yes/no)" |
 
@@ -288,15 +291,13 @@ Please verify:
 
 ## Platform Compatibility
 
-```bash
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  OBSIDIAN_CLI="/Applications/Obsidian.app/Contents/MacOS/obsidian"
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  OBSIDIAN_CLI="obsidian"
-elif [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "cygwin"* ]]; then
-  OBSIDIAN_CLI="obsidian.exe"
-fi
-```
+All examples use `obsidian` directly, assuming the user has added an alias for their platform. Recommend the appropriate alias if the CLI is not on `PATH`:
+
+| Platform | CLI path | Recommended alias |
+|----------|----------|-------------------|
+| macOS | `/Applications/Obsidian.app/Contents/MacOS/obsidian` | `alias obsidian="/Applications/Obsidian.app/Contents/MacOS/obsidian"` |
+| Linux | `/usr/bin/obsidian` or `/opt/Obsidian/obsidian` | usually already on `PATH` |
+| Windows (Git Bash / MSYS2) | `%LOCALAPPDATA%\Obsidian\obsidian.exe` | `alias obsidian="$LOCALAPPDATA/Obsidian/obsidian.exe"` |
 
 ## Additional Resources
 

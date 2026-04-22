@@ -197,7 +197,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   OBSIDIAN_CLI="/Applications/Obsidian.app/Contents/MacOS/obsidian"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
   OBSIDIAN_CLI="obsidian"
-elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+elif [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "cygwin"* ]]; then
   OBSIDIAN_CLI="obsidian.exe"
 fi
 ```

@@ -535,7 +535,7 @@ General-purpose Obsidian vault management for tasks, tags, properties, file oper
 | Request | Action |
 |---------|--------|
 | "list my tasks" / "show incomplete tasks" | List tasks from today's daily note (default) |
-| "mark task 2 done" | Toggle a specific task |
+| "mark task 2 done" | Mark a specific task as done (idempotent — stays done if already complete) |
 | "list all tags" / "find notes tagged #auth" | Tag lookup |
 | "set the status property to done" | Set frontmatter property |
 | "move this note to Archive" | Move or rename a file |
