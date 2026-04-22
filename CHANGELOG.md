@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.1](https://github.com/Anras573/AIchemist/compare/v3.0.0...v3.0.1) (2026-04-22)
+
+
+### Bug Fixes
+
+* **skills:** correct Obsidian skill runtime behaviour and add general vault management skill ([#79](https://github.com/Anras573/AIchemist/issues/79)) ([fc0b47b](https://github.com/Anras573/AIchemist/commit/fc0b47bf3f180053756a6c688f0f783fd96df8d3))
+
 ## [3.0.0](https://github.com/Anras573/AIchemist/compare/v2.10.0...v3.0.0) (2026-04-17)
 
 
