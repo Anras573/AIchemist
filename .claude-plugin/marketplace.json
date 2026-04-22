@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Custom agents and skills for AI-assisted development with Jira, .NET, TypeScript/React, and DDD integration",
-    "version": "3.0.0"
+    "version": "3.0.1"
   },
   "plugins": [
     {
