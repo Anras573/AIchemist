@@ -65,10 +65,12 @@ On first vault interaction, check for an `AGENT.md` file at the vault root and r
 
 ## CLI Command Reference
 
-All commands follow the pattern:
+Vault-targeted commands follow the pattern:
 ```bash
 obsidian vault=<vault-name> <command> [options]
 ```
+
+Global commands (like `vaults`) do **not** use `vault=` and are run standalone.
 
 | Command | Purpose | Key Options |
 |---------|---------|-------------|
@@ -77,7 +79,7 @@ obsidian vault=<vault-name> <command> [options]
 | `daily:prepend` | Prepend to today's note (creates with template if missing) | `content=<text>`, `inline` |
 | `daily:path` | Get today's daily note path (use to infer date pattern) | — |
 | `read` | Read a file by exact path (used for specific dates) | `path=<path>` |
-| `vaults` | List available vaults | `verbose` |
+| `vaults` | List available vaults (**global command** — no `vault=`) | `verbose` |
 
 **Notes:**
 - Quote values with spaces: `content="My content here"`

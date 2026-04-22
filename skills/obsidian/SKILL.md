@@ -74,10 +74,12 @@ On first vault interaction, check for an `AGENT.md` file at the vault root and r
 
 ## CLI Command Reference
 
-All commands follow the pattern:
+Vault-targeted commands follow the pattern:
 ```bash
 obsidian vault=<vault-name> <command> [options]
 ```
+
+Global commands (like `vaults`) do **not** use `vault=` and are run standalone.
 
 | Command | Purpose | Key Options |
 |---------|---------|-------------|
@@ -98,7 +100,7 @@ obsidian vault=<vault-name> <command> [options]
 | `backlinks` | List backlinks to a file | `path=<path>`, `format=json` |
 | `orphans` | List files with no incoming links | `total` |
 | `files` | List files in the vault or a folder | `folder=<path>`, `ext=<ext>` |
-| `vaults` | List available vaults | `verbose` |
+| `vaults` | List available vaults (**global command** — no `vault=`) | `verbose` |
 
 **Notes:**
 - Use `format=json` for programmatic parsing of results

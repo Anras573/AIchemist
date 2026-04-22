@@ -62,10 +62,12 @@ On first vault interaction, check for an `AGENT.md` file at the vault root and r
 
 ## CLI Command Reference
 
-All commands follow the pattern:
+Vault-targeted commands follow the pattern:
 ```bash
 obsidian vault=<vault-name> <command> [options]
 ```
+
+Global commands (like `vaults`) do **not** use `vault=` and are run standalone.
 
 | Command | Purpose | Key Options |
 |---------|---------|-------------|
@@ -73,7 +75,7 @@ obsidian vault=<vault-name> <command> [options]
 | `append` | Append to a specific note (file must exist) | `path=<path>`, `content=<text>`, `inline` |
 | `create` | Create a new note with content | `path=<path>`, `content=<text>` |
 | `read` | Check if a named note exists | `path=<path>` |
-| `vaults` | List available vaults | `verbose` |
+| `vaults` | List available vaults (**global command** — no `vault=`) | `verbose` |
 
 **Notes:**
 - Quote values with spaces: `content="My content here"`
