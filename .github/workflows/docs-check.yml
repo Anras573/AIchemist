@@ -1,0 +1,25 @@
+name: Docs Check
+
+on:
+  pull_request:
+    paths:
+      - 'agents/**'
+      - 'docs/agents.md'
+      - 'tools/check-agent-docs.sh'
+      - '.github/workflows/docs-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'agents/**'
+      - 'docs/agents.md'
+      - 'tools/check-agent-docs.sh'
+      - '.github/workflows/docs-check.yml'
+
+jobs:
+  agent-docs-sync:
+    name: Verify agents ↔ docs/agents.md sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run agent docs check
+        run: bash tools/check-agent-docs.sh
