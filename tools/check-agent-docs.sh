@@ -28,11 +28,15 @@ if [ ! -f "$DOCS_FILE" ]; then
   exit 1
 fi
 
-# Forward check: every agent file must be referenced in docs.
+# Forward check: every agent file must be referenced via the Source-link
+# convention in docs. Use fixed-string match (-F) so `.` in filenames
+# isn't interpreted as regex-any-char, and anchor to the full
+# `**Source:** [\`agents/<file>\`]` shape so an incidental mention of
+# the filename in prose can't satisfy the contract.
 missing=()
 while IFS= read -r -d '' agent_file; do
   base=$(basename "$agent_file")
-  if ! grep -q "$base" "$DOCS_FILE"; then
+  if ! grep -F -q '**Source:** [`agents/'"$base"'`]' "$DOCS_FILE"; then
     missing+=("$base")
   fi
 done < <(find "$AGENTS_DIR" -maxdepth 1 -name "*.agent.md" -type f -print0 | sort -z)
