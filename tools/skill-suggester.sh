@@ -39,8 +39,15 @@ readonly EXCLUDED_TOOLS_REGEX='^(Read|TodoWrite|TaskCreate|TaskUpdate|TaskList|T
 
 # ----- Read hook input -----------------------------------------------------
 
+# Cleanup: remove tmpdir on exit, and the write-phase lock if we acquired it.
+LOCK_ACQUIRED=""
+cleanup() {
+  rm -rf "$TMPDIR" 2>/dev/null
+  [ -n "$LOCK_ACQUIRED" ] && rm -rf "$LOCK_ACQUIRED" 2>/dev/null
+}
+
 TMPDIR=$(mktemp -d -t skill-suggester.XXXXXX) || exit 0
-trap 'rm -rf "$TMPDIR" 2>/dev/null' EXIT HUP INT TERM
+trap cleanup EXIT HUP INT TERM
 
 # Stream stdin directly to a temp file instead of slurping into a shell
 # variable — PreCompact transcripts can be multi-MB and doubling that in
@@ -51,8 +58,10 @@ cat > "$STDIN_FILE"
 
 # Hook stdin may be a JSON payload (with transcript_path) or a raw JSONL dump.
 TRANSCRIPT=""
+HOOK_EVENT="unknown"
 if jq -e . < "$STDIN_FILE" >/dev/null 2>&1; then
   PATH_FIELD=$(jq -r '.transcript_path // empty' < "$STDIN_FILE" 2>/dev/null)
+  HOOK_EVENT=$(jq -r '.hook_event_name // "unknown"' < "$STDIN_FILE" 2>/dev/null)
   [ -n "$PATH_FIELD" ] && [ -f "$PATH_FIELD" ] && TRANSCRIPT="$PATH_FIELD"
 fi
 [ -z "$TRANSCRIPT" ] && TRANSCRIPT="$STDIN_FILE"
@@ -469,6 +478,35 @@ EOF
 " >/dev/null 2>&1
 }
 
+# Best-effort mutex on the write phase: two concurrent hook invocations
+# (e.g. two sessions' SessionEnd firing at once) would otherwise both load
+# NOTE_CACHE before either appends, both see no entry, and both append the
+# same suggestion. Uses mkdir (atomic on local fs) with PID-based stale
+# detection so an orphaned lock from a killed process eventually releases.
+# If the lock is held by a live process, we skip this run silently —
+# consistent with the hook's best-effort contract.
+acquire_write_lock() {
+  local lockdir="${TMPDIR:-/tmp}/aichemist-skill-suggester.lock"
+  if mkdir "$lockdir" 2>/dev/null; then
+    echo "$$" > "$lockdir/pid" 2>/dev/null || true
+    LOCK_ACQUIRED="$lockdir"
+    return 0
+  fi
+  # Lock held — check if holder is still alive.
+  local holder
+  holder=$(cat "$lockdir/pid" 2>/dev/null)
+  if [ -n "$holder" ] && ! kill -0 "$holder" 2>/dev/null; then
+    # Stale lock (holder died without cleanup); break and retry once.
+    rm -rf "$lockdir" 2>/dev/null
+    if mkdir "$lockdir" 2>/dev/null; then
+      echo "$$" > "$lockdir/pid" 2>/dev/null || true
+      LOCK_ACQUIRED="$lockdir"
+      return 0
+    fi
+  fi
+  return 1
+}
+
 # ----- Main ---------------------------------------------------------------
 
 main() {
@@ -478,7 +516,13 @@ main() {
   local regex_count
   regex_count=$(echo "$suggestions" | jq -r 'length' 2>/dev/null)
 
-  if [ "${regex_count:-0}" = "0" ]; then
+  # Skip the Claude semantic fallback specifically on PreCompact: a session
+  # that fires both PreCompact AND SessionEnd would otherwise invoke
+  # `claude -p` twice, and because the model is non-deterministic the two
+  # runs can phrase the same workflow differently — bypassing name-based
+  # dedup and producing duplicate note entries. Regex is deterministic and
+  # runs on both events, so PreCompact still contributes regex hits.
+  if [ "${regex_count:-0}" = "0" ] && [ "$HOOK_EVENT" != "PreCompact" ]; then
     local exchanges
     exchanges=$(count_user_exchanges)
     if [ "${exchanges:-0}" -ge "$SESSION_GATE" ]; then
@@ -491,6 +535,11 @@ main() {
   [ "${total:-0}" = "0" ] && exit 0
 
   ensure_note_exists || exit 0
+  # Acquire the write-phase lock before reading NOTE_CACHE so concurrent
+  # runs can't both observe a stale cache and both append.
+  if ! is_dry_run && ! acquire_write_lock; then
+    exit 0  # another instance holds the lock; skip silently
+  fi
   load_note_cache
 
   # One jq call emits all suggestion fields as TSV; the while loop reads
