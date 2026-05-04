@@ -59,6 +59,8 @@ Domain-Driven Design expert for strategic modeling and tactical pattern review.
 
 ## Simplify Agent
 
+**Source:** [`agents/simplify.agent.md`](../agents/simplify.agent.md)
+
 Code simplification specialist that refines recently modified code for clarity, consistency, and maintainability while preserving exact functionality.
 
 **Expertise:**
