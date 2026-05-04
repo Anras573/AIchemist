@@ -57,6 +57,18 @@ Domain-Driven Design expert for strategic modeling and tactical pattern review.
 
 **Invoked by:** Task tool for domain modeling questions, or consulted by Code Review agent
 
+## Simplify Agent
+
+Code simplification specialist that refines recently modified code for clarity, consistency, and maintainability while preserving exact functionality.
+
+**Expertise:**
+- 17 language-agnostic rules across 6 clusters (structure & visibility, dead weight, consistency, error handling, tests, judgment calls)
+- Flags single-implementation interfaces, wrappers without value, naming drift, dead code, near-duplicate tests
+- Defers language-specific opinions to the .NET and TypeScript/React agents
+- Runs once per invocation — does not self-chain on subsequent edits
+
+**Invoked by:** Task tool when the user asks to simplify/tighten/clean up code, or consulted by a parent agent after a code-writing task before final handoff
+
 ## Agent Collaboration
 
 Agents can consult each other for specialized guidance:
@@ -64,3 +76,5 @@ Agents can consult each other for specialized guidance:
 - Code Review agent consults .NET agent for C# reviews
 - Code Review agent consults TypeScript/React agent for frontend reviews
 - Code Review agent consults DDD agent for domain model reviews
+- Simplify agent consults .NET agent for C# simplifications and TypeScript/React agent for frontend simplifications
+- Parent agents can delegate to Simplify agent for a clarity pass before handoff
