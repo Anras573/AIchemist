@@ -190,14 +190,21 @@ detect_tool_sequences() {
 
   # The " → " separator (U+2192) must stay in sync with the Python split
   # in format_regex_suggestions — both encode the arrow the same way.
+  # Count non-overlapping occurrences only: a single run of Edit→Edit→Edit→Edit
+  # should count as ONE match of "Edit→Edit→Edit", not two. Greedy scan —
+  # when a key matches at position i, require the next match of the same key
+  # to start at position >= i+len.
   awk -F'\t' -v len="$TOOL_SEQ_LEN" -v min="$TOOL_REPEAT_MIN" '
     { names[NR] = $1; lines[NR] = $2 }
     END {
       for (i = 1; i <= NR - len + 1; i++) {
         key = names[i]
         for (j = 1; j < len; j++) key = key " \xe2\x86\x92 " names[i+j]
-        count[key]++
-        if (!(key in first_line)) first_line[key] = lines[i]
+        if (!(key in last_start) || i >= last_start[key] + len) {
+          count[key]++
+          last_start[key] = i
+          if (!(key in first_line)) first_line[key] = lines[i]
+        }
       }
       for (k in count) {
         if (count[k] >= min) print k "\t" first_line[k]
@@ -211,6 +218,9 @@ detect_user_ngrams() {
   extract_user_messages > /dev/null  # ensure cache populated
   [ ! -s "$msgs" ] && return 0
 
+  # Non-overlapping count: a repeated phrase within one message ("the the
+  # the the the" with n=4) counts as one occurrence, not two. Across
+  # messages we always count separately since positions reset each record.
   awk -F'\t' -v n="$NGRAM_SIZE" -v min="$NGRAM_REPEAT_MIN" '
     {
       line = $1
@@ -218,8 +228,12 @@ detect_user_ngrams() {
       for (i = 1; i <= nwords - n + 1; i++) {
         key = ""
         for (j = 0; j < n; j++) key = key (j ? " " : "") w[i+j]
-        count[key]++
-        if (!(key in first_line)) first_line[key] = line
+        if (!(key in last_nr) || last_nr[key] != NR || i >= last_pos[key] + n) {
+          count[key]++
+          last_nr[key] = NR
+          last_pos[key] = i
+          if (!(key in first_line)) first_line[key] = line
+        }
       }
     }
     END {
@@ -245,8 +259,11 @@ seq_path, ngram_path, cap = sys.argv[1], sys.argv[2], int(sys.argv[3])
 out = []
 
 def slug(s):
+    # Cap at 28 so that even with the "workflow-" prefix (9 chars) we stay
+    # safely under redact_snippet's 40-char length threshold — otherwise
+    # legitimate long slugs collide on [REDACTED-LONG].
     s = re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
-    return s[:48] or "pattern"
+    return s[:28] or "pattern"
 
 with open(seq_path) as f:
     for line in f:
@@ -407,15 +424,26 @@ EOF
   return 0
 }
 
-# Redact likely-secret substrings from a snippet before persisting it to
-# the long-lived Obsidian note. Best-effort — catches common patterns
-# (API-key prefixes, credential assignments, long opaque tokens) but is
-# not a replacement for secret scanning.
+# Redact likely-secret substrings from a string before persisting it to the
+# long-lived Obsidian note. Best-effort — catches common patterns (API-key
+# prefixes, credential assignments, long opaque tokens) but is not a
+# replacement for secret scanning.
+#
+# Uses python3 (already a required dep) rather than sed because BSD sed on
+# macOS does not support the `/i` case-insensitive flag, and the
+# credential-assignment pattern needs case-insensitive matching to catch
+# both "password=" and "PASSWORD=".
 redact_snippet() {
-  echo "$1" \
-    | sed -E 's/(sk-|xoxb-|xoxp-|ghp_|gho_|ghu_|github_pat_|AKIA|Bearer[[:space:]]+)[A-Za-z0-9_./+=-]+/[REDACTED-TOKEN]/g' \
-    | sed -E 's/(password|passwd|secret|token|api[_-]?key|access[_-]?key)([[:space:]]*[=:][[:space:]]*)[^[:space:]]+/\1\2[REDACTED]/gi' \
-    | sed -E 's/[A-Za-z0-9_+/=-]{40,}/[REDACTED-LONG]/g'
+  python3 -c '
+import re, sys
+s = sys.argv[1]
+s = re.sub(r"(sk-|xoxb-|xoxp-|ghp_|gho_|ghu_|github_pat_|AKIA|Bearer\s+)[A-Za-z0-9_./+=-]+",
+           "[REDACTED-TOKEN]", s)
+s = re.sub(r"(password|passwd|secret|token|api[_-]?key|access[_-]?key)(\s*[=:]\s*)\S+",
+           r"\1\2[REDACTED]", s, flags=re.IGNORECASE)
+s = re.sub(r"[A-Za-z0-9_+/=-]{40,}", "[REDACTED-LONG]", s)
+sys.stdout.write(s)
+' "$1"
 }
 
 append_suggestion() {
@@ -471,8 +499,13 @@ main() {
   # duplicates (e.g. two suggestions with colliding names) are caught by
   # already_in_note on subsequent iterations.
   while IFS=$'\t' read -r kind name one_liner line snippet; do
-    snippet=$(redact_snippet "$(echo "$snippet" | tr -d '"' | head -c 200)")
+    # Redact ALL text-bearing fields, including name — for n-gram and
+    # Claude-fallback suggestions the name is slugged from user text, so
+    # a secret-bearing phrase can otherwise end up as the backticked
+    # name in the note.
+    name=$(redact_snippet "$name")
     one_liner=$(redact_snippet "$one_liner")
+    snippet=$(redact_snippet "$(echo "$snippet" | tr -d '"' | head -c 200)")
     if [ -n "$name" ] && [ -n "$one_liner" ] && ! already_in_note "$name"; then
       append_suggestion "$kind" "$name" "$one_liner" "$line" "$snippet"
       NOTE_CACHE="$NOTE_CACHE"$'\n'"\`$name\`"
