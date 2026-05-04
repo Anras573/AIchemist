@@ -30,16 +30,23 @@ fi
 
 # Forward check: every agent file must be referenced via the Source-link
 # convention in docs. Use fixed-string match (-F) so `.` in filenames
-# isn't interpreted as regex-any-char, and anchor to the full
-# `**Source:** [\`agents/<file>\`]` shape so an incidental mention of
-# the filename in prose can't satisfy the contract.
+# isn't interpreted as regex-any-char, and match the FULL markdown link
+# — both the display text `[\`agents/<file>\`]` AND the target
+# `(../agents/<file>)` — so a broken link target (or an incidental
+# filename mention in prose) doesn't satisfy the contract.
+#
+# Portability: uses plain find | sort (not -print0/-z) because `sort -z`
+# is GNU-only and fails on stock macOS/BSD. Agent filenames are
+# controlled by convention (slug-like, no spaces or newlines), so
+# line-delimited iteration is safe.
 missing=()
-while IFS= read -r -d '' agent_file; do
+while IFS= read -r agent_file; do
+  [ -z "$agent_file" ] && continue
   base=$(basename "$agent_file")
-  if ! grep -F -q '**Source:** [`agents/'"$base"'`]' "$DOCS_FILE"; then
+  if ! grep -F -q '**Source:** [`agents/'"$base"'`](../agents/'"$base"')' "$DOCS_FILE"; then
     missing+=("$base")
   fi
-done < <(find "$AGENTS_DIR" -maxdepth 1 -name "*.agent.md" -type f -print0 | sort -z)
+done < <(find "$AGENTS_DIR" -maxdepth 1 -name "*.agent.md" -type f | sort)
 
 if [ ${#missing[@]} -gt 0 ]; then
   echo "::error title=Missing agent documentation::docs/agents.md is missing entries for ${#missing[@]} agent(s)."
