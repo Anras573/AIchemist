@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/Anras573/AIchemist/compare/v3.0.1...v3.1.0) (2026-05-04)
+
+
+### Features
+
+* **agents:** add simplify agent forked from code-simplifier ([#83](https://github.com/Anras573/AIchemist/issues/83)) ([4465905](https://github.com/Anras573/AIchemist/commit/4465905cac6084b7d178fda0f83b6541b3ac268a))
+
 ## [3.0.1](https://github.com/Anras573/AIchemist/compare/v3.0.0...v3.0.1) (2026-04-22)
 
 
