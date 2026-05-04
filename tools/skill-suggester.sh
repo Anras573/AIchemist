@@ -7,32 +7,19 @@
 # and appends one-line nudges to "AIchemist/Skill Ideas.md" in the user's
 # Obsidian vault.
 #
-# Flow:
-#   1. Read hook payload from stdin (JSON with transcript_path, or raw JSONL).
-#   2. Build a normalized tool-call sequence and extract user messages.
-#   3. Regex pass: detect tool-call subsequences (len 3, 2+ repeats) and
-#      user-phrasing n-grams (4 words, 2+ repeats).
-#   4. If regex found nothing AND session has >=20 exchanges: invoke
-#      `claude -p` for semantic detection (hybrid fallback).
-#   5. Dedup against existing note contents; append new suggestions via
-#      `obsidian append`.
-#
 # Best-effort: any failure exits 0 silently to avoid breaking the session.
 
 set -u
-trap 'exit 0' EXIT ERR
 
-# ----- Dependencies ---------------------------------------------------------
-
-for cmd in jq awk sort uniq obsidian; do
+for cmd in jq awk sort obsidian python3; do
   command -v "$cmd" >/dev/null 2>&1 || exit 0
 done
 
-# claude CLI is optional (only needed for the semantic fallback)
+# claude CLI is optional (only needed for the semantic fallback).
 HAS_CLAUDE=0
 command -v claude >/dev/null 2>&1 && HAS_CLAUDE=1
 
-# ----- Config ---------------------------------------------------------------
+# ----- Config --------------------------------------------------------------
 
 readonly PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 readonly NOTE_PATH="AIchemist/Skill Ideas.md"
@@ -42,9 +29,11 @@ readonly NGRAM_SIZE=4
 readonly NGRAM_REPEAT_MIN=2
 readonly SESSION_GATE=20
 readonly MAX_SUGGESTIONS=3
+readonly MIN_TRANSCRIPT_LINES=10
+readonly CLAUDE_OUTPUT_MAX=32768
 
-# DRY_RUN=1 → print what would be written, don't touch Obsidian
 readonly DRY_RUN="${DRY_RUN:-0}"
+is_dry_run() { [ "$DRY_RUN" = "1" ]; }
 
 readonly EXCLUDED_TOOLS_REGEX='^(Read|TodoWrite|TaskCreate|TaskUpdate|TaskList|TaskGet|TaskOutput|TaskStop|AskUserQuestion|EnterPlanMode|ExitPlanMode|EnterWorktree|ExitWorktree|ScheduleWakeup|Monitor)$'
 
@@ -54,10 +43,9 @@ HOOK_INPUT=$(cat)
 [ -z "$HOOK_INPUT" ] && exit 0
 
 TMPDIR=$(mktemp -d -t skill-suggester.XXXXXX) || exit 0
-# Override the existing trap to also clean up tmpdir
-trap 'rm -rf "$TMPDIR" 2>/dev/null; exit 0' EXIT ERR
+trap 'rm -rf "$TMPDIR" 2>/dev/null' EXIT HUP INT TERM
 
-# Try JSON payload with transcript_path; else treat stdin as raw JSONL
+# Hook stdin may be a JSON payload (with transcript_path) or a raw JSONL dump.
 TRANSCRIPT=""
 if echo "$HOOK_INPUT" | jq -e . >/dev/null 2>&1; then
   PATH_FIELD=$(echo "$HOOK_INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
@@ -67,6 +55,10 @@ if [ -z "$TRANSCRIPT" ]; then
   TRANSCRIPT="$TMPDIR/session.jsonl"
   echo "$HOOK_INPUT" > "$TRANSCRIPT"
 fi
+
+# Early gate: skip full pipeline on trivially small transcripts.
+_line_count=$(wc -l < "$TRANSCRIPT" 2>/dev/null | tr -d ' ')
+[ "${_line_count:-0}" -lt "$MIN_TRANSCRIPT_LINES" ] && exit 0
 
 # ----- Vault resolution ----------------------------------------------------
 
@@ -81,9 +73,8 @@ resolve_vault() {
   [ -z "$vault" ] && vault="${OBSIDIAN_VAULT:-}"
 
   if [ -z "$vault" ]; then
-    # Try single-vault auto-pick: parse `obsidian vaults` output
     local vaults count
-    vaults=$(obsidian vaults 2>/dev/null | awk 'NF && !/^(NAME|Available|No vault)/' | awk '{print $1}')
+    vaults=$(obsidian vaults 2>/dev/null | awk 'NF && !/^(NAME|Available|No vault)/ { print $1 }')
     count=$(echo "$vaults" | grep -c . || true)
     [ "$count" = "1" ] && vault=$(echo "$vaults" | head -n1)
   fi
@@ -93,7 +84,7 @@ resolve_vault() {
 
 VAULT=$(resolve_vault)
 if [ -z "$VAULT" ]; then
-  if [ "$DRY_RUN" = "1" ]; then
+  if is_dry_run; then
     VAULT="<no-vault-configured>"
     echo "[DRY_RUN] no vault resolved; continuing with placeholder" >&2
   else
@@ -103,20 +94,15 @@ fi
 
 # ----- Transcript parsing --------------------------------------------------
 
-# Emit one tool-call per line, filtered + normalized.
-# Output format: <normalized-tool-name>\t<line-number>
 extract_tools() {
   # shellcheck disable=SC2016
   jq -r --arg excl "$EXCLUDED_TOOLS_REGEX" '
     def normalize(name; input):
       if name == "Bash" then
-        # Two-token Bash grouping: first 2 whitespace-separated tokens
         (input.command // "" | split(" ") | .[0:2] | join(" ")) as $two
         | "Bash(" + $two + ")"
       elif (name | startswith("mcp__plugin_")) then
-        # mcp__plugin_<vendor>_<server>__<tool> → <server>:<tool>
-        (name | sub("^mcp__plugin_[^_]+_"; "") | sub("__"; ":")) as $n
-        | $n
+        (name | sub("^mcp__plugin_[^_]+_"; "") | sub("__"; ":"))
       else
         name
       end;
@@ -138,44 +124,48 @@ extract_tools() {
   ' "$TRANSCRIPT" 2>/dev/null
 }
 
-# Emit each user message on one line (newlines collapsed), lowercased.
-# Output format: <line-number>\t<message-text>
+# Extract user messages once, cache to msgs.tsv for reuse by
+# count_user_exchanges and detect_user_ngrams.
 extract_user_messages() {
-  jq -r '
-    [inputs] as $lines
-    | $lines
-    | to_entries
-    | map(
-        select(
-          (.value.type? == "user") or (.value.message?.role? == "user")
+  local msgs="$TMPDIR/msgs.tsv"
+  if [ ! -f "$msgs" ]; then
+    jq -r '
+      [inputs] as $lines
+      | $lines
+      | to_entries
+      | map(
+          select(
+            (.value.type? == "user") or (.value.message?.role? == "user")
+          )
+          | {
+              line: (.key + 1),
+              text: (
+                .value.message?.content // .value.content // ""
+                | if type == "string" then .
+                  elif type == "array" then
+                    map(if type == "object" then (.text // "") else . end) | join(" ")
+                  else ""
+                  end
+                # Strip Claude Code harness-injected tags so we only count
+                # actual user phrasings, not slash-command metadata or
+                # system reminders.
+                | gsub("<system-reminder>.*?</system-reminder>"; ""; "s")
+                | gsub("<local-command-stdout>.*?</local-command-stdout>"; ""; "s")
+                | gsub("<local-command-caveat>.*?</local-command-caveat>"; ""; "s")
+                | gsub("<command-name>.*?</command-name>"; ""; "s")
+                | gsub("<command-message>.*?</command-message>"; ""; "s")
+                | gsub("<command-args>.*?</command-args>"; ""; "s")
+                | gsub("\\s+"; " ")
+                | ascii_downcase
+              )
+            }
+          | select(.text != "")
         )
-        | {
-            line: (.key + 1),
-            text: (
-              .value.message?.content // .value.content // ""
-              | if type == "string" then .
-                elif type == "array" then
-                  map(if type == "object" then (.text // "") else . end) | join(" ")
-                else ""
-                end
-              # Strip Claude Code harness-injected tags (system reminders,
-              # slash-command metadata, captured command I/O) before
-              # n-gram detection, so we only count actual user phrasings.
-              | gsub("<system-reminder>.*?</system-reminder>"; ""; "s")
-              | gsub("<local-command-stdout>.*?</local-command-stdout>"; ""; "s")
-              | gsub("<local-command-caveat>.*?</local-command-caveat>"; ""; "s")
-              | gsub("<command-name>.*?</command-name>"; ""; "s")
-              | gsub("<command-message>.*?</command-message>"; ""; "s")
-              | gsub("<command-args>.*?</command-args>"; ""; "s")
-              | gsub("\\s+"; " ")
-              | ascii_downcase
-            )
-          }
-        | select(.text != "")
-      )
-    | .[]
-    | "\(.line)\t\(.text)"
-  ' "$TRANSCRIPT" 2>/dev/null
+      | .[]
+      | "\(.line)\t\(.text)"
+    ' "$TRANSCRIPT" 2>/dev/null > "$msgs"
+  fi
+  cat "$msgs"
 }
 
 count_user_exchanges() {
@@ -184,13 +174,13 @@ count_user_exchanges() {
 
 # ----- Regex detection -----------------------------------------------------
 
-# Tool subsequences: sliding window of length TOOL_SEQ_LEN, repeats >= TOOL_REPEAT_MIN.
-# Emits one line per matching subsequence: <seq-with-arrows>\t<first-line-number>
 detect_tool_sequences() {
   local tools="$TMPDIR/tools.tsv"
   extract_tools > "$tools"
   [ ! -s "$tools" ] && return 0
 
+  # The " → " separator (U+2192) must stay in sync with the Python split
+  # in format_regex_suggestions — both encode the arrow the same way.
   awk -F'\t' -v len="$TOOL_SEQ_LEN" -v min="$TOOL_REPEAT_MIN" '
     { names[NR] = $1; lines[NR] = $2 }
     END {
@@ -207,17 +197,14 @@ detect_tool_sequences() {
   ' "$tools"
 }
 
-# User-phrasing n-grams: sliding window of NGRAM_SIZE words, repeats >= NGRAM_REPEAT_MIN.
-# Emits: <ngram-text>\t<first-line-number>
 detect_user_ngrams() {
   local msgs="$TMPDIR/msgs.tsv"
-  extract_user_messages > "$msgs"
+  extract_user_messages > /dev/null  # ensure cache populated
   [ ! -s "$msgs" ] && return 0
 
   awk -F'\t' -v n="$NGRAM_SIZE" -v min="$NGRAM_REPEAT_MIN" '
     {
       line = $1
-      # tokenize $2 on whitespace
       nwords = split($2, w, /[[:space:]]+/)
       for (i = 1; i <= nwords - n + 1; i++) {
         key = ""
@@ -236,18 +223,11 @@ detect_user_ngrams() {
 
 # ----- Format regex hits as suggestions JSON -------------------------------
 
-# Converts regex detections into the same JSON shape Claude would produce.
-# Uses heuristics: tool sequences → likely skill/hook; repeated phrasings → likely skill.
 format_regex_suggestions() {
   local seqs="$TMPDIR/seqs.tsv"
   local ngrams="$TMPDIR/ngrams.tsv"
   detect_tool_sequences > "$seqs"
   detect_user_ngrams > "$ngrams"
-
-  # Build JSON array; cap at MAX_SUGGESTIONS total (sequences first, then ngrams)
-  jq -Rs --argjson cap "$MAX_SUGGESTIONS" '
-    split("\n") | map(select(length > 0)) | .[:$cap]
-  ' "$seqs" > "$TMPDIR/seq-arr.json" 2>/dev/null
 
   python3 - "$seqs" "$ngrams" "$MAX_SUGGESTIONS" <<'PY' 2>/dev/null || echo "[]"
 import json, sys, re
@@ -296,18 +276,16 @@ PY
 list_existing() {
   local dir="$1" glob="$2"
   find "$PLUGIN_ROOT/$dir" -maxdepth 2 -name "$glob" 2>/dev/null | while read -r f; do
-    awk '/^name:/ { sub(/^name:[[:space:]]*/, ""); gsub(/[[:space:]]*$/, ""); print; exit }' "$f"
+    awk -F': *' '/^name:/ { gsub(/[[:space:]]+$/, "", $2); print $2; exit }' "$f"
   done | sort -u
 }
 
 invoke_claude_fallback() {
   [ "$HAS_CLAUDE" = "1" ] || { echo "[]"; return; }
 
-  local skills agents preamble transcript_snippet
+  local skills agents transcript_snippet
   skills=$(list_existing "skills" "SKILL.md" | paste -sd, -)
   agents=$(list_existing "agents" "*.agent.md" | paste -sd, -)
-
-  # Tail the transcript to keep prompt size bounded
   transcript_snippet=$(tail -n 400 "$TRANSCRIPT")
 
   local prompt_file="$TMPDIR/prompt.txt"
@@ -320,7 +298,7 @@ become reusable automations. The user already has:
   EXISTING HOOK PURPOSES:
     - Desktop notification on session idle
     - Mining session transcripts into mempalace memory
-    - Mining sessions for skill suggestions (this hook)
+    - Mining sessions for skill suggestions
 
 Find up to $MAX_SUGGESTIONS patterns NOT already covered above. A pattern qualifies
 only if it appears 2+ times in the transcript OR the user explicitly describes
@@ -365,12 +343,9 @@ qualifies; err on the side of [].
 $transcript_snippet
 EOF
 
-  # Invoke headless claude; require valid JSON array or give up
-  local raw
+  local raw json
   raw=$(claude -p "$(cat "$prompt_file")" --output-format text 2>/dev/null | tr -d '\r')
-  # Extract JSON array from response (first [ to last ])
-  local json
-  json=$(echo "$raw" | awk '/^\[/,/^\]$/' | head -c 8192)
+  json=$(echo "$raw" | awk '/^\[/,/^\]$/' | head -c "$CLAUDE_OUTPUT_MAX")
   if echo "$json" | jq -e 'type == "array"' >/dev/null 2>&1; then
     echo "$json"
   else
@@ -380,17 +355,26 @@ EOF
 
 # ----- Obsidian dedup + append --------------------------------------------
 
+# Cached note contents — populated once by load_note_cache, read by
+# already_in_note for each suggestion without re-fetching.
+NOTE_CACHE=""
+
+load_note_cache() {
+  if is_dry_run; then
+    NOTE_CACHE=""
+    return 0
+  fi
+  NOTE_CACHE=$(obsidian vault="$VAULT" read path="$NOTE_PATH" 2>/dev/null || true)
+}
+
 already_in_note() {
   local name="$1"
-  [ "$DRY_RUN" = "1" ] && return 1
-  # Read current note; if suggestion name already appears, skip
-  obsidian vault="$VAULT" read path="$NOTE_PATH" 2>/dev/null \
-    | grep -F -q "\`$name\`" && return 0
-  return 1
+  is_dry_run && return 1
+  echo "$NOTE_CACHE" | grep -F -q "\`$name\`"
 }
 
 ensure_note_exists() {
-  if [ "$DRY_RUN" = "1" ]; then
+  if is_dry_run; then
     echo "[DRY_RUN] would ensure $NOTE_PATH exists in vault=$VAULT" >&2
     return 0
   fi
@@ -423,7 +407,7 @@ append_suggestion() {
     - _observed_: $date_iso
 EOF
 )
-  if [ "$DRY_RUN" = "1" ]; then
+  if is_dry_run; then
     echo "--- would append to $NOTE_PATH ---"
     echo "$body"
     echo
@@ -440,40 +424,34 @@ main() {
   local suggestions
   suggestions=$(format_regex_suggestions)
 
-  # Determine if we should invoke Claude fallback
   local regex_count
-  regex_count=$(echo "$suggestions" | jq -r 'length' 2>/dev/null || echo 0)
+  regex_count=$(echo "$suggestions" | jq -r 'length' 2>/dev/null)
 
-  if [ "$regex_count" = "0" ]; then
+  if [ "${regex_count:-0}" = "0" ]; then
     local exchanges
     exchanges=$(count_user_exchanges)
-    if [ "$exchanges" -ge "$SESSION_GATE" ]; then
+    if [ "${exchanges:-0}" -ge "$SESSION_GATE" ]; then
       suggestions=$(invoke_claude_fallback)
     fi
   fi
 
   local total
-  total=$(echo "$suggestions" | jq -r 'length' 2>/dev/null || echo 0)
-  [ "$total" = "0" ] && exit 0
+  total=$(echo "$suggestions" | jq -r 'length' 2>/dev/null)
+  [ "${total:-0}" = "0" ] && exit 0
 
   ensure_note_exists || exit 0
+  load_note_cache
 
-  # Iterate suggestions, dedup, append
-  local i=0
-  while [ "$i" -lt "$total" ]; do
-    local sug kind name one_liner line snippet
-    sug=$(echo "$suggestions" | jq -r ".[$i]")
-    kind=$(echo "$sug" | jq -r '.kind // "skill"')
-    name=$(echo "$sug" | jq -r '.name // empty')
-    one_liner=$(echo "$sug" | jq -r '.one_liner // empty')
-    line=$(echo "$sug" | jq -r '.evidence_line // 0')
-    snippet=$(echo "$sug" | jq -r '.evidence_snippet // empty' | tr -d '"' | head -c 200)
-
-    if [ -n "$name" ] && [ -n "$one_liner" ] && ! already_in_note "$name"; then
-      append_suggestion "$kind" "$name" "$one_liner" "$line" "$snippet"
-    fi
-    i=$((i + 1))
-  done
+  # One jq call emits all suggestion fields as TSV; the while loop reads
+  # each row without re-parsing the JSON array on every field access.
+  echo "$suggestions" \
+    | jq -r '.[] | [.kind // "skill", .name // "", .one_liner // "", .evidence_line // 0, .evidence_snippet // ""] | @tsv' \
+    | while IFS=$'\t' read -r kind name one_liner line snippet; do
+        snippet=$(echo "$snippet" | tr -d '"' | head -c 200)
+        if [ -n "$name" ] && [ -n "$one_liner" ] && ! already_in_note "$name"; then
+          append_suggestion "$kind" "$name" "$one_liner" "$line" "$snippet"
+        fi
+      done
 
   exit 0
 }
