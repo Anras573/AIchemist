@@ -39,22 +39,23 @@ readonly EXCLUDED_TOOLS_REGEX='^(Read|TodoWrite|TaskCreate|TaskUpdate|TaskList|T
 
 # ----- Read hook input -----------------------------------------------------
 
-HOOK_INPUT=$(cat)
-[ -z "$HOOK_INPUT" ] && exit 0
-
 TMPDIR=$(mktemp -d -t skill-suggester.XXXXXX) || exit 0
 trap 'rm -rf "$TMPDIR" 2>/dev/null' EXIT HUP INT TERM
 
+# Stream stdin directly to a temp file instead of slurping into a shell
+# variable — PreCompact transcripts can be multi-MB and doubling that in
+# memory can dominate the hook's cost.
+STDIN_FILE="$TMPDIR/stdin.raw"
+cat > "$STDIN_FILE"
+[ ! -s "$STDIN_FILE" ] && exit 0
+
 # Hook stdin may be a JSON payload (with transcript_path) or a raw JSONL dump.
 TRANSCRIPT=""
-if echo "$HOOK_INPUT" | jq -e . >/dev/null 2>&1; then
-  PATH_FIELD=$(echo "$HOOK_INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
+if jq -e . < "$STDIN_FILE" >/dev/null 2>&1; then
+  PATH_FIELD=$(jq -r '.transcript_path // empty' < "$STDIN_FILE" 2>/dev/null)
   [ -n "$PATH_FIELD" ] && [ -f "$PATH_FIELD" ] && TRANSCRIPT="$PATH_FIELD"
 fi
-if [ -z "$TRANSCRIPT" ]; then
-  TRANSCRIPT="$TMPDIR/session.jsonl"
-  echo "$HOOK_INPUT" > "$TRANSCRIPT"
-fi
+[ -z "$TRANSCRIPT" ] && TRANSCRIPT="$STDIN_FILE"
 
 # Early gate: skip full pipeline on trivially small transcripts.
 _line_count=$(wc -l < "$TRANSCRIPT" 2>/dev/null | tr -d ' ')
@@ -73,8 +74,11 @@ resolve_vault() {
   [ -z "$vault" ] && vault="${OBSIDIAN_VAULT:-}"
 
   if [ -z "$vault" ]; then
+    # Parse `obsidian vaults` output. Use tab as separator so vault names
+    # with spaces ("My Vault") resolve correctly — `print $1` with default
+    # whitespace separator truncates at the first space.
     local vaults count
-    vaults=$(obsidian vaults 2>/dev/null | awk 'NF && !/^(NAME|Available|No vault)/ { print $1 }')
+    vaults=$(obsidian vaults 2>/dev/null | awk -F'\t' 'NF && !/^(NAME|Available|No vault)/ { print $1 }')
     count=$(echo "$vaults" | grep -c . || true)
     [ "$count" = "1" ] && vault=$(echo "$vaults" | head -n1)
   fi
@@ -107,7 +111,10 @@ extract_tools() {
         name
       end;
 
-    [inputs] as $lines
+    # `[., inputs]` (not `[inputs]`) captures the first JSON value too —
+    # otherwise jq discards it as the initial `.` binding, losing the first
+    # tool use and skewing every reported line number by 1.
+    [., inputs] as $lines
     | $lines
     | to_entries
     | map(
@@ -130,7 +137,9 @@ extract_user_messages() {
   local msgs="$TMPDIR/msgs.tsv"
   if [ ! -f "$msgs" ]; then
     jq -r '
-      [inputs] as $lines
+      # `[., inputs]` includes the first transcript entry; `[inputs]` alone
+      # would drop it (jq binds the first value to `.` implicitly).
+      [., inputs] as $lines
       | $lines
       | to_entries
       | map(
@@ -245,9 +254,12 @@ with open(seq_path) as f:
         line = line.rstrip("\n")
         if not line: continue
         seq, _, lineno = line.rpartition("\t")
+        # Slug the FULL sequence so two workflows that happen to start
+        # with the same tool (e.g. Edit→Bash(git add)→Edit vs
+        # Edit→Bash(git status)→Edit) get distinct names.
         out.append({
             "kind": "skill",
-            "name": "workflow-" + slug(seq.split(" → ")[0]),
+            "name": "workflow-" + slug(seq),
             "one_liner": f"Repeated tool workflow: {seq}",
             "evidence_line": int(lineno) if lineno.isdigit() else 0,
             "evidence_snippet": seq,
@@ -395,6 +407,17 @@ EOF
   return 0
 }
 
+# Redact likely-secret substrings from a snippet before persisting it to
+# the long-lived Obsidian note. Best-effort — catches common patterns
+# (API-key prefixes, credential assignments, long opaque tokens) but is
+# not a replacement for secret scanning.
+redact_snippet() {
+  echo "$1" \
+    | sed -E 's/(sk-|xoxb-|xoxp-|ghp_|gho_|ghu_|github_pat_|AKIA|Bearer[[:space:]]+)[A-Za-z0-9_./+=-]+/[REDACTED-TOKEN]/g' \
+    | sed -E 's/(password|passwd|secret|token|api[_-]?key|access[_-]?key)([[:space:]]*[=:][[:space:]]*)[^[:space:]]+/\1\2[REDACTED]/gi' \
+    | sed -E 's/[A-Za-z0-9_+/=-]{40,}/[REDACTED-LONG]/g'
+}
+
 append_suggestion() {
   local kind="$1" name="$2" one_liner="$3" line="$4" snippet="$5"
   local date_iso
@@ -444,14 +467,17 @@ main() {
 
   # One jq call emits all suggestion fields as TSV; the while loop reads
   # each row without re-parsing the JSON array on every field access.
-  echo "$suggestions" \
-    | jq -r '.[] | [.kind // "skill", .name // "", .one_liner // "", .evidence_line // 0, .evidence_snippet // ""] | @tsv' \
-    | while IFS=$'\t' read -r kind name one_liner line snippet; do
-        snippet=$(echo "$snippet" | tr -d '"' | head -c 200)
-        if [ -n "$name" ] && [ -n "$one_liner" ] && ! already_in_note "$name"; then
-          append_suggestion "$kind" "$name" "$one_liner" "$line" "$snippet"
-        fi
-      done
+  # The loop body extends NOTE_CACHE after each append so that same-run
+  # duplicates (e.g. two suggestions with colliding names) are caught by
+  # already_in_note on subsequent iterations.
+  while IFS=$'\t' read -r kind name one_liner line snippet; do
+    snippet=$(redact_snippet "$(echo "$snippet" | tr -d '"' | head -c 200)")
+    one_liner=$(redact_snippet "$one_liner")
+    if [ -n "$name" ] && [ -n "$one_liner" ] && ! already_in_note "$name"; then
+      append_suggestion "$kind" "$name" "$one_liner" "$line" "$snippet"
+      NOTE_CACHE="$NOTE_CACHE"$'\n'"\`$name\`"
+    fi
+  done < <(echo "$suggestions" | jq -r '.[] | [.kind // "skill", .name // "", .one_liner // "", .evidence_line // 0, .evidence_snippet // ""] | @tsv')
 
   exit 0
 }
