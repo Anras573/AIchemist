@@ -64,11 +64,16 @@ cat > "$STDIN_FILE"
 [ ! -s "$STDIN_FILE" ] && exit 0
 
 # Hook stdin may be a JSON payload (with transcript_path) or a raw JSONL dump.
+# Probe ONLY the first line: the hook payload is always a single JSON object
+# on one line. Reading the whole file through jq three separate times (as an
+# earlier version did) would re-parse a multi-MB PreCompact transcript on
+# every probe — pure waste if the input turns out to be raw JSONL.
 TRANSCRIPT=""
 HOOK_EVENT="unknown"
-if jq -e . < "$STDIN_FILE" >/dev/null 2>&1; then
-  PATH_FIELD=$(jq -r '.transcript_path // empty' < "$STDIN_FILE" 2>/dev/null)
-  HOOK_EVENT=$(jq -r '.hook_event_name // "unknown"' < "$STDIN_FILE" 2>/dev/null)
+FIRST_LINE=$(head -n1 "$STDIN_FILE")
+if PAYLOAD_FIELDS=$(echo "$FIRST_LINE" | jq -r 'select(type == "object") | [(.transcript_path // ""), (.hook_event_name // "unknown")] | @tsv' 2>/dev/null) \
+    && [ -n "$PAYLOAD_FIELDS" ]; then
+  IFS=$'\t' read -r PATH_FIELD HOOK_EVENT <<< "$PAYLOAD_FIELDS"
   [ -n "$PATH_FIELD" ] && [ -f "$PATH_FIELD" ] && TRANSCRIPT="$PATH_FIELD"
 fi
 [ -z "$TRANSCRIPT" ] && TRANSCRIPT="$STDIN_FILE"
@@ -94,15 +99,15 @@ resolve_vault() {
     # with spaces ("My Vault") resolve correctly — `print $1` with default
     # whitespace separator truncates at the first space.
     #
-    # Pick the first vault even when there are several. A user with
-    # multiple vaults who wants a specific target should set
-    # `obsidian.preferredVault` in config.json or `$OBSIDIAN_VAULT` —
-    # the alternative of bailing out silently on multi-vault setups
-    # meant the hook was effectively disabled for a very common
-    # first-run configuration.
-    local vaults
+    # Auto-pick ONLY when there's exactly one vault. For multi-vault
+    # setups we silently skip rather than guess — guessing would persist
+    # unsolicited notes into a vault the user didn't intend. Multi-vault
+    # users must explicitly opt in via `obsidian.preferredVault` in
+    # config.json or `$OBSIDIAN_VAULT`; see docs/configuration.md.
+    local vaults count
     vaults=$(obsidian vaults 2>/dev/null | awk -F'\t' 'NF && !/^(NAME|Available|No vault)/ { print $1 }')
-    [ -n "$vaults" ] && vault=$(echo "$vaults" | head -n1)
+    count=$(echo "$vaults" | grep -c . || true)
+    [ "$count" = "1" ] && vault=$(echo "$vaults" | head -n1)
   fi
 
   echo "$vault"
@@ -221,6 +226,12 @@ detect_tool_sequences() {
   # should count as ONE match of "Edit→Edit→Edit", not two. Greedy scan —
   # when a key matches at position i, require the next match of the same key
   # to start at position >= i+len.
+  # awk associative-array iteration order is undefined, so we pipe
+  # through `sort` to get a deterministic order — by first-line
+  # number (column 2, numeric). Two effects: identical transcripts
+  # produce identical suggestion lists across runs/platforms, and
+  # patterns surface in the order they first appeared in the session
+  # (chronological), which is more intuitive than alphabetic.
   awk -F'\t' -v len="$TOOL_SEQ_LEN" -v min="$TOOL_REPEAT_MIN" '
     { names[NR] = $1; lines[NR] = $2 }
     END {
@@ -237,7 +248,7 @@ detect_tool_sequences() {
         if (count[k] >= min) print k "\t" first_line[k]
       }
     }
-  ' "$tools"
+  ' "$tools" | sort -t $'\t' -k2n
 }
 
 detect_user_ngrams() {
@@ -248,6 +259,8 @@ detect_user_ngrams() {
   # Non-overlapping count: a repeated phrase within one message ("the the
   # the the the" with n=4) counts as one occurrence, not two. Across
   # messages we always count separately since positions reset each record.
+  # Deterministic order via external sort — see detect_tool_sequences
+  # for the same pattern and reasoning.
   awk -F'\t' -v n="$NGRAM_SIZE" -v min="$NGRAM_REPEAT_MIN" '
     {
       line = $1
@@ -268,7 +281,7 @@ detect_user_ngrams() {
         if (count[k] >= min) print k "\t" first_line[k]
       }
     }
-  ' "$msgs"
+  ' "$msgs" | sort -t $'\t' -k2n
 }
 
 # ----- Format regex hits as suggestions JSON -------------------------------

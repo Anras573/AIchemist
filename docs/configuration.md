@@ -166,3 +166,54 @@ Daily notes use the "daily" template with sections for:
 - Work log
 - Evening reflection
 ```
+
+## Hooks
+
+### Skill Suggester
+
+AIchemist ships a `PreCompact`/`SessionEnd` hook (`tools/skill-suggester.sh`) that mines your session transcripts for repeated workflow patterns and surfaces them as candidate skills/agents/hooks. Suggestions are appended to `AIchemist/Skill Ideas.md` inside your Obsidian vault so you can review them during triage.
+
+#### Requirements
+
+The hook is best-effort — it silently exits if any of these are missing:
+
+- `jq`, `awk`, `sort`, `python3` — standard on macOS and most Linux distros
+- `obsidian` CLI — the Obsidian plugin/CLI this repo already requires for other skills (see the **Obsidian** section above)
+- `claude` CLI — optional; enables the semantic fallback when regex detection finds nothing
+
+#### Vault selection
+
+The hook needs to know which vault to write to. It checks, in order:
+
+1. `obsidian.preferredVault` in `${CLAUDE_PLUGIN_ROOT}/config.json`
+2. `$OBSIDIAN_VAULT` environment variable
+3. Auto-pick, but **only when exactly one vault is configured**
+
+If you have multiple Obsidian vaults, the hook deliberately **does not guess** — it silently skips rather than risk writing unsolicited notes to the wrong vault. You must opt in explicitly by setting `obsidian.preferredVault`:
+
+```json
+{
+  "obsidian": {
+    "preferredVault": "My Vault"
+  }
+}
+```
+
+#### Output
+
+- **Note location**: `AIchemist/Skill Ideas.md` in the resolved vault. Created on first qualifying session, appended thereafter.
+- **Entry shape**: one line per suggestion with the kind (skill/agent/hook), a proposed name, a one-line rationale, and a line-reference into the session transcript.
+- **Dedup**: per-vault lock during writes, plus name-based dedup against existing note contents.
+- **Redaction**: common token prefixes (`sk-`, `ghp_`, `Bearer ...`) and credential assignments are masked before persistence. Best-effort only; review the note before sharing.
+
+#### Disabling
+
+Remove the two entries referencing `tools/skill-suggester.sh` from `hooks/hooks.json`:
+
+```json
+"PreCompact": [ ... ],     // remove the skill-suggester entry
+"SessionEnd": [ ... ]      // remove this whole block if only this hook is registered
+```
+
+Or `chmod -x tools/skill-suggester.sh` to keep the registration but neuter execution.
+
