@@ -3,7 +3,7 @@
 # Requires MSGRAPH_APP_ID and MSGRAPH_TENANT_ID to be set in the environment.
 #
 # Usage:
-#   msgraph.sh login                              # authenticate (device code flow)
+#   msgraph.sh login                              # authenticate via browser
 #   msgraph.sh logout                             # clear cached tokens
 #   msgraph.sh get-events [--start ISO8601] [--end ISO8601]
 #   msgraph.sh get-event-detail EVENT_ID
@@ -21,15 +21,13 @@ require_env() {
   [[ -n "${MSGRAPH_TENANT_ID:-}" ]]  || die "MSGRAPH_TENANT_ID is not set. Export it from your shell profile."
 }
 
-# Prefer a globally installed m365; fall back to npx.
+# Resolve m365 once: prefer global install, fall back to npx.
 # npx requires --package to map the package name to the m365 binary.
-m365_cmd() {
-  if command -v m365 &>/dev/null; then
-    m365 "$@"
-  else
-    npx --yes --package @pnp/cli-microsoft365 m365 "$@"
-  fi
-}
+if command -v m365 &>/dev/null; then
+  m365_cmd() { m365 "$@"; }
+else
+  m365_cmd() { npx --yes --package @pnp/cli-microsoft365 m365 "$@"; }
+fi
 
 # macOS-compatible ISO 8601 date arithmetic.
 iso_now() {
@@ -99,7 +97,7 @@ cmd_get_event_detail() {
   echo "Usage: $(basename "$0") <command> [options]"
   echo ""
   echo "Commands:"
-  echo "  login                              Authenticate via device code flow"
+  echo "  login                              Authenticate via browser"
   echo "  logout                             Clear cached tokens"
   echo "  get-events [--start ISO] [--end ISO]  List calendar events (default: next 7 days)"
   echo "  get-event-detail EVENT_ID          Fetch full event including body/description"
