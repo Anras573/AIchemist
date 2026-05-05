@@ -1,0 +1,6 @@
+.git/
+.claude/
+*.lock
+*.db
+*.sqlite
+CHANGELOG.md
