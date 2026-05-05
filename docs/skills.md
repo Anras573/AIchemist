@@ -377,7 +377,7 @@ Microsoft 365 calendar integration via the `m365` CLI (`@pnp/cli-microsoft365`).
 
 ### Operations
 
-All operations are read-only — no confirmation needed.
+Calendar queries are read-only — no confirmation needed. Authentication (`login`/`logout`) is a one-time setup step that manages local credentials.
 
 | Workflow | What it does |
 |----------|-------------|

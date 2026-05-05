@@ -9,7 +9,7 @@ version: 1.0.0
 
 Fetch and interpret Microsoft 365 calendar events via `tools/msgraph.sh`. Primary use cases: daily schedule overview, upcoming events, and meeting preparation briefings.
 
-All operations are **read-only** — no confirmation needed.
+Calendar queries are **read-only** — no confirmation needed. Authentication commands (`login`/`logout`) manage local credentials and are a one-time setup step.
 
 ## Prerequisites
 
