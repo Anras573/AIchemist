@@ -25,8 +25,10 @@ require_env() {
 # npx requires --package to map the package name to the m365 binary.
 if command -v m365 &>/dev/null; then
   m365_cmd() { m365 "$@"; }
-else
+elif command -v npx &>/dev/null; then
   m365_cmd() { npx --yes --package @pnp/cli-microsoft365 m365 "$@"; }
+else
+  die "Neither m365 nor npx is available. Install Node.js (https://nodejs.org) or run: npm install -g @pnp/cli-microsoft365"
 fi
 
 # macOS-compatible ISO 8601 date arithmetic.
