@@ -83,7 +83,7 @@ cmd_get_events() {
 
 cmd_get_event_detail() {
   require_env
-  [[ $# -ge 1 ]] || die "Usage: msgraph.sh get-event-detail EVENT_ID"
+  [[ $# -ge 1 ]] || die "Usage: $(basename "$0") get-event-detail EVENT_ID"
   local event_id="$1"
 
   m365_cmd outlook event get \
@@ -97,13 +97,13 @@ cmd_get_event_detail() {
 # ---------------------------------------------------------------------------
 
 [[ $# -ge 1 ]] || {
-  echo "Usage: $(basename "$0") <command> [options]"
-  echo ""
-  echo "Commands:"
-  echo "  login                              Authenticate via browser"
-  echo "  logout                             Clear cached tokens"
-  echo "  get-events [--start ISO] [--end ISO]  List calendar events (default: next 7 days)"
-  echo "  get-event-detail EVENT_ID          Fetch full event including body/description"
+  echo "Usage: $(basename "$0") <command> [options]" >&2
+  echo "" >&2
+  echo "Commands:" >&2
+  echo "  login                              Authenticate via browser" >&2
+  echo "  logout                             Clear cached tokens" >&2
+  echo "  get-events [--start ISO] [--end ISO]  List calendar events (default: next 7 days)" >&2
+  echo "  get-event-detail EVENT_ID          Fetch full event including body/description" >&2
   exit 1
 }
 
