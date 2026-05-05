@@ -110,21 +110,14 @@ resolve_vault() {
 
   [ -z "$vault" ] && vault="${OBSIDIAN_VAULT:-}"
 
-  if [ -z "$vault" ]; then
-    # Parse `obsidian vaults` output. Use tab as separator so vault names
-    # with spaces ("My Vault") resolve correctly — `print $1` with default
-    # whitespace separator truncates at the first space.
-    #
-    # Auto-pick ONLY when there's exactly one vault. For multi-vault
-    # setups we silently skip rather than guess — guessing would persist
-    # unsolicited notes into a vault the user didn't intend. Multi-vault
-    # users must explicitly opt in via `obsidian.preferredVault` in
-    # config.json or `$OBSIDIAN_VAULT`; see docs/configuration.md.
-    local vaults count
-    vaults=$(obsidian vaults 2>/dev/null | awk -F'\t' 'NF && !/^(NAME|Available|No vault)/ { print $1 }')
-    count=$(echo "$vaults" | grep -c . || true)
-    [ "$count" = "1" ] && vault=$(echo "$vaults" | head -n1)
-  fi
+  # NOTE: no auto-pick, even for single-vault setups. Per the repo's
+  # "Explicit over implicit" rule, a hook that persists content to a
+  # long-lived note in the user's vault must be explicitly enabled.
+  # Auto-picking "whichever vault exists" would start writing to a
+  # fresh install the first time a session ends — the user never had
+  # a chance to consent. If `preferredVault` isn't set in config.json
+  # and `$OBSIDIAN_VAULT` isn't in the environment, return empty and
+  # silently skip the entire hook.
 
   echo "$vault"
 }
