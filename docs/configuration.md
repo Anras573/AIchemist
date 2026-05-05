@@ -166,3 +166,68 @@ Daily notes use the "daily" template with sections for:
 - Work log
 - Evening reflection
 ```
+
+## Hooks
+
+### Skill Suggester
+
+AIchemist ships a `PreCompact`/`SessionEnd` hook (`tools/skill-suggester.sh`) that mines your session transcripts for repeated workflow patterns and surfaces them as candidate skills/agents/hooks. Suggestions are appended to `AIchemist/Skill Ideas.md` inside your Obsidian vault so you can review them during triage.
+
+#### Requirements
+
+**Required** (hook silently exits if missing):
+
+- `jq`, `awk`, `sort`, `python3` — standard on macOS and most Linux distros; used by the detection pipeline.
+- `obsidian` CLI — only required for actual note writes; the Obsidian plugin/CLI this repo already requires for other skills (see the **Obsidian** section above). `DRY_RUN=1` mode bypasses this check so contributors/CI can exercise detection without Obsidian installed.
+
+**Optional**:
+
+- `claude` CLI — when present, enables the semantic-LLM fallback that runs on sufficiently large sessions if regex detection found nothing. Without it, the hook still runs the regex detector and emits whatever it finds — `claude` is strictly additive, not a hard dependency.
+
+#### Vault selection (opt-in)
+
+**This hook is opt-in.** It does not auto-pick a vault, even when you only have one — per the project's "Explicit over implicit" rule, a feature that writes to a long-lived note in your vault must be explicitly enabled. Until you configure one of the two sources below, the hook silently does nothing.
+
+The hook checks in order:
+
+1. `obsidian.preferredVault` in `${CLAUDE_PLUGIN_ROOT}/config.json`
+2. `$OBSIDIAN_VAULT` environment variable
+
+To enable, set your preferred vault:
+
+```json
+{
+  "obsidian": {
+    "preferredVault": "My Vault"
+  }
+}
+```
+
+Or export `OBSIDIAN_VAULT=My\ Vault` in your shell profile.
+
+#### Output
+
+- **Note location**: `AIchemist/Skill Ideas.md` in the resolved vault. Created on first qualifying session, appended thereafter.
+- **Entry shape**: a top-level bullet per suggestion plus two sub-bullets for evidence and observation date, e.g.
+
+  ```markdown
+  - `workflow-git-status-edit-commit` (skill): Repeated tool workflow: Bash(git status) → Edit → Bash(git commit)
+      - _evidence_: line 214 — "Bash(git status) → Edit → Bash(git commit)"
+      - _observed_: 2026-05-05
+  ```
+
+  The top-level bullet carries the proposed name (backticked), kind (skill/agent/hook), and a one-line rationale; the sub-bullets give the transcript line-reference and the UTC date when the suggestion was first persisted.
+- **Dedup**: per-vault lock during writes, plus name-based dedup against existing note contents.
+- **Redaction**: common token prefixes (`sk-`, `ghp_`, `Bearer ...`) and credential assignments are masked before persistence. Best-effort only; review the note before sharing.
+
+#### Disabling
+
+The simplest way to disable is to NOT configure a vault — with no `preferredVault` and no `$OBSIDIAN_VAULT`, the hook short-circuits early and does nothing.
+
+To disable more permanently, edit `hooks/hooks.json` and remove the two entries that invoke `tools/skill-suggester.sh`:
+
+- Under `PreCompact`: remove the object whose `command` is `"${CLAUDE_PLUGIN_ROOT}/tools/skill-suggester.sh" 2>/dev/null; exit 0`. Leave any other entries (e.g. the mempalace command) in place.
+- Under `SessionEnd`: remove the entire `SessionEnd` block if skill-suggester is the only hook registered there, otherwise remove just the skill-suggester entry.
+
+Alternatively, `chmod -x tools/skill-suggester.sh` keeps the hook registration but prevents the script from executing.
+
