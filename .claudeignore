@@ -8,6 +8,10 @@ bun.lockb
 *.db
 *.sqlite
 *.sqlite3
-*-wal
-*-shm
+*.db-wal
+*.db-shm
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-wal
+*.sqlite3-shm
 CHANGELOG.md
