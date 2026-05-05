@@ -18,7 +18,9 @@
     "code-review",
     "obsidian",
     "knowledge-management",
-    "markitdown"
+    "markitdown",
+    "calendar",
+    "microsoft-365"
   ],
   "agents": "agents/",
   "skills": "skills/",

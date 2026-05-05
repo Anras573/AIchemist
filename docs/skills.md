@@ -353,6 +353,55 @@ Use Playwright MCP for:
 - Exploratory automation requiring persistent state and rich introspection
 - Long-running autonomous workflows where continuous browser context outweighs token cost
 
+## Calendar Skill
+
+Microsoft 365 calendar integration via the `m365` CLI (`@pnp/cli-microsoft365`). Fetches events and generates meeting preparation briefings.
+
+**Trigger phrases:** "my calendar", "what's on my schedule", "what meetings do I have", "today's agenda", "what's coming up", "next meeting", "prepare me for my next meeting", "meeting prep", "brief me on".
+
+### Prerequisites
+
+1. **`m365` CLI** installed:
+   ```bash
+   npm install -g @pnp/cli-microsoft365
+   ```
+2. **Environment variables** in your shell profile:
+   ```bash
+   export MSGRAPH_APP_ID=<your-azure-app-id>
+   export MSGRAPH_TENANT_ID=<your-azure-tenant-id>
+   ```
+3. **Authenticated once** via browser OAuth:
+   ```bash
+   ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh login
+   ```
+   Tokens are cached by `m365` and auto-refreshed.
+
+### Operations
+
+All operations are read-only — no confirmation needed.
+
+| Workflow | What it does |
+|----------|-------------|
+| Today's schedule | Events from 00:00–23:59 today, grouped and formatted |
+| Upcoming events | Next 7 days by default, grouped by day |
+| Next meeting | First event in the next 2 hours (extends to end of day if none) |
+| Meeting prep / briefing | Full event detail including body — agenda, action items, and attendees extracted from HTML |
+
+### Meeting Prep Workflow
+
+The primary high-value workflow. Given a meeting subject or time:
+
+1. Fetches the matching event from `get-events`
+2. Retrieves full body via `get-event-detail`
+3. Strips HTML boilerplate; extracts agenda items, pre-reads, and action items
+4. Presents a structured brief with join link, attendees, and suggested prep
+
+### Cross-Skill Integrations
+
+- **Daily Note** — Offer to append today's schedule after fetching it
+- **Capture** — Offer to save a meeting brief to `Meeting Notes/[Subject]` in Obsidian
+- **Jira** — If a meeting body mentions issue keys, offer to fetch their current status
+
 ## MemPalace Memory Skill
 
 Persistent local memory backed by ChromaDB (vector search) and a SQLite knowledge graph. No Docker, no API key, no cloud account required. Automatically stores and retrieves context across sessions.
