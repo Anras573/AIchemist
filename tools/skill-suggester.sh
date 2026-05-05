@@ -434,8 +434,14 @@ qualifies; err on the side of [].
 $transcript_snippet
 EOF
 
+  # Pipe the prompt via stdin instead of passing it as a `-p` argv
+  # argument. The transcript tail can be hundreds of KB; on macOS
+  # ARG_MAX is ~256KB, so argv-based invocation would silently fail
+  # on exactly the long sessions this fallback path is meant to
+  # analyze. `claude -p` (with no message argument) reads the prompt
+  # from stdin in print mode.
   local raw json
-  raw=$(claude -p "$(cat "$prompt_file")" --output-format text 2>/dev/null | tr -d '\r')
+  raw=$(claude -p --output-format text < "$prompt_file" 2>/dev/null | tr -d '\r')
   json=$(echo "$raw" | awk '/^\[/,/^\]$/' | head -c "$CLAUDE_OUTPUT_MAX")
   if echo "$json" | jq -e 'type == "array"' >/dev/null 2>&1; then
     echo "$json"

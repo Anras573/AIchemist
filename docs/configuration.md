@@ -175,11 +175,14 @@ AIchemist ships a `PreCompact`/`SessionEnd` hook (`tools/skill-suggester.sh`) th
 
 #### Requirements
 
-The hook is best-effort — it silently exits if any of these are missing:
+**Required** (hook silently exits if missing):
 
-- `jq`, `awk`, `sort`, `python3` — standard on macOS and most Linux distros
-- `obsidian` CLI — the Obsidian plugin/CLI this repo already requires for other skills (see the **Obsidian** section above)
-- `claude` CLI — optional; enables the semantic fallback when regex detection finds nothing
+- `jq`, `awk`, `sort`, `python3` — standard on macOS and most Linux distros; used by the detection pipeline.
+- `obsidian` CLI — only required for actual note writes; the Obsidian plugin/CLI this repo already requires for other skills (see the **Obsidian** section above). `DRY_RUN=1` mode bypasses this check so contributors/CI can exercise detection without Obsidian installed.
+
+**Optional**:
+
+- `claude` CLI — when present, enables the semantic-LLM fallback that runs on sufficiently large sessions if regex detection found nothing. Without it, the hook still runs the regex detector and emits whatever it finds — `claude` is strictly additive, not a hard dependency.
 
 #### Vault selection
 
