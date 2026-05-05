@@ -318,9 +318,13 @@ PY
 
 # ----- Claude semantic fallback --------------------------------------------
 
+# Extracts the `name:` frontmatter field from each matching file passed as
+# an argument. Callers pass filenames via shell glob expansion so no
+# reliance on `find`'s extensions — works identically on BSD and GNU.
 list_existing() {
-  local dir="$1" glob="$2"
-  find "$PLUGIN_ROOT/$dir" -maxdepth 2 -name "$glob" 2>/dev/null | while read -r f; do
+  local f
+  for f in "$@"; do
+    [ -f "$f" ] || continue
     awk -F': *' '/^name:/ { gsub(/[[:space:]]+$/, "", $2); print $2; exit }' "$f"
   done | sort -u
 }
@@ -329,8 +333,10 @@ invoke_claude_fallback() {
   [ "$HAS_CLAUDE" = "1" ] || { echo "[]"; return; }
 
   local skills agents transcript_snippet
-  skills=$(list_existing "skills" "SKILL.md" | paste -sd, -)
-  agents=$(list_existing "agents" "*.agent.md" | paste -sd, -)
+  # Glob expansion happens at call time in the current shell. If no files
+  # match, the literal glob string is passed and `[ -f "$f" ]` filters it.
+  skills=$(list_existing "$PLUGIN_ROOT"/skills/*/SKILL.md | paste -sd, -)
+  agents=$(list_existing "$PLUGIN_ROOT"/agents/*.agent.md | paste -sd, -)
   transcript_snippet=$(tail -n 400 "$TRANSCRIPT")
 
   local prompt_file="$TMPDIR/prompt.txt"
