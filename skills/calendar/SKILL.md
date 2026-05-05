@@ -41,19 +41,21 @@ Calendar queries are **read-only** — no confirmation needed. Authentication co
 
 ## ISO 8601 Time Helpers (macOS)
 
+Use local time with UTC offset (`%z`) so day boundaries match the user's timezone:
+
 ```bash
-# Now
-date -u +"%Y-%m-%dT%H:%M:%SZ"
+# Now (local time)
+date +"%Y-%m-%dT%H:%M:%S%z"
 
-# Start / end of today
-date -u +"%Y-%m-%dT00:00:00Z"
-date -u +"%Y-%m-%dT23:59:59Z"
+# Start / end of today (local time)
+date +"%Y-%m-%dT00:00:00%z"
+date +"%Y-%m-%dT23:59:59%z"
 
-# 2 hours from now
-date -u -v+2H +"%Y-%m-%dT%H:%M:%SZ"
+# 2 hours from now — BSD (macOS) / GNU fallback
+date -v+2H +"%Y-%m-%dT%H:%M:%S%z" 2>/dev/null || date -d "+2 hours" +"%Y-%m-%dT%H:%M:%S%z"
 
-# 7 days from now
-date -u -v+7d +"%Y-%m-%dT%H:%M:%SZ"
+# 7 days from now — BSD (macOS) / GNU fallback
+date -v+7d +"%Y-%m-%dT%H:%M:%S%z" 2>/dev/null || date -d "+7 days" +"%Y-%m-%dT%H:%M:%S%z"
 ```
 
 ## Core Workflows
@@ -62,8 +64,8 @@ date -u -v+7d +"%Y-%m-%dT%H:%M:%SZ"
 
 ```bash
 ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh get-events \
-  --start "$(date -u +"%Y-%m-%dT00:00:00Z")" \
-  --end "$(date -u +"%Y-%m-%dT23:59:59Z")"
+  --start "$(date +"%Y-%m-%dT00:00:00%z")" \
+  --end "$(date +"%Y-%m-%dT23:59:59%z")"
 ```
 
 Present as:
@@ -101,8 +103,8 @@ Fetch events from now to 2 hours from now:
 
 ```bash
 ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh get-events \
-  --start "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-  --end "$(date -u -v+2H +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u -d "+2 hours" +"%Y-%m-%dT%H:%M:%SZ")"
+  --start "$(date +"%Y-%m-%dT%H:%M:%S%z")" \
+  --end "$(date -v+2H +"%Y-%m-%dT%H:%M:%S%z" 2>/dev/null || date -d "+2 hours" +"%Y-%m-%dT%H:%M:%S%z")"
 ```
 
 If the result is empty, extend to end of day.

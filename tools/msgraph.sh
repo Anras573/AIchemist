@@ -31,16 +31,17 @@ else
   die "Neither m365 nor npx is available. Install Node.js (https://nodejs.org) or run: npm install -g @pnp/cli-microsoft365"
 fi
 
-# macOS-compatible ISO 8601 date arithmetic.
+# macOS-compatible ISO 8601 date arithmetic using local time + offset.
+# Local time preserves correct day boundaries for the user's timezone.
 iso_now() {
-  date -u +"%Y-%m-%dT%H:%M:%SZ"
+  date +"%Y-%m-%dT%H:%M:%S%z"
 }
 
 iso_days_from_now() {
   local days="$1"
   # GNU date uses -d; BSD date (macOS) uses -v
-  date -u -v+"${days}d" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null \
-    || date -u -d "+${days} days" +"%Y-%m-%dT%H:%M:%SZ"
+  date -v+"${days}d" +"%Y-%m-%dT%H:%M:%S%z" 2>/dev/null \
+    || date -d "+${days} days" +"%Y-%m-%dT%H:%M:%S%z"
 }
 
 # ---------------------------------------------------------------------------
