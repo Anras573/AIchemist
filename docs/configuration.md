@@ -202,7 +202,15 @@ If you have multiple Obsidian vaults, the hook deliberately **does not guess** �
 #### Output
 
 - **Note location**: `AIchemist/Skill Ideas.md` in the resolved vault. Created on first qualifying session, appended thereafter.
-- **Entry shape**: one line per suggestion with the kind (skill/agent/hook), a proposed name, a one-line rationale, and a line-reference into the session transcript.
+- **Entry shape**: a top-level bullet per suggestion plus two sub-bullets for evidence and observation date, e.g.
+
+  ```markdown
+  - `workflow-git-status-edit-commit` (skill): Repeated tool workflow: Bash(git status) → Edit → Bash(git commit)
+      - _evidence_: line 214 — "Bash(git status) → Edit → Bash(git commit)"
+      - _observed_: 2026-05-05
+  ```
+
+  The top-level bullet carries the proposed name (backticked), kind (skill/agent/hook), and a one-line rationale; the sub-bullets give the transcript line-reference and the UTC date when the suggestion was first persisted.
 - **Dedup**: per-vault lock during writes, plus name-based dedup against existing note contents.
 - **Redaction**: common token prefixes (`sk-`, `ghp_`, `Bearer ...`) and credential assignments are masked before persistence. Best-effort only; review the note before sharing.
 
