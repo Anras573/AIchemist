@@ -93,10 +93,16 @@ resolve_vault() {
     # Parse `obsidian vaults` output. Use tab as separator so vault names
     # with spaces ("My Vault") resolve correctly — `print $1` with default
     # whitespace separator truncates at the first space.
-    local vaults count
+    #
+    # Pick the first vault even when there are several. A user with
+    # multiple vaults who wants a specific target should set
+    # `obsidian.preferredVault` in config.json or `$OBSIDIAN_VAULT` —
+    # the alternative of bailing out silently on multi-vault setups
+    # meant the hook was effectively disabled for a very common
+    # first-run configuration.
+    local vaults
     vaults=$(obsidian vaults 2>/dev/null | awk -F'\t' 'NF && !/^(NAME|Available|No vault)/ { print $1 }')
-    count=$(echo "$vaults" | grep -c . || true)
-    [ "$count" = "1" ] && vault=$(echo "$vaults" | head -n1)
+    [ -n "$vaults" ] && vault=$(echo "$vaults" | head -n1)
   fi
 
   echo "$vault"
@@ -182,6 +188,11 @@ extract_user_messages() {
                 | gsub("<command-args>.*?</command-args>"; ""; "s")
                 | gsub("\\s+"; " ")
                 | ascii_downcase
+                # Trim leading/trailing whitespace so messages that
+                # contained ONLY harness tags (and left a " " residue
+                # after gsub) fail the nonempty check below rather
+                # than inflating the user-exchange count with blanks.
+                | gsub("^ | $"; "")
               )
             }
           | select(.text != "")
@@ -503,13 +514,18 @@ acquire_write_lock() {
   # path is stable across all hook invocations of this user, not buried
   # inside each invocation's unique mktemp dir.
   #
-  # Scope the lock BY VAULT: two sessions targeting different Obsidian
-  # vaults would otherwise serialize unnecessarily — they can't race
-  # because they're writing different files. Sanitize the vault name
-  # into a filesystem-safe token before embedding in the path.
-  local vault_token
+  # Scope the lock BY (user, vault):
+  #   - Vault: two sessions targeting different Obsidian vaults can't
+  #     race since they're writing different files.
+  #   - User: on Linux, $SYSTEM_TMPDIR is typically /tmp, which is
+  #     shared across users. Two OS users who happen to have the same
+  #     vault name would otherwise contend on the same lockdir and
+  #     silently suppress each other's suggestions.
+  # Sanitize both tokens into filesystem-safe strings before embedding.
+  local vault_token user_token
   vault_token=$(printf '%s' "$VAULT" | tr -c 'a-zA-Z0-9' '_' | cut -c1-64)
-  local lockdir="$SYSTEM_TMPDIR/aichemist-skill-suggester.${vault_token:-default}.lock"
+  user_token="${UID:-nouser}"
+  local lockdir="$SYSTEM_TMPDIR/aichemist-skill-suggester.${user_token}.${vault_token:-default}.lock"
   if mkdir "$lockdir" 2>/dev/null; then
     echo "$$" > "$lockdir/pid" 2>/dev/null || true
     LOCK_ACQUIRED="$lockdir"
