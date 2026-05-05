@@ -39,6 +39,13 @@ readonly EXCLUDED_TOOLS_REGEX='^(Read|TodoWrite|TaskCreate|TaskUpdate|TaskList|T
 
 # ----- Read hook input -----------------------------------------------------
 
+# Capture the SYSTEM tmpdir before we shadow TMPDIR with our per-invocation
+# mktemp path. The write-phase lock must live in a path shared across all
+# hook invocations of the same user — NOT inside our per-process mktemp
+# dir (which is what the previous lock inadvertently did, making every
+# invocation acquire its own uncontested lock and defeating the purpose).
+readonly SYSTEM_TMPDIR="${TMPDIR:-/tmp}"
+
 # Cleanup: remove tmpdir on exit, and the write-phase lock if we acquired it.
 LOCK_ACQUIRED=""
 cleanup() {
@@ -486,7 +493,10 @@ EOF
 # If the lock is held by a live process, we skip this run silently —
 # consistent with the hook's best-effort contract.
 acquire_write_lock() {
-  local lockdir="${TMPDIR:-/tmp}/aichemist-skill-suggester.lock"
+  # Use SYSTEM_TMPDIR (captured before TMPDIR was shadowed) so the lock
+  # path is stable across all hook invocations of this user, not buried
+  # inside each invocation's unique mktemp dir.
+  local lockdir="$SYSTEM_TMPDIR/aichemist-skill-suggester.lock"
   if mkdir "$lockdir" 2>/dev/null; then
     echo "$$" > "$lockdir/pid" 2>/dev/null || true
     LOCK_ACQUIRED="$lockdir"
