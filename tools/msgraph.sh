@@ -65,8 +65,8 @@ cmd_get_events() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --start) start="$2"; shift 2 ;;
-      --end)   end="$2";   shift 2 ;;
+      --start) [[ $# -ge 2 ]] || die "--start requires a value"; start="$2"; shift 2 ;;
+      --end)   [[ $# -ge 2 ]] || die "--end requires a value";   end="$2";   shift 2 ;;
       *) die "Unknown option: $1" ;;
     esac
   done

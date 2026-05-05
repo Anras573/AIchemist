@@ -102,7 +102,7 @@ Fetch events from now to 2 hours from now:
 ```bash
 ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh get-events \
   --start "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-  --end "$(date -u -v+2H +"%Y-%m-%dT%H:%M:%SZ")"
+  --end "$(date -u -v+2H +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u -d "+2 hours" +"%Y-%m-%dT%H:%M:%SZ")"
 ```
 
 If the result is empty, extend to end of day.
