@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.1.0](https://github.com/Anras573/AIchemist/compare/v3.0.1...v3.1.0) (2026-05-05)
+
+
+### Features
+
+* **agents:** add simplify agent forked from code-simplifier ([#83](https://github.com/Anras573/AIchemist/issues/83)) ([4465905](https://github.com/Anras573/AIchemist/commit/4465905cac6084b7d178fda0f83b6541b3ac268a))
+* **calendar:** add Microsoft 365 calendar skill and CLI wrapper ([#87](https://github.com/Anras573/AIchemist/issues/87)) ([88db19e](https://github.com/Anras573/AIchemist/commit/88db19e766465395b025d80220439b8365dc2172))
+* **hooks:** add skill-suggester hook for workflow pattern detection ([#84](https://github.com/Anras573/AIchemist/issues/84)) ([1807fc4](https://github.com/Anras573/AIchemist/commit/1807fc485c2b59afc62a0292c93e2ad77ee97875))
+
 ## [3.0.1](https://github.com/Anras573/AIchemist/compare/v3.0.0...v3.0.1) (2026-04-22)
 
 
