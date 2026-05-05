@@ -1,0 +1,17 @@
+.git/
+.claude/
+*.lock
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lockb
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-wal
+*.sqlite3-shm
+CHANGELOG.md
