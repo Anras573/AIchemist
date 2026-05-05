@@ -13,22 +13,22 @@ All operations are **read-only** — no confirmation needed.
 
 ## Prerequisites
 
-1. **m365 CLI installed** (or available via npx):
-   ```bash
-   npm install -g @pnp/cli-microsoft365
-   ```
-
-2. **Environment variables** exported in your shell profile (`.zshrc` / `.bash_profile`):
+1. **Environment variables** exported in your shell profile (`.zshrc` / `.bash_profile`):
    ```bash
    export MSGRAPH_APP_ID=<your-azure-app-id>
    export MSGRAPH_TENANT_ID=<your-azure-tenant-id>
    ```
 
-3. **Authenticated once**:
+2. **Authenticated once**:
    ```bash
    ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh login
    ```
    This opens a browser window for Microsoft OAuth login. Tokens are cached by m365 and auto-refreshed.
+
+   The script uses `m365` if installed globally, otherwise falls back to `npx` automatically. Install globally for faster startup:
+   ```bash
+   npm install -g @pnp/cli-microsoft365
+   ```
 
 ## Available Commands
 

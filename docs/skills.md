@@ -361,20 +361,19 @@ Microsoft 365 calendar integration via the `m365` CLI (`@pnp/cli-microsoft365`).
 
 ### Prerequisites
 
-1. **`m365` CLI** installed:
-   ```bash
-   npm install -g @pnp/cli-microsoft365
-   ```
-2. **Environment variables** in your shell profile:
+1. **Environment variables** in your shell profile:
    ```bash
    export MSGRAPH_APP_ID=<your-azure-app-id>
    export MSGRAPH_TENANT_ID=<your-azure-tenant-id>
    ```
-3. **Authenticated once** via browser OAuth:
+2. **Authenticated once** via browser OAuth:
    ```bash
    ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh login
    ```
-   Tokens are cached by `m365` and auto-refreshed.
+   Tokens are cached by `m365` and auto-refreshed. The script falls back to `npx` automatically if `m365` is not installed globally — install it for faster startup:
+   ```bash
+   npm install -g @pnp/cli-microsoft365
+   ```
 
 ### Operations
 
