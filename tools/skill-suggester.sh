@@ -496,7 +496,14 @@ acquire_write_lock() {
   # Use SYSTEM_TMPDIR (captured before TMPDIR was shadowed) so the lock
   # path is stable across all hook invocations of this user, not buried
   # inside each invocation's unique mktemp dir.
-  local lockdir="$SYSTEM_TMPDIR/aichemist-skill-suggester.lock"
+  #
+  # Scope the lock BY VAULT: two sessions targeting different Obsidian
+  # vaults would otherwise serialize unnecessarily — they can't race
+  # because they're writing different files. Sanitize the vault name
+  # into a filesystem-safe token before embedding in the path.
+  local vault_token
+  vault_token=$(printf '%s' "$VAULT" | tr -c 'a-zA-Z0-9' '_' | cut -c1-64)
+  local lockdir="$SYSTEM_TMPDIR/aichemist-skill-suggester.${vault_token:-default}.lock"
   if mkdir "$lockdir" 2>/dev/null; then
     echo "$$" > "$lockdir/pid" 2>/dev/null || true
     LOCK_ACQUIRED="$lockdir"
@@ -526,13 +533,16 @@ main() {
   local regex_count
   regex_count=$(echo "$suggestions" | jq -r 'length' 2>/dev/null)
 
-  # Skip the Claude semantic fallback specifically on PreCompact: a session
-  # that fires both PreCompact AND SessionEnd would otherwise invoke
-  # `claude -p` twice, and because the model is non-deterministic the two
-  # runs can phrase the same workflow differently — bypassing name-based
-  # dedup and producing duplicate note entries. Regex is deterministic and
-  # runs on both events, so PreCompact still contributes regex hits.
-  if [ "${regex_count:-0}" = "0" ] && [ "$HOOK_EVENT" != "PreCompact" ]; then
+  # Only run the Claude semantic fallback on a known-SessionEnd event.
+  # Reasoning: a session that fires both PreCompact AND SessionEnd would
+  # otherwise invoke `claude -p` twice, and the non-deterministic model
+  # can phrase the same workflow differently across runs — bypassing
+  # name-based dedup. Strict allowlist (SessionEnd only, not a denylist
+  # of PreCompact) because HOOK_EVENT is "unknown" for raw-JSONL input,
+  # and a denylist would let PreCompact-as-raw-JSONL slip through.
+  # Regex is deterministic and runs on all events, so PreCompact still
+  # contributes regex hits.
+  if [ "${regex_count:-0}" = "0" ] && [ "$HOOK_EVENT" = "SessionEnd" ]; then
     local exchanges
     exchanges=$(count_user_exchanges)
     if [ "${exchanges:-0}" -ge "$SESSION_GATE" ]; then
@@ -544,12 +554,15 @@ main() {
   total=$(echo "$suggestions" | jq -r 'length' 2>/dev/null)
   [ "${total:-0}" = "0" ] && exit 0
 
-  ensure_note_exists || exit 0
-  # Acquire the write-phase lock before reading NOTE_CACHE so concurrent
-  # runs can't both observe a stale cache and both append.
+  # Acquire the write-phase lock BEFORE touching the note at all, so the
+  # create-or-append flow is entirely inside the critical section.
+  # Otherwise two concurrent runs against a missing note would both see
+  # it as absent, both try to create, and the loser gets a spurious
+  # failure and exits without processing any of its suggestions.
   if ! is_dry_run && ! acquire_write_lock; then
     exit 0  # another instance holds the lock; skip silently
   fi
+  ensure_note_exists || exit 0
   load_note_cache
 
   # One jq call emits all suggestion fields as TSV; the while loop reads
@@ -558,6 +571,11 @@ main() {
   # duplicates (e.g. two suggestions with colliding names) are caught by
   # already_in_note on subsequent iterations.
   while IFS=$'\t' read -r kind name one_liner line snippet; do
+    # Cap name length to match the Python slug cap (28) BEFORE redaction
+    # so Claude-fallback names (which arrive verbatim, no Python slug
+    # pass) don't hit the 40-char [REDACTED-LONG] pattern and collapse
+    # multiple distinct suggestions onto the same stored key.
+    name="${name:0:36}"
     # Redact ALL text-bearing fields, including name — for n-gram and
     # Claude-fallback suggestions the name is slugged from user text, so
     # a secret-bearing phrase can otherwise end up as the backticked
