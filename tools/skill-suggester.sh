@@ -53,7 +53,7 @@ is_dry_run() { [ "$DRY_RUN" = "1" ]; }
 
 readonly EXCLUDED_TOOLS_REGEX='^(Read|TodoWrite|TaskCreate|TaskUpdate|TaskList|TaskGet|TaskOutput|TaskStop|AskUserQuestion|EnterPlanMode|ExitPlanMode|EnterWorktree|ExitWorktree|ScheduleWakeup|Monitor)$'
 
-# ----- Read hook input -----------------------------------------------------
+# ----- Vault resolution (runs BEFORE stdin I/O) ----------------------------
 
 # Capture the SYSTEM tmpdir before we shadow TMPDIR with our per-invocation
 # mktemp path. The write-phase lock must live in a path shared across all
@@ -61,6 +61,47 @@ readonly EXCLUDED_TOOLS_REGEX='^(Read|TodoWrite|TaskCreate|TaskUpdate|TaskList|T
 # dir (which is what the previous lock inadvertently did, making every
 # invocation acquire its own uncontested lock and defeating the purpose).
 readonly SYSTEM_TMPDIR="${TMPDIR:-/tmp}"
+
+resolve_vault() {
+  local vault=""
+  local config="$PLUGIN_ROOT/config.json"
+
+  if [ -f "$config" ]; then
+    vault=$(jq -r '.obsidian.preferredVault // empty' "$config" 2>/dev/null)
+  fi
+
+  [ -z "$vault" ] && vault="${OBSIDIAN_VAULT:-}"
+
+  # NOTE: no auto-pick, even for single-vault setups. Per the repo's
+  # "Explicit over implicit" rule, a hook that persists content to a
+  # long-lived note in the user's vault must be explicitly enabled.
+  # Auto-picking "whichever vault exists" would start writing to a
+  # fresh install the first time a session ends — the user never had
+  # a chance to consent. If `preferredVault` isn't set in config.json
+  # and `$OBSIDIAN_VAULT` isn't in the environment, return empty and
+  # silently skip the entire hook.
+
+  echo "$vault"
+}
+
+# Resolve the vault FIRST — before we create a tmpdir or consume stdin.
+# The docs now recommend "don't configure a vault" as the disable path,
+# which makes this the common case for users who haven't opted in. We
+# want the disabled path to be cheap: one small config.json read, maybe
+# one env-var check, exit. Doing the full stdin-to-tmpfile dance before
+# realizing we have nothing to do would waste multi-MB of I/O on every
+# PreCompact/SessionEnd for users who deliberately haven't opted in.
+VAULT=$(resolve_vault)
+if [ -z "$VAULT" ]; then
+  if is_dry_run; then
+    VAULT="<no-vault-configured>"
+    echo "[DRY_RUN] no vault resolved; continuing with placeholder" >&2
+  else
+    exit 0
+  fi
+fi
+
+# ----- Read hook input -----------------------------------------------------
 
 # Cleanup: remove tmpdir on exit, and the write-phase lock if we acquired it.
 LOCK_ACQUIRED=""
@@ -97,40 +138,6 @@ fi
 # Early gate: skip full pipeline on trivially small transcripts.
 _line_count=$(wc -l < "$TRANSCRIPT" 2>/dev/null | tr -d ' ')
 [ "${_line_count:-0}" -lt "$MIN_TRANSCRIPT_LINES" ] && exit 0
-
-# ----- Vault resolution ----------------------------------------------------
-
-resolve_vault() {
-  local vault=""
-  local config="$PLUGIN_ROOT/config.json"
-
-  if [ -f "$config" ]; then
-    vault=$(jq -r '.obsidian.preferredVault // empty' "$config" 2>/dev/null)
-  fi
-
-  [ -z "$vault" ] && vault="${OBSIDIAN_VAULT:-}"
-
-  # NOTE: no auto-pick, even for single-vault setups. Per the repo's
-  # "Explicit over implicit" rule, a hook that persists content to a
-  # long-lived note in the user's vault must be explicitly enabled.
-  # Auto-picking "whichever vault exists" would start writing to a
-  # fresh install the first time a session ends — the user never had
-  # a chance to consent. If `preferredVault` isn't set in config.json
-  # and `$OBSIDIAN_VAULT` isn't in the environment, return empty and
-  # silently skip the entire hook.
-
-  echo "$vault"
-}
-
-VAULT=$(resolve_vault)
-if [ -z "$VAULT" ]; then
-  if is_dry_run; then
-    VAULT="<no-vault-configured>"
-    echo "[DRY_RUN] no vault resolved; continuing with placeholder" >&2
-  else
-    exit 0
-  fi
-fi
 
 # ----- Transcript parsing --------------------------------------------------
 
@@ -559,11 +566,22 @@ acquire_write_lock() {
     LOCK_ACQUIRED="$lockdir"
     return 0
   fi
-  # Lock held — check if holder is still alive.
-  local holder
+  # Lock held — check staleness via TWO signals:
+  #   a) PID liveness: holder process actually running?
+  #   b) Lock age: hook runs are short (< 1 min typically), so a lock
+  #      older than 15 minutes is almost certainly orphaned — the
+  #      original process crashed and its PID may have been reused
+  #      by an unrelated process. PID-alive alone can't distinguish
+  #      "still holding the lock" from "unrelated reused-PID process",
+  #      so age is the tiebreaker.
+  # `find -mmin +15` is portable across BSD and GNU find.
+  local holder lock_old holder_alive=0
   holder=$(cat "$lockdir/pid" 2>/dev/null)
-  if [ -n "$holder" ] && ! kill -0 "$holder" 2>/dev/null; then
-    # Stale lock (holder died without cleanup); break and retry once.
+  [ -n "$holder" ] && kill -0 "$holder" 2>/dev/null && holder_alive=1
+  lock_old=$(find "$lockdir" -maxdepth 0 -mmin +15 2>/dev/null)
+  if [ "$holder_alive" = "0" ] || [ -n "$lock_old" ]; then
+    # Stale: holder is gone, or lock has been held implausibly long.
+    # Break and retry once.
     rm -rf "$lockdir" 2>/dev/null
     if mkdir "$lockdir" 2>/dev/null; then
       echo "$$" > "$lockdir/pid" 2>/dev/null || true
