@@ -4,16 +4,30 @@
 #
 # Hook script for PreCompact and SessionEnd events. Mines the current session
 # transcript for patterns that could become reusable skills, agents, or hooks,
-# and appends one-line nudges to "AIchemist/Skill Ideas.md" in the user's
+# and appends markdown bullet entries (top-level bullet plus _evidence_
+# and _observed_ sub-bullets) to "AIchemist/Skill Ideas.md" in the user's
 # Obsidian vault.
 #
 # Best-effort: any failure exits 0 silently to avoid breaking the session.
 
 set -u
 
-for cmd in jq awk sort obsidian python3; do
+# DRY_RUN is read-only once captured below, but we need its value up front
+# to decide whether the `obsidian` CLI dep is actually required. Default to
+# "0" so the normal hook path still requires obsidian.
+readonly DRY_RUN="${DRY_RUN:-0}"
+
+# Always-required deps for the detection pipeline.
+for cmd in jq awk sort python3; do
   command -v "$cmd" >/dev/null 2>&1 || exit 0
 done
+
+# obsidian CLI is only required for actual note I/O. DRY_RUN=1 prints the
+# intended writes to stdout without shelling out, so contributors can test
+# the detection logic on machines or CI envs without Obsidian installed.
+if [ "$DRY_RUN" != "1" ]; then
+  command -v obsidian >/dev/null 2>&1 || exit 0
+fi
 
 # claude CLI is optional (only needed for the semantic fallback).
 HAS_CLAUDE=0
@@ -32,7 +46,9 @@ readonly MAX_SUGGESTIONS=3
 readonly MIN_TRANSCRIPT_LINES=10
 readonly CLAUDE_OUTPUT_MAX=32768
 
-readonly DRY_RUN="${DRY_RUN:-0}"
+# DRY_RUN was made readonly at the top of the script (before the obsidian
+# dep check). is_dry_run is defined here so the Config section stays
+# self-contained for callers.
 is_dry_run() { [ "$DRY_RUN" = "1" ]; }
 
 readonly EXCLUDED_TOOLS_REGEX='^(Read|TodoWrite|TaskCreate|TaskUpdate|TaskList|TaskGet|TaskOutput|TaskStop|AskUserQuestion|EnterPlanMode|ExitPlanMode|EnterWorktree|ExitWorktree|ScheduleWakeup|Monitor)$'
