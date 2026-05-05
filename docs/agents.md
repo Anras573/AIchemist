@@ -4,6 +4,8 @@ Agents are specialized AI assistants invoked via the Task tool. They have focuse
 
 ## Code Review Agent
 
+**Source:** [`agents/code-review.agent.md`](../agents/code-review.agent.md)
+
 Expert code reviewer with parallel agent support, Jira integration, and confidence scoring.
 
 **Capabilities:**
@@ -16,6 +18,8 @@ Expert code reviewer with parallel agent support, Jira integration, and confiden
 **Invoked by:** `/code-review` skill or Task tool
 
 ## TypeScript/React Agent
+
+**Source:** [`agents/typescript-react.agent.md`](../agents/typescript-react.agent.md)
 
 Full-stack TypeScript developer specializing in modern frontend and backend patterns.
 
@@ -30,6 +34,8 @@ Full-stack TypeScript developer specializing in modern frontend and backend patt
 
 ## .NET Agent
 
+**Source:** [`agents/dotnet.agent.md`](../agents/dotnet.agent.md)
+
 C#/.NET expert covering the full .NET ecosystem.
 
 **Expertise:**
@@ -43,6 +49,8 @@ C#/.NET expert covering the full .NET ecosystem.
 **Invoked by:** Task tool when working with C#/.NET code, or consulted by Code Review agent
 
 ## DDD Agent
+
+**Source:** [`agents/ddd.agent.md`](../agents/ddd.agent.md)
 
 Domain-Driven Design expert for strategic modeling and tactical pattern review.
 
