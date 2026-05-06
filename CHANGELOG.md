@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.2.0](https://github.com/Anras573/AIchemist/compare/v3.1.0...v3.2.0) (2026-05-06)
+
+
+### Features
+
+* **rules:** move coding standards from agents into scoped rules files ([#95](https://github.com/Anras573/AIchemist/issues/95)) ([7b0e816](https://github.com/Anras573/AIchemist/commit/7b0e816d00cbf3bcff2b4a92022c6c992663fea2))
+* **ticket-flow:** add agent self-check in phase 3 assumption step ([#91](https://github.com/Anras573/AIchemist/issues/91)) ([ec1ce6e](https://github.com/Anras573/AIchemist/commit/ec1ce6e647cd24e431bddb5f7ab7c4bbfd5fe1c7))
+* **ticket-flow:** add code-explorer agent and phase 4 agent routing ([#94](https://github.com/Anras573/AIchemist/issues/94)) ([5e2bf85](https://github.com/Anras573/AIchemist/commit/5e2bf85cfad8e711c05bf56f156c22fe93324e83))
+* **ticket-flow:** add simplify-agent step before /code-review in phase 5 ([#92](https://github.com/Anras573/AIchemist/issues/92)) ([d39f6c6](https://github.com/Anras573/AIchemist/commit/d39f6c6b5de2609e4b87745f0db57dd0b386680d))
+
 ## [3.1.0](https://github.com/Anras573/AIchemist/compare/v3.0.1...v3.1.0) (2026-05-05)
 
 
