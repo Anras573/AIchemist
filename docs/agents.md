@@ -2,6 +2,22 @@
 
 Agents are specialized AI assistants invoked via the Task tool. They have focused expertise and can consult each other for cross-domain guidance.
 
+## Code Explorer Agent
+
+**Source:** [`agents/code-explorer.agent.md`](../agents/code-explorer.agent.md)
+
+Read-only codebase exploration specialist for mapping patterns and architecture before implementation.
+
+**Capabilities:**
+- Track A: Finds existing features or patterns similar to what a ticket requires, tracing the full implementation path
+- Track B: Maps the architecture of the area a ticket touches — entry points, data flow, extension points, consumers
+- Returns 5–8 ranked key files with concrete `file:line` references
+- Reports gaps, inconsistencies, and risks noticed during exploration
+
+**Invoked by:** `ticket-flow` skill (Phase 2) via Task tool, launched in parallel pairs
+
+---
+
 ## Code Review Agent
 
 **Source:** [`agents/code-review.agent.md`](../agents/code-review.agent.md)
