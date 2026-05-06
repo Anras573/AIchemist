@@ -191,17 +191,14 @@ Track acceptance criteria status as you go:
 | Run `simplify-agent` | *"Before the code review, shall I run simplify-agent to clean up the implementation first? It may rewrite or delete code."* |
 | Push to remote | *"Review complete. [N issues found / No issues found]. Ready to push?"* |
 
-1. Confirm with the user before launching `simplify-agent` (see table above). If confirmed, launch `simplify-agent` against the changes — it cleans up the implementation by removing noise, redundant logic, and complexity so the subsequent review focuses on correctness. If declined, skip to step 2.
+1. Confirm with the user before launching `simplify-agent` (see table above). If confirmed, launch `simplify-agent` against the changes — it cleans up the implementation by removing noise, redundant logic, and complexity so the subsequent review focuses on correctness. If the agent cannot be resolved or fails to launch, skip this step and proceed to step 2. If the user declines, skip to step 2.
 
 2. Run the `/code-review` skill against the current changes (or the simplified changes, if step 1 was run). The review will:
    - Check for bugs, logic errors, security issues
    - Validate against project guidelines
    - Validate against the Jira ticket's acceptance criteria
 
-Present findings and ask:
-> *"Review complete. [N issues found / No issues found]. Ready to push?"*
-
-Do not push until the user says yes.
+Present findings and ask for push confirmation (see table above). Do not push until the user says yes.
 
 ---
 
