@@ -75,13 +75,13 @@ Do NOT write any implementation code until Phase 3 (assumptions check) is comple
 
 Do not check runtime-specific plugin cache paths or shell out to inspect agent files. Instead, use an environment-agnostic fallback:
 
-1. First, attempt to launch 2 `code-explorer` agents in parallel with the goals below.
-2. If the runtime reports that `code-explorer` is unavailable, unsupported, or the launch fails because the agent cannot be resolved, immediately fall back to performing the same 2 exploration tracks directly in the main conversation instead of spawning another named agent.
+1. First, attempt to launch 2 `code-explorer-agent` agents in parallel with the goals below.
+2. If the runtime reports that `code-explorer-agent` is unavailable, unsupported, or the launch fails because the agent cannot be resolved, immediately fall back to performing the same 2 exploration tracks directly in the main conversation instead of spawning another named agent.
 3. Do not treat unrelated task failures as proof the agent is unavailable; only fall back when the failure is specifically about agent availability/resolution.
 
-**Preferred path:** Launch 2 `code-explorer` agents in parallel when available.
+**Preferred path:** Launch 2 `code-explorer-agent` agents in parallel when available.
 
-**Fallback path:** Perform the two exploration tracks below in the main conversation when `code-explorer` cannot be launched in the current runtime. Keep the tracks distinct and cover both before proceeding; execute them in parallel if the available tools/runtime support that, otherwise complete them sequentially.
+**Fallback path:** Perform the two exploration tracks below in the main conversation when `code-explorer-agent` cannot be launched in the current runtime. Keep the tracks distinct and cover both before proceeding; execute them in parallel if the available tools/runtime support that, otherwise complete them sequentially.
 
 In either path, cover these two goals:
 
@@ -176,7 +176,7 @@ Based on the key files identified in Phase 2, detect the project type and launch
 
 | File patterns | Agent | Role |
 |--------------|-------|------|
-| `*.cs`, `*.csproj`, `*.fsproj` | `dotnet-agent` | Lead implementor for C#/.NET code |
+| `*.cs`, `*.csproj`, `*.fsproj`, `*.sln` | `dotnet-agent` | Lead implementor for C#/.NET code |
 | `*.ts`, `*.tsx`, `*.js`, `*.jsx` | `typescript-react-agent` | Lead implementor for TypeScript/React code |
 | Any domain logic (entities, aggregates, business rules) | `ddd-agent` | Sparring partner for design decisions |
 

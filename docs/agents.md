@@ -14,7 +14,7 @@ Read-only codebase exploration specialist for mapping patterns and architecture 
 - Returns 5–8 ranked key files with concrete `file:line` references
 - Reports gaps, inconsistencies, and risks noticed during exploration
 
-**Invoked by:** `ticket-flow` skill (Phase 2) via Task tool, launched in parallel pairs
+**Invoked by:** `ticket-flow` skill (Phase 2) as `code-explorer-agent` via Task tool, launched in parallel pairs
 
 ---
 

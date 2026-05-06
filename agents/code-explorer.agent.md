@@ -1,18 +1,24 @@
 ---
-name: code-explorer
+name: code-explorer-agent
 description: |
   Codebase exploration specialist for mapping patterns and architecture before implementation. Use this agent when you need to understand an area of the codebase before making changes — finding similar features, tracing data flow, or identifying extension points.
 
   <example>
   Context: Starting a new ticket and need to understand existing patterns.
   user: "Find how similar features are implemented before we start."
-  assistant: "I'll use the code-explorer agent to trace existing patterns and return the key files."
+  assistant: "I'll use the code-explorer-agent to trace existing patterns and return the key files."
   </example>
 
   <example>
   Context: Need to understand the architecture of an area before touching it.
   user: "Map the architecture around the payment flow."
-  assistant: "I'll use the code-explorer agent to identify entry points, data flow, and extension points."
+  assistant: "I'll use the code-explorer-agent to identify entry points, data flow, and extension points."
+  </example>
+
+  <example>
+  Context: Need to trace how a request moves through the backend before adding a new endpoint.
+  user: "I need to understand how API requests flow through the system before I add a new one."
+  assistant: "I'll use the code-explorer-agent to map the request path — entry point, middleware, handlers, and persistence — and return the key files."
   </example>
 model: sonnet
 skills:
@@ -57,8 +63,8 @@ Return findings in this structure:
 **Goal:** [restate the goal in one sentence]
 
 **Key files:**
-- `path/to/file` — [why this file matters to the goal]
-- `path/to/file` — [why this file matters to the goal]
+- `path/to/file:line` — [why this file matters to the goal]
+- `path/to/file:line` — [why this file matters to the goal]
 
 **Patterns / Architecture notes:**
 - [observation 1]
