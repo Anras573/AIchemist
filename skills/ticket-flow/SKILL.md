@@ -150,7 +150,14 @@ Example format:
 3. [CONFIRM] The AC mentions "mobile" — does this mean responsive layout only, or native?
 ```
 
-**Gate**: Do not proceed to Phase 4 until all `[CONFIRM]` items are resolved AND the user has explicitly approved moving to implementation.
+Before presenting the assumptions list to the user, ask yourself (as the agent):
+> *"What questions do you have for me, before you start?"*
+
+Use this as an internal self-check only. Do not ask the user this question directly and do not include it verbatim in your response. Instead, surface any gaps in your own understanding that are not already covered by the `[CONFIRM]` items above, and fold any new questions into the numbered assumptions list as additional `[CONFIRM]` items before presenting to the user.
+
+Present the full assumptions list as a summary of open items, but do **not** ask the user to answer every `[CONFIRM]` item in a single prompt. After showing the list, resolve `[CONFIRM]` items one-by-one in follow-up prompts, waiting for the user's answer before asking the next `[CONFIRM]` item.
+
+**Gate**: Do not proceed to Phase 4 until all `[CONFIRM]` items from the assumptions list have been resolved through those follow-up prompts AND the user has explicitly approved moving to implementation.
 
 ---
 
