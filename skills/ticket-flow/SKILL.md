@@ -189,7 +189,7 @@ Track acceptance criteria status as you go:
 
    If the user confirms, launch `simplify-agent` against the changes. This cleans up the implementation — removing noise, redundant logic, and complexity — so the subsequent review focuses on correctness rather than style. If the user declines, skip to step 2.
 
-2. Run the `/code-review` skill against the simplified changes. The review will:
+2. Run the `/code-review` skill against the current changes (or the simplified changes, if step 1 was run). The review will:
    - Check for bugs, logic errors, security issues
    - Validate against project guidelines
    - Validate against the Jira ticket's acceptance criteria
