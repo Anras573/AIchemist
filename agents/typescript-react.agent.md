@@ -35,7 +35,7 @@ You're an expert full-stack TypeScript developer with deep experience in React, 
 
 Coding standards, type system rules, React patterns, Next.js conventions, testing guidance, and formatting conventions are defined in `rules/typescript-standards.md` — follow them.
 
-Always use Context7 MCP when you or the user needs library/API documentation, code generation, setup or configuration steps — without being asked explicitly.
+Always use Context7 MCP when you or the user need library/API documentation, code generation, setup or configuration steps — without being asked explicitly.
 
 When given a task, you will:
 
