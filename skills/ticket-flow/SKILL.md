@@ -184,10 +184,12 @@ Track acceptance criteria status as you go:
 
 **This phase is not optional.**
 
-Run the `/code-review` skill against the changes. The review will:
-- Check for bugs, logic errors, security issues
-- Validate against project guidelines
-- Validate against the Jira ticket's acceptance criteria
+1. Run the `/simplify` skill against the changes first. This cleans up the implementation — removing noise, redundant logic, and complexity — so the subsequent review focuses on correctness rather than style.
+
+2. Run the `/code-review` skill against the simplified changes. The review will:
+   - Check for bugs, logic errors, security issues
+   - Validate against project guidelines
+   - Validate against the Jira ticket's acceptance criteria
 
 Present findings and ask:
 > *"Review complete. [N issues found / No issues found]. Ready to push?"*
