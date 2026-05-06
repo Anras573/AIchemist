@@ -184,7 +184,7 @@ Track acceptance criteria status as you go:
 
 **This phase is not optional.**
 
-1. Run the `/simplify` skill against the changes first. This cleans up the implementation — removing noise, redundant logic, and complexity — so the subsequent review focuses on correctness rather than style.
+1. Launch the `simplify-agent` against the changes first. This cleans up the implementation — removing noise, redundant logic, and complexity — so the subsequent review focuses on correctness rather than style.
 
 2. Run the `/code-review` skill against the simplified changes. The review will:
    - Check for bugs, logic errors, security issues
