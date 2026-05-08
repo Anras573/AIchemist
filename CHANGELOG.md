@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.1](https://github.com/Anras573/AIchemist/compare/v3.2.0...v3.2.1) (2026-05-08)
+
+
+### Bug Fixes
+
+* **skill-suggester:** poll for note readability after create ([#96](https://github.com/Anras573/AIchemist/issues/96)) ([0f83d3c](https://github.com/Anras573/AIchemist/commit/0f83d3c82f8a530c937aefbe57576f6f099d4a28))
+
 ## [3.2.0](https://github.com/Anras573/AIchemist/compare/v3.1.0...v3.2.0) (2026-05-06)
 
 
