@@ -45,6 +45,8 @@ readonly SESSION_GATE=20
 readonly MAX_SUGGESTIONS=3
 readonly MIN_TRANSCRIPT_LINES=10
 readonly CLAUDE_OUTPUT_MAX=32768
+readonly NOTE_READY_RETRIES=10
+readonly NOTE_READY_DELAY_S="0.3"
 
 # DRY_RUN was made readonly at the top of the script (before the obsidian
 # dep check). is_dry_run is defined here so the Config section stays
@@ -490,10 +492,10 @@ EOF
     obsidian vault="$VAULT" create path="$NOTE_PATH" content="$(cat "$header_file")" >/dev/null 2>&1 || return 1
     # Obsidian indexes files asynchronously; poll until the note is readable
     # before returning so load_note_cache and the first append don't race.
-    local retries=10
+    local retries=$NOTE_READY_RETRIES
     while [ "$retries" -gt 0 ]; do
       obsidian vault="$VAULT" read path="$NOTE_PATH" >/dev/null 2>&1 && return 0
-      sleep 0.3
+      python3 -c "import time; time.sleep($NOTE_READY_DELAY_S)"
       retries=$((retries - 1))
     done
     return 1
