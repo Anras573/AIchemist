@@ -495,8 +495,8 @@ EOF
     local retries=$NOTE_READY_RETRIES
     while [ "$retries" -gt 0 ]; do
       obsidian vault="$VAULT" read path="$NOTE_PATH" >/dev/null 2>&1 && return 0
-      python3 -c "import time; time.sleep($NOTE_READY_DELAY_S)"
       retries=$((retries - 1))
+      [ "$retries" -gt 0 ] && python3 -c "import time; time.sleep($NOTE_READY_DELAY_S)"
     done
     return 1
   fi
