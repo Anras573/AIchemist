@@ -488,6 +488,15 @@ Review periodically; delete what doesn't land.
 
 EOF
     obsidian vault="$VAULT" create path="$NOTE_PATH" content="$(cat "$header_file")" >/dev/null 2>&1 || return 1
+    # Obsidian indexes files asynchronously; poll until the note is readable
+    # before returning so load_note_cache and the first append don't race.
+    local retries=10
+    while [ "$retries" -gt 0 ]; do
+      obsidian vault="$VAULT" read path="$NOTE_PATH" >/dev/null 2>&1 && return 0
+      sleep 0.3
+      retries=$((retries - 1))
+    done
+    return 1
   fi
   return 0
 }
