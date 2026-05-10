@@ -114,9 +114,11 @@ If you judge a named constant is involved, follow the first branch that applies:
 # --hidden searches dot-directories (.github/) but rg still respects .gitignore;
 # add --no-ignore if .env or other dotfiles are gitignored and must be included.
 # rg always excludes .git; negative globs match any path component (including nested dirs)
-# Use single quotes around constant names to prevent shell expansion of untrusted values
+# Use single quotes around constant names to prevent shell expansion of untrusted values.
+# If a constant name contains a single quote, assign it to a variable and use double
+# quotes: NAME='value'; rg ... -e "$NAME"  (avoids breaking the single-quoted literal).
 rg --fixed-strings --hidden -l -e 'OldName' -e 'NewName' . \
-  -g "!node_modules" -g "!bin" -g "!obj" -g "!dist" \
+  -g '!node_modules' -g '!bin' -g '!obj' -g '!dist' \
   -g "*.cs" -g "*.csproj" -g "*.props" -g "*.targets" \
   -g "*.json" -g "*.yml" -g "*.yaml" \
   -g ".env" -g "*.env.*" -g "*.config" -g "Dockerfile*"
@@ -124,7 +126,8 @@ rg --fixed-strings --hidden -l -e 'OldName' -e 'NewName' . \
 
 ```bash
 # Fallback without ripgrep — prune directories first, then filter files
-# Use single quotes around constant names to prevent shell expansion of untrusted values
+# Use single quotes around constant names to prevent shell expansion of untrusted values.
+# If a constant name contains a single quote, use a variable: NAME='value'; grep ... -e "$NAME"
 find . \
   \( -name ".git" -o -name "bin" -o -name "obj" -o -name "node_modules" -o -name "dist" \) -prune -o \
   -type f \( \
