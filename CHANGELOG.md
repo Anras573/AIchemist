@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.0](https://github.com/Anras573/AIchemist/compare/v3.2.1...v3.3.0) (2026-05-10)
+
+
+### Features
+
+* **ticket-flow:** grep named constant consumers in Phase 2 ([#99](https://github.com/Anras573/AIchemist/issues/99)) ([e2ba18f](https://github.com/Anras573/AIchemist/commit/e2ba18fc81b6f403626a3e26fbeea27888d88b81))
+
 ## [3.2.1](https://github.com/Anras573/AIchemist/compare/v3.2.0...v3.2.1) (2026-05-08)
 
 
