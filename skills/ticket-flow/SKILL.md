@@ -91,6 +91,60 @@ In either path, cover these two goals:
 | Explorer B | Map the architecture of the area this ticket touches. Identify entry points, data flow, and extension points. Return 5–8 key files. |
 
 After exploration completes:
+
+### Named Constant Check
+
+Before presenting findings, use judgment to decide whether the ticket introduces or renames a named constant — a string value with downstream consumers that must stay in sync. Use the ticket text to make this call; the explorer findings may provide additional signal but are not required.
+
+Signals that suggest a named constant is involved (not exhaustive — use judgment):
+- Ticket mentions "rename", "replace", "migrate", or "change ... to ..."
+- An environment name, auth scheme name, policy name, config key, feature flag, or connection string name appears to be changing
+- A quoted string or `UPPER_CASE` identifier in the ticket description looks like a constant rather than a description
+- Explorer B found conditional logic that branches on a specific named value (e.g. `IsEnvironment`, `env ==`) *and* that value appears to be changing per the ticket
+
+If you judge a named constant is involved, follow the first branch that applies:
+
+**Branch A — names unknown:** If neither the old name nor the new name can be determined from the ticket, add a `[CONFIRM]` item to Phase 3: *"The ticket implies a named constant is changing but doesn't name it — what is the old and new value?"* Do not run the grep. In the findings, include the **Named constant consumers** section with a single placeholder entry: *(deferred — grep will run after Phase 3 resolves the constant name)*.
+
+**Branch B — Explorer B found some consumers:** If Explorer B's key-files list includes files that reference this constant, note those files. Still run the exhaustive search in Branch C below — Explorer B returns only 5–8 key files, not a complete sweep. Merge Explorer B's files into the final consumer list.
+
+**Branch C — exhaustive search:** Run from the repo root. Prefer `rg` (ripgrep) — it respects `.gitignore`:
+```bash
+# With ripgrep (preferred) — run from repo root
+# --hidden searches dot-directories (.github/) but rg still respects .gitignore;
+# add --no-ignore if .env or other dotfiles are gitignored and must be included.
+# rg always excludes .git; negative globs match any path component (including nested dirs)
+# Use single quotes around constant names to prevent shell expansion of untrusted values.
+# If a constant name contains a single quote, assign it to a variable and use double
+# quotes: NAME='value'; rg ... -e "$NAME"  (avoids breaking the single-quoted literal).
+rg --fixed-strings --hidden -l -e 'OldName' -e 'NewName' . \
+  -g '!node_modules' -g '!bin' -g '!obj' -g '!dist' \
+  -g "*.cs" -g "*.csproj" -g "*.props" -g "*.targets" \
+  -g "*.json" -g "*.yml" -g "*.yaml" \
+  -g ".env" -g "*.env.*" -g "*.config" -g "Dockerfile*"
+```
+
+```bash
+# Fallback without ripgrep — prune directories first, then filter files
+# Use single quotes around constant names to prevent shell expansion of untrusted values.
+# If a constant name contains a single quote, use a variable: NAME='value'; grep ... -e "$NAME"
+find . \
+  \( -name ".git" -o -name "bin" -o -name "obj" -o -name "node_modules" -o -name "dist" \) -prune -o \
+  -type f \( \
+    -name "*.cs" -o -name "*.csproj" -o -name "*.props" -o -name "*.targets" \
+    -o -name "*.json" -o -name "*.yml" -o -name "*.yaml" \
+    -o -name ".env" -o -name "*.env.*" -o -name "*.config" -o -name "Dockerfile*" \
+  \) -exec grep -F -l -e 'OldName' -e 'NewName' -- {} +
+```
+
+*(Adapt the `-e` patterns and `-g`/`-name` globs to the project's stack. Fixed-string mode — `--fixed-strings` for `rg`, `-F` for `grep` — handles constant names that contain regex metacharacters like `.` or `+`. Multiple `-e` avoids needing `|` alternation.)*
+
+For each file in the output, note what role it plays. Add the full consumer list to the **Named constant consumers** section of the findings below as required review targets before any implementation begins.
+
+If you judge no named constant is involved, skip this check and proceed to findings.
+
+---
+
 1. Read all files identified by the exploration tracks
 2. Present findings:
 
@@ -105,6 +159,9 @@ After exploration completes:
 
 **Key files:**
 - `path/to/file.ts` — [why it matters]
+
+**Named constant consumers:** *(omit section if Named Constant Check was skipped; use deferred placeholder if Branch A applies)*
+- `path/to/file.ts` — [role: CI workflow / compose override / appsettings layer / etc.]
 ```
 
 3. Ask: *"Does this match what you expected? Anything else I should look at before we check assumptions?"*
@@ -132,7 +189,7 @@ Focus on:
 - **Scope edges** — what is explicitly out of scope?
 
 Also surface codebase-specific risks from Phase 2 findings:
-- Existing callers or consumers of the area being changed
+- Existing callers or consumers of the area being changed — if a complete Named Constant consumer list was produced in Phase 2 (Branches B/C), reference it here and do not re-run the grep; if Phase 2 used Branch A (names deferred), run the exhaustive Branch C search now that the names are confirmed and present the consumer list as an additional **Named constant consumers** block directly in the Phase 3 output before continuing with assumptions
 - Divergence between the intended approach and the patterns found in Phase 2
 - Missing error handling or failure paths not covered by the AC
 
