@@ -32,7 +32,9 @@ else
   die "Neither m365 nor npx is available. Install Node.js (https://nodejs.org) or run: npm install -g @pnp/cli-microsoft365"
 fi
 
-command -v python3 &>/dev/null || die "python3 is required but not found. Install Python 3 (https://python.org)."
+require_python3() {
+  command -v python3 &>/dev/null || die "python3 is required but not found. Install Python 3 (https://python.org)."
+}
 
 # Use UTC Z-suffix — accepted by Graph API on both macOS (BSD date) and Linux (GNU date).
 # Avoids the +HHMM vs +HH:MM offset formatting difference between platforms.
@@ -65,6 +67,7 @@ cmd_logout() {
 
 cmd_list_calendars() {
   require_env
+  require_python3
   m365_cmd request \
     --url "https://graph.microsoft.com/v1.0/me/calendars?\$select=id,name,isDefaultCalendar,canEdit,color" \
     --output json \
@@ -72,22 +75,23 @@ cmd_list_calendars() {
 import json, sys
 data = json.load(sys.stdin)
 if not isinstance(data, dict) or 'value' not in data:
-    print('Error: unexpected response from Graph API:', json.dumps(data), file=sys.stderr)
-    sys.exit(1)
+  print('Error: unexpected response from Graph API:', json.dumps(data), file=sys.stderr)
+  sys.exit(1)
 items = data['value']
 if not isinstance(items, list):
-    print('Error: expected a list of calendars, got:', type(items).__name__, file=sys.stderr)
-    sys.exit(1)
+  print('Error: expected a list of calendars, got:', type(items).__name__, file=sys.stderr)
+  sys.exit(1)
 for c in items:
-    default = ' (default)' if c.get('isDefaultCalendar') else ''
-    editable = ' [read-only]' if not c.get('canEdit') else ''
-    print(f\"{c['name']}{default}{editable}\")
-    print(f\"  id: {c['id']}\")
+  default = ' (default)' if c.get('isDefaultCalendar') else ''
+  editable = ' [read-only]' if not c.get('canEdit') else ''
+  print(c['name'] + default + editable)
+  print('  id: ' + c['id'])
 "
 }
 
 cmd_get_events() {
   require_env
+  require_python3
   local start end calendar_id=""
   start="$(iso_now)"
   end="$(iso_days_from_now 7)"
@@ -104,37 +108,54 @@ cmd_get_events() {
   # Use calendarView (not /events) so recurring meetings are expanded into
   # individual occurrences within the window. /events filters by original
   # creation date, silently dropping recurring standups, 1:1s, etc.
-  local all_events next_url
-  next_url="$(python3 -c "
-import sys, urllib.parse
-start, end, cal = sys.argv[1], sys.argv[2], sys.argv[3]
-base = 'https://graph.microsoft.com/v1.0/me'
-if cal:
-    base += '/calendars/' + urllib.parse.quote(cal, safe='')
-print(base + '/calendarView'
-    + '?startDateTime=' + urllib.parse.quote(start, safe='')
-    + '&endDateTime='   + urllib.parse.quote(end, safe='')
-    + '&\$select=id,subject,start,end,isOnlineMeeting,location,sensitivity,isCancelled,isAllDay'
-    + '&\$orderby=start/dateTime'
-    + '&\$top=50')
-" "$start" "$end" "$calendar_id")"
+  local m365_prefix
+  if command -v m365 &>/dev/null; then
+    m365_prefix='["m365"]'
+  else
+    m365_prefix='["npx","--yes","--package","@pnp/cli-microsoft365","m365"]'
+  fi
 
-  all_events="[]"
-  while [[ -n "$next_url" ]]; do
-    local page
-    page="$(m365_cmd request --url "$next_url" --output json)"
-    read -r all_events next_url < <(python3 -c "
-import json, sys
-page = json.loads(sys.argv[1])
-if not isinstance(page, dict) or 'value' not in page:
-    print('Error: unexpected response from Graph API:', json.dumps(page), file=sys.stderr)
-    sys.exit(1)
-events = json.loads(sys.argv[2]) + page['value']
+  M365_PREFIX="$m365_prefix" \
+  GRAPH_START="$start" \
+  GRAPH_END="$end" \
+  GRAPH_CAL="$calendar_id" \
+  python3 << 'PYEOF'
+import json, os, subprocess, urllib.parse
+
+m365_cmd = json.loads(os.environ["M365_PREFIX"])
+start    = os.environ["GRAPH_START"]
+end      = os.environ["GRAPH_END"]
+cal      = os.environ["GRAPH_CAL"]
+
+base = "https://graph.microsoft.com/v1.0/me"
+if cal:
+    base += "/calendars/" + urllib.parse.quote(cal, safe="")
+
+url = (base + "/calendarView"
+    + "?startDateTime=" + urllib.parse.quote(start, safe="")
+    + "&endDateTime="   + urllib.parse.quote(end, safe="")
+    + "&$select=id,subject,start,end,isOnlineMeeting,location,sensitivity,isCancelled,isAllDay"
+    + "&$orderby=start/dateTime"
+    + "&$top=50")
+
+events = []
+while url:
+    result = subprocess.run(
+        m365_cmd + ["request", "--url", url, "--output", "json"],
+        capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        print("Error: m365 request failed:", result.stderr.strip(), file=sys.stderr)
+        sys.exit(1)
+    page = json.loads(result.stdout)
+    if not isinstance(page, dict) or "value" not in page:
+        print("Error: unexpected response from Graph API:", json.dumps(page), file=sys.stderr)
+        sys.exit(1)
+    events.extend(page["value"])
+    url = page.get("@odata.nextLink", "")
+
 print(json.dumps(events))
-print(page.get('@odata.nextLink', ''))
-" "$page" "$all_events")
-  done
-  echo "$all_events"
+PYEOF
 }
 
 cmd_get_event_detail() {
