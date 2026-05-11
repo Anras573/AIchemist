@@ -36,17 +36,14 @@ require_python3() {
   command -v python3 &>/dev/null || die "python3 is required but not found. Install Python 3 (https://python.org)."
 }
 
-# Use UTC Z-suffix — accepted by Graph API on both macOS (BSD date) and Linux (GNU date).
-# Avoids the +HHMM vs +HH:MM offset formatting difference between platforms.
+# Use Python for timestamp generation: produces local time with +HH:MM offset,
+# which is DST-correct and accepted by the Graph API on all platforms.
 iso_now() {
-  date -u +"%Y-%m-%dT%H:%M:%SZ"
+  python3 -c "from datetime import datetime, timezone; print(datetime.now(timezone.utc).astimezone().isoformat(timespec='seconds'))"
 }
 
 iso_days_from_now() {
-  local days="$1"
-  # GNU date uses -d; BSD date (macOS) uses -v
-  date -u -v+"${days}d" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null \
-    || date -u -d "+${days} days" +"%Y-%m-%dT%H:%M:%SZ"
+  python3 -c "from datetime import datetime, timezone, timedelta; print((datetime.now(timezone.utc).astimezone() + timedelta(days=$1)).isoformat(timespec='seconds'))"
 }
 
 # ---------------------------------------------------------------------------
