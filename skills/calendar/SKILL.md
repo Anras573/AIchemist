@@ -51,11 +51,7 @@ The script requires ISO 8601 timestamps with a `+HH:MM` UTC offset (e.g. `2026-0
 python3 -c "from datetime import datetime, timezone; print(datetime.now(timezone.utc).astimezone().isoformat(timespec='seconds'))"
 
 # N days from now (DST-correct: .astimezone() applied after timedelta)
-python3 -c "
-import sys
-from datetime import datetime, timezone, timedelta
-print((datetime.now(timezone.utc) + timedelta(days=int(sys.argv[1]))).astimezone().isoformat(timespec='seconds'))
-" 7
+python3 -c "import sys; from datetime import datetime, timezone, timedelta; print((datetime.now(timezone.utc) + timedelta(days=int(sys.argv[1]))).astimezone().isoformat(timespec='seconds'))" 7
 
 # Start of today (midnight local time)
 python3 -c "from datetime import datetime, timezone; d=datetime.now(timezone.utc).astimezone(); print(d.replace(hour=0,minute=0,second=0,microsecond=0).isoformat(timespec='seconds'))"

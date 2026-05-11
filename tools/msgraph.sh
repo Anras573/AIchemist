@@ -47,11 +47,7 @@ iso_now() {
 }
 
 iso_days_from_now() {
-  python3 -c "
-import sys
-from datetime import datetime, timezone, timedelta
-print((datetime.now(timezone.utc) + timedelta(days=int(sys.argv[1]))).astimezone().isoformat(timespec='seconds'))
-" "$1"
+  python3 -c "import sys; from datetime import datetime, timezone, timedelta; print((datetime.now(timezone.utc) + timedelta(days=int(sys.argv[1]))).astimezone().isoformat(timespec='seconds'))" "$1"
 }
 
 # ---------------------------------------------------------------------------
