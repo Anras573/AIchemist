@@ -82,7 +82,7 @@ url = "https://graph.microsoft.com/v1.0/me/calendars?$select=id,name,isDefaultCa
 while url:
     result = subprocess.run(
         m365_cmd + ["request", "--url", url, "--output", "json"],
-        capture_output=True, text=True
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
     )
     if result.returncode != 0:
         print("Error: m365 request failed:", result.stderr.strip(), file=sys.stderr)
@@ -150,7 +150,7 @@ events = []
 while url:
     result = subprocess.run(
         m365_cmd + ["request", "--url", url, "--output", "json"],
-        capture_output=True, text=True
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
     )
     if result.returncode != 0:
         print("Error: m365 request failed:", result.stderr.strip(), file=sys.stderr)
