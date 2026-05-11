@@ -25,7 +25,7 @@ require_env() {
 
 # Resolve m365 once: prefer global install, fall back to npx.
 # npx requires --package to map the package name to the m365 binary.
-# M365_PREFIX is the JSON array form used by the Python heredoc in cmd_get_events.
+# M365_PREFIX is the JSON array form used by the Python heredocs in cmd_list_calendars and cmd_get_events.
 if command -v m365 &>/dev/null; then
   m365_cmd() { m365 "$@"; }
   export M365_PREFIX='["m365"]'
@@ -50,7 +50,7 @@ iso_days_from_now() {
   python3 -c "
 import sys
 from datetime import datetime, timezone, timedelta
-print((datetime.now(timezone.utc).astimezone() + timedelta(days=int(sys.argv[1]))).isoformat(timespec='seconds'))
+print((datetime.now(timezone.utc) + timedelta(days=int(sys.argv[1]))).astimezone().isoformat(timespec='seconds'))
 " "$1"
 }
 
@@ -87,7 +87,11 @@ while url:
     if result.returncode != 0:
         print("Error: m365 request failed:", result.stderr.strip(), file=sys.stderr)
         sys.exit(1)
-    page = json.loads(result.stdout)
+    try:
+        page = json.loads(result.stdout)
+    except json.JSONDecodeError as e:
+        print("Error: non-JSON response from m365:", str(e), "—", result.stdout[:200], file=sys.stderr)
+        sys.exit(1)
     if not isinstance(page, dict) or "value" not in page:
         print("Error: unexpected response from Graph API:", json.dumps(page), file=sys.stderr)
         sys.exit(1)
@@ -151,7 +155,11 @@ while url:
     if result.returncode != 0:
         print("Error: m365 request failed:", result.stderr.strip(), file=sys.stderr)
         sys.exit(1)
-    page = json.loads(result.stdout)
+    try:
+        page = json.loads(result.stdout)
+    except json.JSONDecodeError as e:
+        print("Error: non-JSON response from m365:", str(e), "—", result.stdout[:200], file=sys.stderr)
+        sys.exit(1)
     if not isinstance(page, dict) or "value" not in page:
         print("Error: unexpected response from Graph API:", json.dumps(page), file=sys.stderr)
         sys.exit(1)
