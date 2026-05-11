@@ -120,7 +120,7 @@ cmd_get_events() {
   GRAPH_END="$end" \
   GRAPH_CAL="$calendar_id" \
   python3 << 'PYEOF'
-import json, os, subprocess, urllib.parse
+import json, os, subprocess, sys, urllib.parse
 
 m365_cmd = json.loads(os.environ["M365_PREFIX"])
 start    = os.environ["GRAPH_START"]
