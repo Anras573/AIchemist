@@ -25,6 +25,15 @@
 - [ ] Documentation updated (if applicable)
 - [ ] New placeholders documented in README (if any added)
 
+### Tools (`tools/`) — if this PR touches a shell tool
+
+- [ ] Script tested end-to-end locally (not just read)
+- [ ] Companion `skills/<name>/SKILL.md` updated in this PR (new commands, flags, dependencies)
+- [ ] All fields referenced in SKILL.md workflows are included in API `$select` queries
+- [ ] Shell snippets in SKILL.md docs tested in a terminal (quote nesting, `$()` substitutions)
+- [ ] Python subprocesses use `stdout=subprocess.PIPE, stderr=subprocess.PIPE` (not `capture_output=True`)
+- [ ] Shell variables read via `os.environ` in Python heredocs are `export`ed
+
 ## Testing
 
 <!-- How can reviewers test this change? -->

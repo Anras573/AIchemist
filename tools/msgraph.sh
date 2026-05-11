@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # Microsoft Graph calendar CLI via @pnp/cli-microsoft365 (m365).
 # Requires MSGRAPH_APP_ID and MSGRAPH_TENANT_ID to be set in the environment.
+# Requires python3 for timestamp generation and output formatting.
 #
 # Usage:
-#   msgraph.sh login                              # authenticate via browser
-#   msgraph.sh logout                             # clear cached tokens
-#   msgraph.sh get-events [--start ISO8601] [--end ISO8601]
+#   msgraph.sh login                                        # authenticate via browser
+#   msgraph.sh logout                                       # clear cached tokens
+#   msgraph.sh list-calendars                               # list all calendars
+#   msgraph.sh get-events [--start ISO8601] [--end ISO8601] [--calendar-id ID]
 #   msgraph.sh get-event-detail EVENT_ID
 
 set -euo pipefail
@@ -23,25 +25,29 @@ require_env() {
 
 # Resolve m365 once: prefer global install, fall back to npx.
 # npx requires --package to map the package name to the m365 binary.
+# M365_PREFIX is the JSON array form used by the Python heredocs in cmd_list_calendars and cmd_get_events.
 if command -v m365 &>/dev/null; then
   m365_cmd() { m365 "$@"; }
+  export M365_PREFIX='["m365"]'
 elif command -v npx &>/dev/null; then
   m365_cmd() { npx --yes --package @pnp/cli-microsoft365 m365 "$@"; }
+  export M365_PREFIX='["npx","--yes","--package","@pnp/cli-microsoft365","m365"]'
 else
   die "Neither m365 nor npx is available. Install Node.js (https://nodejs.org) or run: npm install -g @pnp/cli-microsoft365"
 fi
 
-# macOS-compatible ISO 8601 date arithmetic using local time + offset.
-# Local time preserves correct day boundaries for the user's timezone.
+require_python3() {
+  command -v python3 &>/dev/null || die "python3 is required but not found. Install Python 3 (https://python.org)."
+}
+
+# Timestamps use local time with +HH:MM offset: DST-correct and Graph-compatible
+# on all platforms without BSD/GNU date compatibility concerns.
 iso_now() {
-  date +"%Y-%m-%dT%H:%M:%S%z"
+  python3 -c "from datetime import datetime, timezone; print(datetime.now(timezone.utc).astimezone().isoformat(timespec='seconds'))"
 }
 
 iso_days_from_now() {
-  local days="$1"
-  # GNU date uses -d; BSD date (macOS) uses -v
-  date -v+"${days}d" +"%Y-%m-%dT%H:%M:%S%z" 2>/dev/null \
-    || date -d "+${days} days" +"%Y-%m-%dT%H:%M:%S%z"
+  python3 -c "import sys; from datetime import datetime, timezone, timedelta; print((datetime.now(timezone.utc) + timedelta(days=int(sys.argv[1]))).astimezone().isoformat(timespec='seconds'))" "$1"
 }
 
 # ---------------------------------------------------------------------------
@@ -60,25 +66,104 @@ cmd_logout() {
   m365_cmd logout
 }
 
+cmd_list_calendars() {
+  require_env
+  require_python3
+  python3 << 'PYEOF'
+import json, os, subprocess, sys
+
+m365_cmd = json.loads(os.environ["M365_PREFIX"])
+url = "https://graph.microsoft.com/v1.0/me/calendars?$select=id,name,isDefaultCalendar,canEdit&$top=50"
+
+while url:
+    result = subprocess.run(
+        m365_cmd + ["request", "--url", url, "--output", "json"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+    )
+    if result.returncode != 0:
+        print("Error: m365 request failed:", result.stderr.strip(), file=sys.stderr)
+        sys.exit(1)
+    try:
+        page = json.loads(result.stdout)
+    except json.JSONDecodeError as e:
+        print("Error: non-JSON response from m365:", str(e), "—", result.stdout[:200], file=sys.stderr)
+        sys.exit(1)
+    if not isinstance(page, dict) or "value" not in page:
+        print("Error: unexpected response from Graph API:", json.dumps(page), file=sys.stderr)
+        sys.exit(1)
+    for c in page["value"]:
+        default = " (default)" if c.get("isDefaultCalendar") else ""
+        editable = " [read-only]" if not c.get("canEdit") else ""
+        print(c["name"] + default + editable)
+        print("  id: " + c["id"])
+    url = page.get("@odata.nextLink", "")
+PYEOF
+}
+
 cmd_get_events() {
   require_env
-  local start end
+  require_python3
+  local start end calendar_id=""
   start="$(iso_now)"
   end="$(iso_days_from_now 7)"
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --start) [[ $# -ge 2 ]] || die "--start requires a value"; start="$2"; shift 2 ;;
-      --end)   [[ $# -ge 2 ]] || die "--end requires a value";   end="$2";   shift 2 ;;
+      --start)       [[ $# -ge 2 ]] || die "--start requires a value";       start="$2";       shift 2 ;;
+      --end)         [[ $# -ge 2 ]] || die "--end requires a value";         end="$2";         shift 2 ;;
+      --calendar-id) [[ $# -ge 2 ]] || die "--calendar-id requires a value"; calendar_id="$2"; shift 2 ;;
       *) die "Unknown option: $1" ;;
     esac
   done
 
-  m365_cmd outlook event list \
-    --userId "@meId" \
-    --startDateTime "$start" \
-    --endDateTime "$end" \
-    --output json
+  # Use calendarView (not /events) so recurring meetings are expanded into
+  # individual occurrences within the window. /events returns series masters
+  # without expanding recurrences, so future occurrences of recurring standups,
+  # 1:1s, etc. are silently omitted.
+  GRAPH_START="$start" \
+  GRAPH_END="$end" \
+  GRAPH_CAL="$calendar_id" \
+  python3 << 'PYEOF'
+import json, os, subprocess, sys, urllib.parse
+
+m365_cmd = json.loads(os.environ["M365_PREFIX"])
+start    = os.environ["GRAPH_START"]
+end      = os.environ["GRAPH_END"]
+cal      = os.environ["GRAPH_CAL"]
+
+base = "https://graph.microsoft.com/v1.0/me"
+if cal:
+    base += "/calendars/" + urllib.parse.quote(cal, safe="")
+
+url = (base + "/calendarView"
+    + "?startDateTime=" + urllib.parse.quote(start, safe="")
+    + "&endDateTime="   + urllib.parse.quote(end, safe="")
+    + "&$select=id,subject,start,end,isOnlineMeeting,onlineMeetingUrl,location,sensitivity,isCancelled,isAllDay"
+    + "&$orderby=start/dateTime"
+    + "&$top=50")
+
+events = []
+while url:
+    result = subprocess.run(
+        m365_cmd + ["request", "--url", url, "--output", "json"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+    )
+    if result.returncode != 0:
+        print("Error: m365 request failed:", result.stderr.strip(), file=sys.stderr)
+        sys.exit(1)
+    try:
+        page = json.loads(result.stdout)
+    except json.JSONDecodeError as e:
+        print("Error: non-JSON response from m365:", str(e), "—", result.stdout[:200], file=sys.stderr)
+        sys.exit(1)
+    if not isinstance(page, dict) or "value" not in page:
+        print("Error: unexpected response from Graph API:", json.dumps(page), file=sys.stderr)
+        sys.exit(1)
+    events.extend(page["value"])
+    url = page.get("@odata.nextLink", "")
+
+print(json.dumps(events))
+PYEOF
 }
 
 cmd_get_event_detail() {
@@ -100,10 +185,12 @@ cmd_get_event_detail() {
   echo "Usage: $(basename "$0") <command> [options]" >&2
   echo "" >&2
   echo "Commands:" >&2
-  echo "  login                              Authenticate via browser" >&2
-  echo "  logout                             Clear cached tokens" >&2
-  echo "  get-events [--start ISO] [--end ISO]  List calendar events (default: next 7 days)" >&2
-  echo "  get-event-detail EVENT_ID          Fetch full event including body/description" >&2
+  echo "  login                                        Authenticate via browser" >&2
+  echo "  logout                                       Clear cached tokens" >&2
+  echo "  list-calendars                               List all calendars" >&2
+  echo "  get-events [--start ISO] [--end ISO]         List calendar events (default: next 7 days)" >&2
+  echo "             [--calendar-id ID]                Scope to a specific calendar" >&2
+  echo "  get-event-detail EVENT_ID                    Fetch full event including body/description" >&2
   exit 1
 }
 
@@ -112,6 +199,7 @@ COMMAND="$1"; shift
 case "$COMMAND" in
   login)            cmd_login ;;
   logout)           cmd_logout ;;
+  list-calendars)   cmd_list_calendars ;;
   get-events)       cmd_get_events "$@" ;;
   get-event-detail) cmd_get_event_detail "$@" ;;
   *) die "Unknown command: $COMMAND. Run $(basename "$0") for usage." ;;

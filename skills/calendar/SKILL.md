@@ -19,7 +19,9 @@ Calendar queries are **read-only** — no confirmation needed. Authentication co
    export MSGRAPH_TENANT_ID=<your-azure-tenant-id>
    ```
 
-2. **Authenticated once**:
+2. **python3** available in `PATH` — used for timestamp generation and output formatting. Comes pre-installed on macOS. Verify with `python3 --version`.
+
+3. **Authenticated once**:
    ```bash
    ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh login
    ```
@@ -34,28 +36,30 @@ Calendar queries are **read-only** — no confirmation needed. Authentication co
 
 | Command | What it does |
 |---------|-------------|
-| `msgraph.sh get-events [--start ISO] [--end ISO]` | List events in a time range (default: now → +7 days) |
+| `msgraph.sh list-calendars` | List all calendars (id, name, default flag, read-only flag) |
+| `msgraph.sh get-events [--start ISO] [--end ISO] [--calendar-id ID]` | List events in a time range (default: now → +7 days). Uses `calendarView` so recurring meetings are expanded into individual occurrences. |
 | `msgraph.sh get-event-detail EVENT_ID` | Full event details including body/description |
 | `msgraph.sh login` | Authenticate (browser OAuth) |
 | `msgraph.sh logout` | Clear cached tokens |
 
-## ISO 8601 Time Helpers (macOS)
+`--calendar-id` is optional; omit it to query the default calendar. Obtain IDs from `list-calendars`.
 
-Use local time with UTC offset (`%z`) so day boundaries match the user's timezone:
+## ISO 8601 Time Helpers
+
+The script requires ISO 8601 timestamps with a `+HH:MM` UTC offset (e.g. `2026-05-11T09:00:00+02:00`). Use Python — `date +"%z"` on macOS (BSD) emits `+0200` without the colon, which is invalid for Microsoft Graph:
 
 ```bash
-# Now (local time)
-date +"%Y-%m-%dT%H:%M:%S%z"
+# Now (local time with +HH:MM offset)
+python3 -c "from datetime import datetime, timezone; print(datetime.now(timezone.utc).astimezone().isoformat(timespec='seconds'))"
 
-# Start / end of today (local time)
-date +"%Y-%m-%dT00:00:00%z"
-date +"%Y-%m-%dT23:59:59%z"
+# N days from now (DST-correct: .astimezone() applied after timedelta)
+python3 -c "import sys; from datetime import datetime, timezone, timedelta; print((datetime.now(timezone.utc) + timedelta(days=int(sys.argv[1]))).astimezone().isoformat(timespec='seconds'))" 7
 
-# 2 hours from now — BSD (macOS) / GNU fallback
-date -v+2H +"%Y-%m-%dT%H:%M:%S%z" 2>/dev/null || date -d "+2 hours" +"%Y-%m-%dT%H:%M:%S%z"
+# Start of today (midnight local time)
+python3 -c "from datetime import datetime, timezone; d=datetime.now(timezone.utc).astimezone(); print(d.replace(hour=0,minute=0,second=0,microsecond=0).isoformat(timespec='seconds'))"
 
-# 7 days from now — BSD (macOS) / GNU fallback
-date -v+7d +"%Y-%m-%dT%H:%M:%S%z" 2>/dev/null || date -d "+7 days" +"%Y-%m-%dT%H:%M:%S%z"
+# End of today (23:59:59 local time)
+python3 -c "from datetime import datetime, timezone; d=datetime.now(timezone.utc).astimezone(); print(d.replace(hour=23,minute=59,second=59,microsecond=0).isoformat(timespec='seconds'))"
 ```
 
 ## Core Workflows
@@ -64,8 +68,8 @@ date -v+7d +"%Y-%m-%dT%H:%M:%S%z" 2>/dev/null || date -d "+7 days" +"%Y-%m-%dT%H
 
 ```bash
 ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh get-events \
-  --start "$(date +"%Y-%m-%dT00:00:00%z")" \
-  --end "$(date +"%Y-%m-%dT23:59:59%z")"
+  --start "$(python3 -c 'from datetime import datetime,timezone; d=datetime.now(timezone.utc).astimezone(); print(d.replace(hour=0,minute=0,second=0,microsecond=0).isoformat(timespec="seconds"))')" \
+  --end "$(python3 -c 'from datetime import datetime,timezone; d=datetime.now(timezone.utc).astimezone(); print(d.replace(hour=23,minute=59,second=59,microsecond=0).isoformat(timespec="seconds"))')"
 ```
 
 Present as:
@@ -103,8 +107,8 @@ Fetch events from now to 2 hours from now:
 
 ```bash
 ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh get-events \
-  --start "$(date +"%Y-%m-%dT%H:%M:%S%z")" \
-  --end "$(date -v+2H +"%Y-%m-%dT%H:%M:%S%z" 2>/dev/null || date -d "+2 hours" +"%Y-%m-%dT%H:%M:%S%z")"
+  --start "$(python3 -c 'from datetime import datetime,timezone; print(datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds"))')" \
+  --end "$(python3 -c 'from datetime import datetime,timezone,timedelta; print((datetime.now(timezone.utc)+timedelta(hours=2)).astimezone().isoformat(timespec="seconds"))')"
 ```
 
 If the result is empty, extend to end of day.
