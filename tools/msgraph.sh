@@ -24,10 +24,13 @@ require_env() {
 
 # Resolve m365 once: prefer global install, fall back to npx.
 # npx requires --package to map the package name to the m365 binary.
+# M365_PREFIX is the JSON array form used by the Python heredoc in cmd_get_events.
 if command -v m365 &>/dev/null; then
   m365_cmd() { m365 "$@"; }
+  M365_PREFIX='["m365"]'
 elif command -v npx &>/dev/null; then
   m365_cmd() { npx --yes --package @pnp/cli-microsoft365 m365 "$@"; }
+  M365_PREFIX='["npx","--yes","--package","@pnp/cli-microsoft365","m365"]'
 else
   die "Neither m365 nor npx is available. Install Node.js (https://nodejs.org) or run: npm install -g @pnp/cli-microsoft365"
 fi
@@ -36,14 +39,18 @@ require_python3() {
   command -v python3 &>/dev/null || die "python3 is required but not found. Install Python 3 (https://python.org)."
 }
 
-# Use Python for timestamp generation: produces local time with +HH:MM offset,
-# which is DST-correct and accepted by the Graph API on all platforms.
+# Timestamps use local time with +HH:MM offset: DST-correct and Graph-compatible
+# on all platforms without BSD/GNU date compatibility concerns.
 iso_now() {
   python3 -c "from datetime import datetime, timezone; print(datetime.now(timezone.utc).astimezone().isoformat(timespec='seconds'))"
 }
 
 iso_days_from_now() {
-  python3 -c "from datetime import datetime, timezone, timedelta; print((datetime.now(timezone.utc).astimezone() + timedelta(days=$1)).isoformat(timespec='seconds'))"
+  python3 -c "
+import sys
+from datetime import datetime, timezone, timedelta
+print((datetime.now(timezone.utc).astimezone() + timedelta(days=int(sys.argv[1]))).isoformat(timespec='seconds'))
+" "$1"
 }
 
 # ---------------------------------------------------------------------------
@@ -105,14 +112,6 @@ cmd_get_events() {
   # Use calendarView (not /events) so recurring meetings are expanded into
   # individual occurrences within the window. /events filters by original
   # creation date, silently dropping recurring standups, 1:1s, etc.
-  local m365_prefix
-  if command -v m365 &>/dev/null; then
-    m365_prefix='["m365"]'
-  else
-    m365_prefix='["npx","--yes","--package","@pnp/cli-microsoft365","m365"]'
-  fi
-
-  M365_PREFIX="$m365_prefix" \
   GRAPH_START="$start" \
   GRAPH_END="$end" \
   GRAPH_CAL="$calendar_id" \
