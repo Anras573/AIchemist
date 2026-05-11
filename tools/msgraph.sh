@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Microsoft Graph calendar CLI via @pnp/cli-microsoft365 (m365).
 # Requires MSGRAPH_APP_ID and MSGRAPH_TENANT_ID to be set in the environment.
+# Requires python3 for timestamp generation and output formatting.
 #
 # Usage:
 #   msgraph.sh login                                        # authenticate via browser
@@ -73,7 +74,7 @@ cmd_list_calendars() {
   require_env
   require_python3
   m365_cmd request \
-    --url "https://graph.microsoft.com/v1.0/me/calendars?\$select=id,name,isDefaultCalendar,canEdit,color" \
+    --url "https://graph.microsoft.com/v1.0/me/calendars?\$select=id,name,isDefaultCalendar,canEdit" \
     --output json \
   | python3 -c "
 import json, sys
