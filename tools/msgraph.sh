@@ -77,7 +77,7 @@ cmd_list_calendars() {
 import json, os, subprocess, sys
 
 m365_cmd = json.loads(os.environ["M365_PREFIX"])
-url = "https://graph.microsoft.com/v1.0/me/calendars?$select=id,name,isDefaultCalendar,canEdit"
+url = "https://graph.microsoft.com/v1.0/me/calendars?$select=id,name,isDefaultCalendar,canEdit&$top=50"
 
 while url:
     result = subprocess.run(

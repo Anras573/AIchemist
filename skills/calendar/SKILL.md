@@ -70,8 +70,8 @@ python3 -c "from datetime import datetime, timezone; d=datetime.now(timezone.utc
 
 ```bash
 ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh get-events \
-  --start "$(python3 -c "from datetime import datetime,timezone; d=datetime.now(timezone.utc).astimezone(); print(d.replace(hour=0,minute=0,second=0,microsecond=0).isoformat(timespec='seconds'))")" \
-  --end "$(python3 -c "from datetime import datetime,timezone; d=datetime.now(timezone.utc).astimezone(); print(d.replace(hour=23,minute=59,second=59,microsecond=0).isoformat(timespec='seconds'))")"
+  --start "$(python3 -c 'from datetime import datetime,timezone; d=datetime.now(timezone.utc).astimezone(); print(d.replace(hour=0,minute=0,second=0,microsecond=0).isoformat(timespec="seconds"))')" \
+  --end "$(python3 -c 'from datetime import datetime,timezone; d=datetime.now(timezone.utc).astimezone(); print(d.replace(hour=23,minute=59,second=59,microsecond=0).isoformat(timespec="seconds"))')"
 ```
 
 Present as:
@@ -109,8 +109,8 @@ Fetch events from now to 2 hours from now:
 
 ```bash
 ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh get-events \
-  --start "$(python3 -c "from datetime import datetime,timezone; print(datetime.now(timezone.utc).astimezone().isoformat(timespec='seconds'))")" \
-  --end "$(python3 -c "from datetime import datetime,timezone,timedelta; print((datetime.now(timezone.utc)+timedelta(hours=2)).astimezone().isoformat(timespec='seconds'))")"
+  --start "$(python3 -c 'from datetime import datetime,timezone; print(datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds"))')" \
+  --end "$(python3 -c 'from datetime import datetime,timezone,timedelta; print((datetime.now(timezone.utc)+timedelta(hours=2)).astimezone().isoformat(timespec="seconds"))')"
 ```
 
 If the result is empty, extend to end of day.
