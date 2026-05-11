@@ -3,9 +3,10 @@
 # Requires MSGRAPH_APP_ID and MSGRAPH_TENANT_ID to be set in the environment.
 #
 # Usage:
-#   msgraph.sh login                              # authenticate via browser
-#   msgraph.sh logout                             # clear cached tokens
-#   msgraph.sh get-events [--start ISO8601] [--end ISO8601]
+#   msgraph.sh login                                        # authenticate via browser
+#   msgraph.sh logout                                       # clear cached tokens
+#   msgraph.sh list-calendars                               # list all calendars
+#   msgraph.sh get-events [--start ISO8601] [--end ISO8601] [--calendar-id ID]
 #   msgraph.sh get-event-detail EVENT_ID
 
 set -euo pipefail
@@ -31,17 +32,17 @@ else
   die "Neither m365 nor npx is available. Install Node.js (https://nodejs.org) or run: npm install -g @pnp/cli-microsoft365"
 fi
 
-# macOS-compatible ISO 8601 date arithmetic using local time + offset.
-# Local time preserves correct day boundaries for the user's timezone.
+# Use UTC Z-suffix — accepted by Graph API on both macOS (BSD date) and Linux (GNU date).
+# Avoids the +HHMM vs +HH:MM offset formatting difference between platforms.
 iso_now() {
-  date +"%Y-%m-%dT%H:%M:%S%z"
+  date -u +"%Y-%m-%dT%H:%M:%SZ"
 }
 
 iso_days_from_now() {
   local days="$1"
   # GNU date uses -d; BSD date (macOS) uses -v
-  date -v+"${days}d" +"%Y-%m-%dT%H:%M:%S%z" 2>/dev/null \
-    || date -d "+${days} days" +"%Y-%m-%dT%H:%M:%S%z"
+  date -u -v+"${days}d" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null \
+    || date -u -d "+${days} days" +"%Y-%m-%dT%H:%M:%SZ"
 }
 
 # ---------------------------------------------------------------------------
@@ -60,25 +61,47 @@ cmd_logout() {
   m365_cmd logout
 }
 
+cmd_list_calendars() {
+  require_env
+  m365_cmd request \
+    --url "https://graph.microsoft.com/v1.0/me/calendars?\$select=id,name,isDefaultCalendar,canEdit,color" \
+    --output json \
+  | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+items = data.get('value', data) if isinstance(data, dict) else data
+for c in items:
+    default = ' (default)' if c.get('isDefaultCalendar') else ''
+    editable = ' [read-only]' if not c.get('canEdit') else ''
+    print(f\"{c['name']}{default}{editable}\")
+    print(f\"  id: {c['id']}\")
+"
+}
+
 cmd_get_events() {
   require_env
-  local start end
+  local start end calendar_id=""
   start="$(iso_now)"
   end="$(iso_days_from_now 7)"
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --start) [[ $# -ge 2 ]] || die "--start requires a value"; start="$2"; shift 2 ;;
-      --end)   [[ $# -ge 2 ]] || die "--end requires a value";   end="$2";   shift 2 ;;
+      --start)       [[ $# -ge 2 ]] || die "--start requires a value";       start="$2";       shift 2 ;;
+      --end)         [[ $# -ge 2 ]] || die "--end requires a value";         end="$2";         shift 2 ;;
+      --calendar-id) [[ $# -ge 2 ]] || die "--calendar-id requires a value"; calendar_id="$2"; shift 2 ;;
       *) die "Unknown option: $1" ;;
     esac
   done
 
-  m365_cmd outlook event list \
-    --userId "@meId" \
-    --startDateTime "$start" \
-    --endDateTime "$end" \
-    --output json
+  # Use calendarView (not /events) so recurring meetings are expanded into
+  # individual occurrences within the window. /events filters by original
+  # creation date, silently dropping recurring standups, 1:1s, etc.
+  local base="https://graph.microsoft.com/v1.0/me"
+  [[ -n "$calendar_id" ]] && base="https://graph.microsoft.com/v1.0/me/calendars/${calendar_id}"
+  local url="${base}/calendarView?startDateTime=${start}&endDateTime=${end}&\$select=id,subject,start,end,isOnlineMeeting,location,sensitivity,isCancelled,isAllDay&\$orderby=start/dateTime&\$top=50"
+
+  m365_cmd request --url "$url" --output json \
+  | python3 -c "import json,sys; data=json.load(sys.stdin); print(json.dumps(data.get('value', data)))"
 }
 
 cmd_get_event_detail() {
@@ -100,10 +123,12 @@ cmd_get_event_detail() {
   echo "Usage: $(basename "$0") <command> [options]" >&2
   echo "" >&2
   echo "Commands:" >&2
-  echo "  login                              Authenticate via browser" >&2
-  echo "  logout                             Clear cached tokens" >&2
-  echo "  get-events [--start ISO] [--end ISO]  List calendar events (default: next 7 days)" >&2
-  echo "  get-event-detail EVENT_ID          Fetch full event including body/description" >&2
+  echo "  login                                        Authenticate via browser" >&2
+  echo "  logout                                       Clear cached tokens" >&2
+  echo "  list-calendars                               List all calendars" >&2
+  echo "  get-events [--start ISO] [--end ISO]         List calendar events (default: next 7 days)" >&2
+  echo "             [--calendar-id ID]                Scope to a specific calendar" >&2
+  echo "  get-event-detail EVENT_ID                    Fetch full event including body/description" >&2
   exit 1
 }
 
@@ -112,6 +137,7 @@ COMMAND="$1"; shift
 case "$COMMAND" in
   login)            cmd_login ;;
   logout)           cmd_logout ;;
+  list-calendars)   cmd_list_calendars ;;
   get-events)       cmd_get_events "$@" ;;
   get-event-detail) cmd_get_event_detail "$@" ;;
   *) die "Unknown command: $COMMAND. Run $(basename "$0") for usage." ;;
