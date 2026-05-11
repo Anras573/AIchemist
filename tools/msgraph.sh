@@ -27,10 +27,10 @@ require_env() {
 # M365_PREFIX is the JSON array form used by the Python heredoc in cmd_get_events.
 if command -v m365 &>/dev/null; then
   m365_cmd() { m365 "$@"; }
-  M365_PREFIX='["m365"]'
+  export M365_PREFIX='["m365"]'
 elif command -v npx &>/dev/null; then
   m365_cmd() { npx --yes --package @pnp/cli-microsoft365 m365 "$@"; }
-  M365_PREFIX='["npx","--yes","--package","@pnp/cli-microsoft365","m365"]'
+  export M365_PREFIX='["npx","--yes","--package","@pnp/cli-microsoft365","m365"]'
 else
   die "Neither m365 nor npx is available. Install Node.js (https://nodejs.org) or run: npm install -g @pnp/cli-microsoft365"
 fi
