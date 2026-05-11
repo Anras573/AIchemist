@@ -73,25 +73,31 @@ cmd_logout() {
 cmd_list_calendars() {
   require_env
   require_python3
-  m365_cmd request \
-    --url "https://graph.microsoft.com/v1.0/me/calendars?\$select=id,name,isDefaultCalendar,canEdit" \
-    --output json \
-  | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-if not isinstance(data, dict) or 'value' not in data:
-  print('Error: unexpected response from Graph API:', json.dumps(data), file=sys.stderr)
-  sys.exit(1)
-items = data['value']
-if not isinstance(items, list):
-  print('Error: expected a list of calendars, got:', type(items).__name__, file=sys.stderr)
-  sys.exit(1)
-for c in items:
-  default = ' (default)' if c.get('isDefaultCalendar') else ''
-  editable = ' [read-only]' if not c.get('canEdit') else ''
-  print(c['name'] + default + editable)
-  print('  id: ' + c['id'])
-"
+  python3 << 'PYEOF'
+import json, os, subprocess, sys
+
+m365_cmd = json.loads(os.environ["M365_PREFIX"])
+url = "https://graph.microsoft.com/v1.0/me/calendars?$select=id,name,isDefaultCalendar,canEdit"
+
+while url:
+    result = subprocess.run(
+        m365_cmd + ["request", "--url", url, "--output", "json"],
+        capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        print("Error: m365 request failed:", result.stderr.strip(), file=sys.stderr)
+        sys.exit(1)
+    page = json.loads(result.stdout)
+    if not isinstance(page, dict) or "value" not in page:
+        print("Error: unexpected response from Graph API:", json.dumps(page), file=sys.stderr)
+        sys.exit(1)
+    for c in page["value"]:
+        default = " (default)" if c.get("isDefaultCalendar") else ""
+        editable = " [read-only]" if not c.get("canEdit") else ""
+        print(c["name"] + default + editable)
+        print("  id: " + c["id"])
+    url = page.get("@odata.nextLink", "")
+PYEOF
 }
 
 cmd_get_events() {
@@ -111,8 +117,9 @@ cmd_get_events() {
   done
 
   # Use calendarView (not /events) so recurring meetings are expanded into
-  # individual occurrences within the window. /events filters by original
-  # creation date, silently dropping recurring standups, 1:1s, etc.
+  # individual occurrences within the window. /events returns series masters
+  # without expanding recurrences, so future occurrences of recurring standups,
+  # 1:1s, etc. are silently omitted.
   GRAPH_START="$start" \
   GRAPH_END="$end" \
   GRAPH_CAL="$calendar_id" \
