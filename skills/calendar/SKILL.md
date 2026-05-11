@@ -19,7 +19,9 @@ Calendar queries are **read-only** — no confirmation needed. Authentication co
    export MSGRAPH_TENANT_ID=<your-azure-tenant-id>
    ```
 
-2. **Authenticated once**:
+2. **python3** available in `PATH` — used for timestamp generation and output formatting. Comes pre-installed on macOS. Verify with `python3 --version`.
+
+3. **Authenticated once**:
    ```bash
    ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh login
    ```
