@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.1](https://github.com/Anras573/AIchemist/compare/v3.3.0...v3.3.1) (2026-05-11)
+
+
+### Bug Fixes
+
+* **msgraph:** use calendarView and local-timezone timestamps ([#102](https://github.com/Anras573/AIchemist/issues/102)) ([4647bf6](https://github.com/Anras573/AIchemist/commit/4647bf6951ed70a90cd8cae91538029f5d99a4b0))
+
 ## [3.3.0](https://github.com/Anras573/AIchemist/compare/v3.2.1...v3.3.0) (2026-05-10)
 
 
