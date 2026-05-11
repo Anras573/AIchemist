@@ -34,11 +34,6 @@ fi
 
 command -v python3 &>/dev/null || die "python3 is required but not found. Install Python 3 (https://python.org)."
 
-# URL-encode a string for safe use in query parameters or path segments.
-urlencode() {
-  python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=''), end='')" "$1"
-}
-
 # Use UTC Z-suffix — accepted by Graph API on both macOS (BSD date) and Linux (GNU date).
 # Avoids the +HHMM vs +HH:MM offset formatting difference between platforms.
 iso_now() {
@@ -109,31 +104,35 @@ cmd_get_events() {
   # Use calendarView (not /events) so recurring meetings are expanded into
   # individual occurrences within the window. /events filters by original
   # creation date, silently dropping recurring standups, 1:1s, etc.
-  local base="https://graph.microsoft.com/v1.0/me"
-  if [[ -n "$calendar_id" ]]; then
-    base="https://graph.microsoft.com/v1.0/me/calendars/$(urlencode "$calendar_id")"
-  fi
-  local url="${base}/calendarView?startDateTime=$(urlencode "$start")&endDateTime=$(urlencode "$end")&\$select=id,subject,start,end,isOnlineMeeting,location,sensitivity,isCancelled,isAllDay&\$orderby=start/dateTime&\$top=50"
+  local all_events next_url
+  next_url="$(python3 -c "
+import sys, urllib.parse
+start, end, cal = sys.argv[1], sys.argv[2], sys.argv[3]
+base = 'https://graph.microsoft.com/v1.0/me'
+if cal:
+    base += '/calendars/' + urllib.parse.quote(cal, safe='')
+print(base + '/calendarView'
+    + '?startDateTime=' + urllib.parse.quote(start, safe='')
+    + '&endDateTime='   + urllib.parse.quote(end, safe='')
+    + '&\$select=id,subject,start,end,isOnlineMeeting,location,sensitivity,isCancelled,isAllDay'
+    + '&\$orderby=start/dateTime'
+    + '&\$top=50')
+" "$start" "$end" "$calendar_id")"
 
-  # Follow @odata.nextLink until all pages are collected.
-  # Graph caps each page at $top items, so a busy week may require multiple requests.
-  local all_events="[]"
-  local next_url="$url"
+  all_events="[]"
   while [[ -n "$next_url" ]]; do
     local page
     page="$(m365_cmd request --url "$next_url" --output json)"
-    local result
-    result="$(python3 -c "
+    read -r all_events next_url < <(python3 -c "
 import json, sys
 page = json.loads(sys.argv[1])
 if not isinstance(page, dict) or 'value' not in page:
     print('Error: unexpected response from Graph API:', json.dumps(page), file=sys.stderr)
     sys.exit(1)
-acc = json.loads(sys.argv[2])
-print(json.dumps({'events': acc + page['value'], 'next': page.get('@odata.nextLink', '')}))
-" "$page" "$all_events")"
-    all_events="$(python3 -c "import json,sys; print(json.dumps(json.loads(sys.argv[1])['events']))" "$result")"
-    next_url="$(python3 -c "import json,sys; print(json.loads(sys.argv[1])['next'])" "$result")"
+events = json.loads(sys.argv[2]) + page['value']
+print(json.dumps(events))
+print(page.get('@odata.nextLink', ''))
+" "$page" "$all_events")
   done
   echo "$all_events"
 }
