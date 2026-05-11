@@ -138,7 +138,7 @@ if cal:
 url = (base + "/calendarView"
     + "?startDateTime=" + urllib.parse.quote(start, safe="")
     + "&endDateTime="   + urllib.parse.quote(end, safe="")
-    + "&$select=id,subject,start,end,isOnlineMeeting,location,sensitivity,isCancelled,isAllDay"
+    + "&$select=id,subject,start,end,isOnlineMeeting,onlineMeetingUrl,location,sensitivity,isCancelled,isAllDay"
     + "&$orderby=start/dateTime"
     + "&$top=50")
 
