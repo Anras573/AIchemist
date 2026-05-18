@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.0](https://github.com/Anras573/AIchemist/compare/v3.3.1...v3.4.0) (2026-05-18)
+
+
+### Features
+
+* **skills:** add pr-review-loop skill ([#104](https://github.com/Anras573/AIchemist/issues/104)) ([d558324](https://github.com/Anras573/AIchemist/commit/d5583247faa595ffe00a83874dd385c0bba21021))
+
 ## [3.3.1](https://github.com/Anras573/AIchemist/compare/v3.3.0...v3.3.1) (2026-05-11)
 
 
