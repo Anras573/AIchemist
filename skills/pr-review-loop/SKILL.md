@@ -1,10 +1,12 @@
 ---
-name: PR Review Loop
+name: pr-review-loop
 description: |
   Autonomously drives the GitHub Copilot PR review loop. Polls for unresolved review
   threads, classifies and fixes them with confidence-based gating, replies and resolves
   threads on GitHub, then extracts lessons into CLAUDE.md and personal memory.
   Invoke with /pr-review-loop from a repo root on a feature branch with an open PR.
+  Trigger phrases: "pr review loop", "/pr-review-loop", "drive copilot review",
+  "review loop", "start review loop", "copilot review loop", "run review loop".
 version: 1.0.0
 ---
 
@@ -12,6 +14,18 @@ version: 1.0.0
 
 Automate the back-and-forth between a local agent and GitHub Copilot's PR reviewer.
 Each invocation is one polling tick. Use `ScheduleWakeup` to keep the loop alive.
+
+### Operations
+
+| Type | Operations | Behavior |
+|------|------------|----------|
+| **Read** | Fetch PR state, review timestamps, unresolved threads | Automatic — no confirmation needed |
+| **Write** | Edit source files to fix AUTO-FIX clusters | Automatic |
+| **Write** | Edit source files to fix SHOW-FIRST clusters | Requires approval before applying |
+| **Write** | Commit and push fixes | Requires explicit confirmation before each commit/push |
+| **Write** | Post replies and resolve threads on GitHub | Automatic after fixes are confirmed |
+| **Write** | Append lessons to `CLAUDE.md` and commit | Requires explicit confirmation |
+| **Write** | Append to `REVIEW_LESSONS.md`, update global gitignore | Automatic |
 
 ---
 
@@ -33,8 +47,8 @@ You maintain three states across ticks. Determine the current state each tick:
 # Detect open PR, repo info, and latest Copilot review in one call
 gh pr view --json number,headRefOid,url,headRepository,reviews
 
-# Get last push commit timestamp (ISO 8601)
-git log -1 --format=%cI
+# Get last push commit timestamp from the remote tracking branch (ISO 8601)
+git log -1 --format=%cI @{push}
 ```
 
 Extract from the JSON:
@@ -50,7 +64,7 @@ Extract from the JSON:
 
 Only fetch if `LAST_REVIEW_TS > LAST_PUSH_TS` — skip this step entirely if the state is already `WAITING`.
 
-Use GraphQL to fetch threads. Only threads where the author is `copilot-pull-request-reviewer` and `isResolved: false` are relevant.
+Use GraphQL to fetch threads. Only threads where the author is `copilot-pull-request-reviewer` and `isResolved: false` are relevant. (Verified login — Copilot review comments use `copilot-pull-request-reviewer`, not the `[bot]`-suffixed form.)
 
 ```bash
 gh api graphql -f query='
@@ -98,6 +112,8 @@ else:
 
 **If WAITING:** Print `"Waiting for Copilot review... (last push: [LAST_PUSH_TS])"` then schedule next tick:
 ```
+# <<pr-review-loop-dynamic>> is a Claude Code runtime sentinel — the harness resolves
+# it to re-invoke this skill with the same dynamic loop context on the next tick.
 ScheduleWakeup(delaySeconds=120, reason="polling for Copilot review", prompt="<<pr-review-loop-dynamic>>")
 ```
 
@@ -129,7 +145,7 @@ Treat each cluster as one fix unit. Name each cluster with a short label (e.g. "
 
 **SHOW-FIRST** (present plan, wait for approval):
 - Pagination / data truncation risks
-- Input validation, URL encoding, injection risks  
+- Input validation, URL encoding, injection risks
 - Architecture concerns (duplication, refactoring, separation of concerns)
 - Any change spanning > ~10 lines or multiple functions
 - Anything where multiple valid approaches exist
@@ -184,21 +200,32 @@ gh api graphql -f query='
 ' -F threadId="THREAD_ID"
 ```
 
+### Confirm before commit/push
+Print the list of changed files and cluster names, then ask:
+```
+Ready to commit and push the above fixes. Proceed? (yes / cancel)
+```
+Wait for confirmation before continuing.
+
 ### Batch commit and push
 Stage only changed files (not `git add .`):
 ```bash
 git add [specific files changed]
-git commit -m "fix: address Copilot review comments
+git commit -m "fix(skills): address Copilot review comments
 
-$(echo 'Clusters fixed:'; echo '- cluster 1'; echo '- cluster 2')
+Clusters fixed:
+- [cluster 1]
+- [cluster 2]
 
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+Co-Authored-By: Claude <noreply@anthropic.com>"
 git push
 ```
 
 ### Re-request Copilot review
 ```bash
-gh pr edit --add-reviewer copilot-pull-request-reviewer 2>/dev/null || true
+if ! gh pr edit --add-reviewer copilot-pull-request-reviewer 2>/tmp/copilot-review-err; then
+  echo "Warning: failed to re-request Copilot review: $(cat /tmp/copilot-review-err)"
+fi
 ```
 
 Then print: `"Pushed fixes and requested re-review. Waiting for Copilot..."`
@@ -250,29 +277,31 @@ Append to `REVIEW_LESSONS.md` in the repo root (create if absent):
 **→ CLAUDE.md**
 - [lesson 1]
 
-**→ Personal memory**  
+**→ Personal memory**
 - [lesson 1]
 ```
 
-Add `REVIEW_LESSONS.md` to the **global gitignore** (`~/.gitignore_global` or `~/.config/git/ignore` — check which exists), not the repo's `.gitignore`. It is a personal tool artifact, not a repo concern.
+Add `REVIEW_LESSONS.md` to the **global gitignore**, not the repo's `.gitignore`. It is a personal tool artifact, not a repo concern.
 
 ```bash
-# Determine which global gitignore file is active
-git config --global core.excludesfile
-# If empty, default to ~/.gitignore_global
-# Append if not already present:
-grep -qxF 'REVIEW_LESSONS.md' ~/.gitignore_global 2>/dev/null \
-  || echo 'REVIEW_LESSONS.md' >> ~/.gitignore_global
+GLOBAL_IGNORE=$(git config --global core.excludesfile)
+GLOBAL_IGNORE=${GLOBAL_IGNORE:-~/.gitignore_global}
+grep -qxF 'REVIEW_LESSONS.md' "$GLOBAL_IGNORE" 2>/dev/null \
+  || echo 'REVIEW_LESSONS.md' >> "$GLOBAL_IGNORE"
 ```
 
-### Commit CLAUDE.md update
-If any repo-specific lessons were written to `CLAUDE.md`, commit that change on the current branch before exiting — it belongs in the same PR's history as the fixes that generated it:
+### Confirm before CLAUDE.md commit
+If any repo-specific lessons were written to `CLAUDE.md`, show the diff and ask:
+```
+Ready to commit CLAUDE.md lessons to the branch. Proceed? (yes / skip)
+```
+Wait for confirmation. If confirmed:
 
 ```bash
 git add CLAUDE.md
-git commit -m "docs: add code review lessons from PR #NUMBER
+git commit -m "docs(skills): add code review lessons from PR #[NUMBER]
 
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+Co-Authored-By: Claude <noreply@anthropic.com>"
 git push
 ```
 

@@ -630,3 +630,36 @@ Create an `AGENT.md` file at your vault root to give Claude context about your v
 - `#status/active`, `#status/archived`
 - `#type/meeting`, `#type/decision`
 ```
+
+---
+
+## PR Review Loop Skill
+
+Self-scheduling polling loop that autonomously drives the GitHub Copilot PR review cycle. Detects review state, clusters and classifies comments, applies fixes with confidence-based gating, replies and resolves threads, then extracts lessons into `CLAUDE.md` and personal memory.
+
+**Trigger phrases:** "pr review loop", "/pr-review-loop", "drive copilot review", "review loop", "start review loop", "copilot review loop", "run review loop".
+
+### State Machine
+
+| State | Condition | Action |
+|-------|-----------|--------|
+| `WAITING` | No Copilot review newer than last push | Schedule next poll tick |
+| `REVIEWING` | New review with unresolved threads | Fix → push → re-request review |
+| `DONE` | New review, all threads resolved | Extract lessons, exit loop |
+
+### Operations
+
+| Type | Operations | Behavior |
+|------|------------|----------|
+| **Read** | PR state, review timestamps, unresolved threads | Automatic |
+| **Write** | Edit files (AUTO-FIX clusters) | Automatic |
+| **Write** | Edit files (SHOW-FIRST clusters) | Requires approval |
+| **Write** | Commit and push fixes | Requires explicit confirmation |
+| **Write** | Append lessons to `CLAUDE.md` and commit | Requires explicit confirmation |
+| **Write** | Post replies, resolve threads, update global gitignore | Automatic after confirmation |
+
+### Requirements
+
+- Claude Code (uses `ScheduleWakeup` for polling — not available on other Claude surfaces)
+- `gh` CLI authenticated
+- Open PR on current branch with GitHub Copilot code review enabled
