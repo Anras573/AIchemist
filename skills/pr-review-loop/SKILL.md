@@ -36,9 +36,9 @@ You maintain three states across ticks. Determine the current state each tick:
 
 | State | Condition | Action |
 |---|---|---|
-| `WAITING` | Latest Copilot review `submittedAt` ≤ last push commit timestamp | Schedule next tick, do nothing |
-| `REVIEWING` | Latest Copilot review `submittedAt` > last push timestamp AND unresolved threads exist | Process comments → fix → push → schedule next tick |
-| `DONE` | Latest Copilot review `submittedAt` > last push timestamp AND zero unresolved threads | Extract lessons, print summary, do NOT schedule next tick |
+| `WAITING` | Latest Copilot review `submittedAt` ≤ server-side push time of HEAD | Schedule next tick, do nothing |
+| `REVIEWING` | Latest Copilot review `submittedAt` > server-side push time of HEAD AND unresolved threads exist | Process comments → fix → push → schedule next tick |
+| `DONE` | Latest Copilot review `submittedAt` > server-side push time of HEAD AND zero unresolved threads | Extract lessons, print summary, do NOT schedule next tick |
 
 ---
 
@@ -49,7 +49,7 @@ You maintain three states across ticks. Determine the current state each tick:
 gh pr view --json number,headRefOid,url,headRepository,reviews
 ```
 
-Extract from the JSON: `owner` (`.headRepository.owner.login`), `repo` (`.headRepository.name`), `HEAD_REF_OID` (`.headRefOid`).
+Extract from the JSON: `owner` (`.headRepository.owner.login`), `repo` (`.headRepository.name`), `HEAD_REF_OID` (`.headRefOid`), `PR_NUMBER` (`.number`).
 
 ```bash
 # Get server-side push timestamp for the HEAD commit via GitHub GraphQL.
@@ -109,6 +109,8 @@ gh api graphql -f query='
         | map(select(.isResolved == false))
         | map(select(.comments.nodes[0].author.login == "copilot-pull-request-reviewer"))'
 ```
+
+> **Limit:** `reviewThreads(first: 100)` fetches at most 100 threads per query. PRs with > 100 Copilot threads will silently drop the overflow — Step 2 could miss unresolved threads and falsely transition to DONE, and Step 7 could miss lessons. This is acceptable for typical PRs; add cursor-based pagination if you expect high thread volumes.
 
 ---
 
@@ -313,6 +315,8 @@ GLOBAL_IGNORE=${GLOBAL_IGNORE:-${XDG_CONFIG_HOME:-$HOME/.config}/git/ignore}
 GLOBAL_IGNORE="${GLOBAL_IGNORE/#\~/$HOME}"
 grep -qxF 'REVIEW_LESSONS.md' "$GLOBAL_IGNORE" 2>/dev/null
 ```
+
+> **Note:** This check matches the exact line `REVIEW_LESSONS.md` only. If your gitignore already covers the file via a broader pattern (e.g. `*.md`, `REVIEW_LESSONS.*`), the check will still report it as absent and prompt you to add a duplicate entry. This is harmless — a redundant exact-match entry does not change gitignore behavior.
 
 If not present, ask:
 ```
