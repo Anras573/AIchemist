@@ -288,7 +288,7 @@ gh api graphql -f query='
   }
 ' -F owner=OWNER -F repo=REPO -F pr=PR_NUMBER \
   --jq '.data.repository.pullRequest.reviewThreads.nodes
-        | map(select(.comments.nodes[0].author.login == "copilot-pull-request-reviewer"))
+        | map(select(.comments.nodes[0]? != null and .comments.nodes[0].author.login == "copilot-pull-request-reviewer"))
         | map(.comments.nodes[0].body)'
 ```
 
