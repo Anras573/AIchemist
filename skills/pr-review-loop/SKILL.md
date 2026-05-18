@@ -117,7 +117,7 @@ gh api graphql -f query='
 Use `LAST_PUSH_TS` and `LAST_REVIEW_TS` already retrieved in Step 1.
 
 ```
-if LAST_REVIEW_TS is null OR LAST_REVIEW_TS <= LAST_PUSH_TS:
+if LAST_REVIEW_TS is null OR LAST_PUSH_TS is null OR LAST_REVIEW_TS <= LAST_PUSH_TS:
     → WAITING
 elif unresolved_threads is empty:
     → DONE
@@ -309,7 +309,7 @@ How to apply: any time building a URL from user input or variable data.
 Check if the entry already exists:
 ```bash
 GLOBAL_IGNORE=$(git config --global core.excludesfile)
-GLOBAL_IGNORE=${GLOBAL_IGNORE:-~/.gitignore_global}
+GLOBAL_IGNORE=${GLOBAL_IGNORE:-${XDG_CONFIG_HOME:-$HOME/.config}/git/ignore}
 GLOBAL_IGNORE="${GLOBAL_IGNORE/#\~/$HOME}"
 grep -qxF 'REVIEW_LESSONS.md' "$GLOBAL_IGNORE" 2>/dev/null
 ```
