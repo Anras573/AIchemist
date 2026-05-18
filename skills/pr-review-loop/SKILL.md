@@ -24,7 +24,8 @@ Each invocation is one polling tick. Use `ScheduleWakeup` to keep the loop alive
 | **Write** | Edit source files to fix SHOW-FIRST clusters | Requires approval before applying |
 | **Write** | Commit and push fixes | Requires explicit confirmation before each commit/push |
 | **Write** | Post replies and resolve threads on GitHub | Automatic after fixes are confirmed |
-| **Write** | Append lessons to `CLAUDE.md` and commit | Requires explicit confirmation |
+| **Write** | Append lessons to `CLAUDE.md` | Automatic |
+| **Write** | Commit `CLAUDE.md` lessons to branch | Requires explicit confirmation |
 | **Write** | Append to `REVIEW_LESSONS.md` (repo root, untracked until gitignore confirmed) | Automatic after gitignore confirmation |
 | **Write** | Update global gitignore (`core.excludesfile`) | Requires explicit confirmation |
 
@@ -113,7 +114,7 @@ gh api graphql -f query='
 ' -F owner=OWNER -F repo=REPO -F pr=PR_NUMBER \
   --jq '.data.repository.pullRequest.reviewThreads.nodes
         | map(select(.isResolved == false))
-        | map(select(.comments.nodes[0].author.login == "copilot-pull-request-reviewer"))'
+        | map(select(.comments.nodes[0]? != null and .comments.nodes[0].author.login == "copilot-pull-request-reviewer"))'
 ```
 
 > **Limit:** `reviewThreads(first: 100)` fetches at most 100 threads per query. PRs with > 100 Copilot threads will silently drop the overflow — Step 2 could miss unresolved threads and falsely transition to DONE, and Step 7 could miss lessons. This is acceptable for typical PRs; add cursor-based pagination if you expect high thread volumes.
@@ -249,6 +250,8 @@ git push
 
 ### Re-request Copilot review
 ```bash
+# Order matters: 2>&1 redirects stderr to stdout FIRST (captured into $err),
+# then >/dev/null discards stdout. Reversing the order would discard stderr too.
 if ! err=$(gh pr edit --add-reviewer copilot-pull-request-reviewer 2>&1 >/dev/null); then
   echo "Warning: failed to re-request Copilot review: $err"
 fi
