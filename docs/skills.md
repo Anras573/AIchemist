@@ -635,6 +635,8 @@ Create an `AGENT.md` file at your vault root to give Claude context about your v
 
 ## PR Review Loop Skill
 
+**Source:** [`skills/pr-review-loop/SKILL.md`](../skills/pr-review-loop/SKILL.md)
+
 Self-scheduling polling loop that autonomously drives the GitHub Copilot PR review cycle. Detects review state, clusters and classifies comments, applies fixes with confidence-based gating, replies and resolves threads, then extracts lessons into `CLAUDE.md` and personal memory.
 
 **Trigger phrases:** "pr review loop", "/pr-review-loop", "drive copilot review", "review loop", "start review loop", "copilot review loop", "run review loop".
