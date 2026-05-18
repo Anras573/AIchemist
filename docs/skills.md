@@ -4,6 +4,8 @@ Skills are context-aware capabilities that load into the main conversation when 
 
 ## MermaidJS Diagrams Skill
 
+**Source:** [`skills/mermaid/SKILL.md`](../skills/mermaid/SKILL.md)
+
 Generates MermaidJS diagrams as fenced code blocks in Markdown. Diagrams render natively in GitHub, VS Code, Obsidian, and most modern Markdown viewers — no external tooling required.
 
 **Trigger phrases:** "create a diagram", "draw a flowchart", "sequence diagram", "architecture diagram", "visualise this", "add a mermaid diagram", "diagram this flow", "draw a class diagram", "ER diagram", "state machine diagram", "C4 diagram".
@@ -39,6 +41,8 @@ Integrates with the Brainstorming skill — offers to generate diagrams for arch
 
 ## Ticket Flow Skill
 
+**Source:** [`skills/ticket-flow/SKILL.md`](../skills/ticket-flow/SKILL.md)
+
 End-to-end workflow for taking a Jira ticket from definition to reviewed implementation. Combines codebase exploration, assumptions checking, and code review into a single guided flow with explicit approval gates.
 
 **Trigger phrases:** "work on ticket", "start ticket", "implement ticket", "pick up PROJ-123", "let's do PROJ-123", or any Jira issue key with intent to implement.
@@ -69,6 +73,8 @@ Ticket Flow orchestrates existing skills rather than replacing them — it calls
 
 ## Brainstorming Skill
 
+**Source:** [`skills/brainstorming/SKILL.md`](../skills/brainstorming/SKILL.md)
+
 Structured design dialogue that ensures intent, requirements, and approach are understood before any implementation begins. Enforces a hard gate — no code is written until a design is approved.
 
 **Trigger phrases:** "I want to build", "let's add", "how should I implement", "I'm thinking of", "new feature", "let's create", "design this", "help me plan", "should I use X or Y".
@@ -95,6 +101,8 @@ The spec written to disk is the primary artifact. Implementation follows from it
 ---
 
 ## Beads Task Tracking Skill
+
+**Source:** [`skills/beads/SKILL.md`](../skills/beads/SKILL.md)
 
 AI-native task tracking using [Beads](https://github.com/steveyegge/beads) (`bd`), a distributed, git-backed graph issue tracker. Storage defaults to a sidecar directory outside the repo so no beads files are committed unless the repo has explicitly initialized beads.
 
@@ -149,6 +157,8 @@ bd --db "$BD_DB" setup claude --stealth
 
 ## Jira Skill
 
+**Source:** [`skills/jira/SKILL.md`](../skills/jira/SKILL.md)
+
 Jira integration for searching, viewing, creating, and managing issues.
 
 **Trigger phrases:** "search Jira tickets", "get ticket details", "check ticket status", "find my tickets", "what am I working on", "create a Jira issue", "update a ticket", "add a comment", "move ticket to done", or Jira issue keys like `PROJ-123`.
@@ -188,6 +198,8 @@ Config is stored at `${CLAUDE_PLUGIN_ROOT}/config.json` and excluded from versio
 
 ## Playwright Skill
 
+**Source:** [`skills/playwright/SKILL.md`](../skills/playwright/SKILL.md)
+
 Browser automation and web testing using `playwright-cli` — token-efficient alternative to Playwright MCP.
 
 **Trigger phrases:** "test this page", "automate the browser", "take a screenshot of", "check this UI", "fill out this form", "test the flow on", "click through", "scrape this page", "use playwright", "browser test", "open a browser", "navigate to".
@@ -220,6 +232,8 @@ playwright-cli keeps the browser in memory by default. Use named sessions (`-s=n
 ---
 
 ## PostgreSQL Query Skill
+
+**Source:** [`skills/postgresql/SKILL.md`](../skills/postgresql/SKILL.md)
 
 PostgreSQL database querying with safe defaults that block write operations.
 
@@ -274,6 +288,8 @@ No configuration file needed — uses `POSTGRES_URL` environment variable direct
 
 ## Code Review Skill
 
+**Source:** [`skills/code-review/SKILL.md`](../skills/code-review/SKILL.md)
+
 Comprehensive code review using parallel specialized agents, confidence-based filtering, Jira integration, and optional inline PR comments.
 
 **Trigger phrases:** "review my code", "do a code review", "review this PR", "review this pull request", "check my changes", "review changes against main", "review against develop", "post review comments", "review and comment on PR", "code review with Jira context", "review my branch".
@@ -321,6 +337,8 @@ Comprehensive code review using parallel specialized agents, confidence-based fi
 
 ## Tool Preferences Skill
 
+**Source:** [`skills/tool-preferences/SKILL.md`](../skills/tool-preferences/SKILL.md)
+
 Guidance for selecting between equivalent tools when multiple options exist (e.g., `gh` CLI vs GitHub MCP tools).
 
 **Purpose:** Ensures consistent, efficient tool selection across all agents.
@@ -354,6 +372,8 @@ Use Playwright MCP for:
 - Long-running autonomous workflows where continuous browser context outweighs token cost
 
 ## Calendar Skill
+
+**Source:** [`skills/calendar/SKILL.md`](../skills/calendar/SKILL.md)
 
 Microsoft 365 calendar integration via the `m365` CLI (`@pnp/cli-microsoft365`). Fetches events and generates meeting preparation briefings.
 
@@ -402,6 +422,8 @@ The primary high-value workflow. Given a meeting subject or time:
 - **Jira** — If a meeting body mentions issue keys, offer to fetch their current status
 
 ## MemPalace Memory Skill
+
+**Source:** [`skills/mempalace/SKILL.md`](../skills/mempalace/SKILL.md)
 
 Persistent local memory backed by ChromaDB (vector search) and a SQLite knowledge graph. No Docker, no API key, no cloud account required. Automatically stores and retrieves context across sessions.
 
@@ -452,6 +474,8 @@ The skill stores to memory automatically — without confirmation — when the u
 
 ## Daily Note Skill
 
+**Source:** [`skills/daily-note/SKILL.md`](../skills/daily-note/SKILL.md)
+
 Interact with your Obsidian daily note for journaling, task tracking, and session logging.
 
 **Trigger phrases:** "show my daily note", "open daily note", "check daily note", "create daily note", "create today's note", "view today's note", "add to daily note", "append to daily note", "what's in my daily note".
@@ -476,6 +500,8 @@ Interact with your Obsidian daily note for journaling, task tracking, and sessio
 ---
 
 ## Capture Skill
+
+**Source:** [`skills/capture/SKILL.md`](../skills/capture/SKILL.md)
 
 Quick capture of thoughts, code snippets, and insights to Obsidian without leaving the coding flow.
 
@@ -504,6 +530,8 @@ Captures are formatted with a timestamp header, content, optional tags, and proj
 
 ## Research Skill
 
+**Source:** [`skills/research/SKILL.md`](../skills/research/SKILL.md)
+
 Search your Obsidian vault for relevant context during coding sessions. Quickly surface past notes, decisions, and knowledge without leaving your workflow.
 
 **Trigger phrases:** "research in vault", "search my notes", "search obsidian", "find in obsidian", "look up notes", "find notes about", "what do I have on", "search my vault for".
@@ -525,6 +553,8 @@ Search operations are read-only — no confirmation needed. Exception: on first 
 ---
 
 ## Markitdown Skill
+
+**Source:** [`skills/markitdown/SKILL.md`](../skills/markitdown/SKILL.md)
 
 Convert remote web pages, documents, and local files to clean, structured markdown.
 
@@ -571,6 +601,8 @@ Chains naturally with the **Capture** skill (save converted content to Obsidian)
 ---
 
 ## Obsidian Vault Management Skill
+
+**Source:** [`skills/obsidian/SKILL.md`](../skills/obsidian/SKILL.md)
 
 General-purpose Obsidian vault management for tasks, tags, properties, file operations, templates, and link analysis.
 
