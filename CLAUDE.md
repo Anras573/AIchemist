@@ -17,3 +17,12 @@ Before opening a PR that touches a file in `tools/`:
 5. **Use `stdout=subprocess.PIPE, stderr=subprocess.PIPE` in Python subprocesses** — not `capture_output=True` (Python 3.7+). macOS ships with older Python on some versions.
 
 6. **Verify `export` on variables read by child processes.** Any shell variable passed to a Python heredoc via `os.environ` must be `export`ed, not just assigned.
+
+## Code Review Lessons
+
+- Skill `name` field must be lowercase kebab-case — matches the directory name and the slash-command trigger (e.g. `name: pr-review-loop`, not `name: PR Review Loop`)
+- Skill `description` must enumerate explicit trigger phrases so the model knows when to auto-activate the skill
+- New skills must be registered in `docs/skills.md`; the operations table in SKILL.md and the matching rows in docs/skills.md must be kept in sync
+- Commit message scopes must be derived from the actual files changed — not hardcoded; for repo-root files use `repo`, for skills use `skills`, etc.
+- GraphQL `comments(first: N)` — only fetch as many comments as you will consume; if only `nodes[0]` is used, request `first: 1`
+- PR description must accurately reflect code changes — do not describe a change (e.g. `first: 10`) that wasn't actually applied
