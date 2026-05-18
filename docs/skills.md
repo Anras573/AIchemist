@@ -657,6 +657,7 @@ Self-scheduling polling loop that autonomously drives the GitHub Copilot PR revi
 | **Write** | Commit and push fixes | Requires explicit confirmation |
 | **Write** | Append lessons to `CLAUDE.md` and commit | Requires explicit confirmation |
 | **Write** | Post replies, resolve threads | Automatic after confirmation |
+| **Write** | Append to `REVIEW_LESSONS.md` (repo root, untracked) | Automatic after gitignore confirmation |
 | **Write** | Update global gitignore (`core.excludesfile`) | Requires explicit confirmation |
 
 ### Requirements
