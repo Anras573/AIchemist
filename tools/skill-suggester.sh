@@ -3,10 +3,10 @@
 # skill-suggester.sh
 #
 # Hook script for PreCompact and SessionEnd events. Mines the current session
-# transcript for patterns that could become reusable skills, agents, or hooks,
-# and appends markdown bullet entries (top-level bullet plus _evidence_
-# and _observed_ sub-bullets) to "AIchemist/Skill Ideas.md" in the user's
-# Obsidian vault.
+# transcript for patterns that could become reusable skills, agents, or hooks.
+# It writes idea candidates to "AIchemist/Skill Ideas.md" and concrete update
+# proposals for existing skills/agents to "AIchemist/Skill Updates.md" in the
+# user's Obsidian vault.
 #
 # Best-effort: any failure exits 0 silently to avoid breaking the session.
 
@@ -36,13 +36,15 @@ command -v claude >/dev/null 2>&1 && HAS_CLAUDE=1
 # ----- Config --------------------------------------------------------------
 
 readonly PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
-readonly NOTE_PATH="AIchemist/Skill Ideas.md"
+readonly IDEAS_NOTE_PATH="AIchemist/Skill Ideas.md"
+readonly UPDATES_NOTE_PATH="AIchemist/Skill Updates.md"
 readonly TOOL_SEQ_LEN=3
 readonly TOOL_REPEAT_MIN=2
 readonly NGRAM_SIZE=4
 readonly NGRAM_REPEAT_MIN=2
 readonly SESSION_GATE=20
 readonly MAX_SUGGESTIONS=3
+readonly MAX_UPDATE_SUGGESTIONS=3
 readonly MIN_TRANSCRIPT_LINES=10
 readonly CLAUDE_OUTPUT_MAX=32768
 readonly NOTE_READY_RETRIES=10
@@ -231,6 +233,14 @@ count_user_exchanges() {
   extract_user_messages | wc -l | tr -d ' '
 }
 
+extract_correction_signals() {
+  extract_user_messages | awk -F'\t' '
+    $2 ~ /(actually|instead|rather|i meant|i mean|do not|don.t|not that|skip|focus on|prefer|let.s|correction|correct that|change direction|change this)/ {
+      print $1 "\t" $2
+    }
+  ' | head -n 25
+}
+
 # ----- Regex detection -----------------------------------------------------
 
 detect_tool_sequences() {
@@ -371,6 +381,60 @@ list_existing() {
   done | sort -u
 }
 
+build_library_context() {
+  python3 - "$PLUGIN_ROOT" <<'PY' 2>/dev/null
+import glob
+import os
+import re
+import sys
+
+root = sys.argv[1]
+
+def summarize(path, default_name):
+    text = open(path, encoding="utf-8", errors="ignore").read()
+    fm = ""
+    body = text
+    if text.startswith("---"):
+        parts = text.split("---", 2)
+        if len(parts) >= 3:
+            fm, body = parts[1], parts[2]
+
+    name = default_name
+    m = re.search(r"(?m)^name:\s*(.+?)\s*$", fm)
+    if m:
+        name = m.group(1).strip().strip("\"'")
+
+    desc = ""
+    m = re.search(r"(?ms)^description:\s*\|?\s*(.+?)(?:\n[a-zA-Z0-9_-]+:|\Z)", fm)
+    if m:
+        desc = m.group(1)
+    if not desc:
+        desc = body
+
+    desc = re.sub(r"```.*?```", " ", desc, flags=re.S)
+    desc = re.sub(r"`[^`]*`", " ", desc)
+    desc = re.sub(r"\s+", " ", desc).strip()
+    return name, (desc[:220] if desc else "(no description found)")
+
+def emit(label, pattern, default_name):
+    print(f"{label}:")
+    for path in sorted(glob.glob(pattern)):
+        name, desc = summarize(path, default_name(path))
+        print(f"- {name}: {desc}")
+
+emit(
+    "SKILLS",
+    os.path.join(root, "skills", "*", "SKILL.md"),
+    lambda p: os.path.basename(os.path.dirname(p)),
+)
+emit(
+    "AGENTS",
+    os.path.join(root, "agents", "*.agent.md"),
+    lambda p: os.path.basename(p).replace(".agent.md", ""),
+)
+PY
+}
+
 invoke_claude_fallback() {
   [ "$HAS_CLAUDE" = "1" ] || { echo "[]"; return; }
 
@@ -452,34 +516,139 @@ EOF
   fi
 }
 
+invoke_claude_update_proposals() {
+  [ "$HAS_CLAUDE" = "1" ] || { echo "[]"; return; }
+
+  local library_context transcript_snippet correction_signals
+  library_context=$(build_library_context)
+
+  tail -n 500 "$TRANSCRIPT" > "$TMPDIR/transcript_snippet.txt"
+  transcript_snippet=$(redact_text "$TMPDIR/transcript_snippet.txt")
+
+  extract_correction_signals > "$TMPDIR/correction_signals.txt"
+  if [ -s "$TMPDIR/correction_signals.txt" ]; then
+    correction_signals=$(redact_text "$TMPDIR/correction_signals.txt")
+  else
+    correction_signals="<none detected>"
+  fi
+
+  local known_names
+  known_names=$(list_existing "$PLUGIN_ROOT"/skills/*/SKILL.md "$PLUGIN_ROOT"/agents/*.agent.md | paste -sd, -)
+
+  local prompt_file="$TMPDIR/prompt-updates.txt"
+  cat > "$prompt_file" <<EOF
+You are analyzing a Claude Code session transcript to propose concrete edits to
+EXISTING skills or agents in this repository.
+
+Return up to $MAX_UPDATE_SUGGESTIONS update proposals and err on the side of [].
+Only propose updates that are clearly grounded in repeated patterns or explicit
+user corrections/steering in this transcript.
+
+Rules:
+1. Target ONLY an existing skill/agent from the library context below.
+2. Proposals must be specific and directly editable (what to add/change/remove).
+3. Prefer signals where user steered direction mid-session ("actually", "instead",
+   corrections, changed constraints, clarified success criteria).
+4. Avoid generic "improve wording" suggestions without exact direction.
+5. Skip anything already clearly covered in the target's current description.
+
+Output ONLY a JSON array:
+[
+  {
+    "kind": "skill_update|agent_update",
+    "name": "kebab-case-proposal-name",
+    "target": "existing-skill-or-agent-name",
+    "one_liner": "12-20 word summary of the improvement",
+    "proposed_change": "Concrete text-level change recommendation in <= 280 chars",
+    "evidence_line": 147,
+    "evidence_snippet": "Brief quote from transcript"
+  }
+]
+
+If no high-signal updates qualify, return [].
+
+--- EXISTING LIBRARY ---
+$library_context
+
+--- USER CORRECTION SIGNALS ---
+$correction_signals
+
+--- TRANSCRIPT (tail, JSONL) ---
+$transcript_snippet
+EOF
+
+  local raw json
+  raw=$(claude -p --output-format text < "$prompt_file" 2>/dev/null | tr -d '\r')
+  json=$(echo "$raw" | awk '/^\[/,/^\]$/' | head -c "$CLAUDE_OUTPUT_MAX")
+  if echo "$json" | jq -e --argjson cap "$MAX_UPDATE_SUGGESTIONS" --arg known "$known_names" '
+      type == "array"
+      and (length <= $cap)
+      and all(
+        .[];
+        ((.kind // "") == "skill_update" or (.kind // "") == "agent_update")
+        and ((.name // "") | type == "string" and length > 0)
+        and ((.target // "") | type == "string" and length > 0)
+        and ((.one_liner // "") | type == "string" and length > 0)
+        and ((.proposed_change // "") | type == "string" and length > 0)
+        and (
+          if ($known | length) > 0 then
+            ((.target // "") as $t | ($known | split(",")) | any(. == $t))
+          else true end
+        )
+      )
+    ' >/dev/null 2>&1; then
+    echo "$json"
+  else
+    echo "[]"
+  fi
+}
+
 # ----- Obsidian dedup + append --------------------------------------------
 
-# Cached note contents — populated once by load_note_cache, read by
+# Cached note contents — populated once per note by load_note_cache, read by
 # already_in_note for each suggestion without re-fetching.
-NOTE_CACHE=""
+NOTE_CACHE_IDEAS=""
+NOTE_CACHE_UPDATES=""
+
+set_note_cache() {
+  local note_path="$1" content="$2"
+  if [ "$note_path" = "$IDEAS_NOTE_PATH" ]; then
+    NOTE_CACHE_IDEAS="$content"
+  elif [ "$note_path" = "$UPDATES_NOTE_PATH" ]; then
+    NOTE_CACHE_UPDATES="$content"
+  fi
+}
+
+get_note_cache() {
+  local note_path="$1"
+  if [ "$note_path" = "$IDEAS_NOTE_PATH" ]; then
+    printf '%s' "$NOTE_CACHE_IDEAS"
+  elif [ "$note_path" = "$UPDATES_NOTE_PATH" ]; then
+    printf '%s' "$NOTE_CACHE_UPDATES"
+  else
+    printf ''
+  fi
+}
 
 load_note_cache() {
+  local note_path="$1"
   if is_dry_run; then
-    NOTE_CACHE=""
+    set_note_cache "$note_path" ""
     return 0
   fi
-  NOTE_CACHE=$(obsidian vault="$VAULT" read path="$NOTE_PATH" 2>/dev/null || true)
+  set_note_cache "$note_path" "$(obsidian vault="$VAULT" read path="$note_path" 2>/dev/null || true)"
 }
 
 already_in_note() {
-  local name="$1"
+  local note_path="$1" name="$2"
   is_dry_run && return 1
-  echo "$NOTE_CACHE" | grep -F -q "\`$name\`"
+  get_note_cache "$note_path" | grep -F -q "\`$name\`"
 }
 
-ensure_note_exists() {
-  if is_dry_run; then
-    echo "[DRY_RUN] would ensure $NOTE_PATH exists in vault=$VAULT" >&2
-    return 0
-  fi
-  if ! obsidian vault="$VAULT" read path="$NOTE_PATH" >/dev/null 2>&1; then
-    local header_file="$TMPDIR/header.md"
-    cat > "$header_file" <<EOF
+note_header() {
+  local note_path="$1"
+  if [ "$note_path" = "$IDEAS_NOTE_PATH" ]; then
+    cat <<'EOF'
 # Skill Ideas
 
 Auto-generated by AIchemist's skill-suggester hook. Entries are patterns
@@ -489,12 +658,37 @@ a skill, agent, or hook.
 Review periodically; delete what doesn't land.
 
 EOF
-    obsidian vault="$VAULT" create path="$NOTE_PATH" content="$(cat "$header_file")" >/dev/null 2>&1 || return 1
+  elif [ "$note_path" = "$UPDATES_NOTE_PATH" ]; then
+    cat <<'EOF'
+# Skill Updates
+
+Auto-generated by AIchemist's skill-suggester hook. Entries are concrete
+proposals to improve existing skills/agents based on observed transcript gaps
+and user correction signals.
+
+Review, edit, and apply manually.
+
+EOF
+  else
+    return 1
+  fi
+}
+
+ensure_note_exists() {
+  local note_path="$1"
+  if is_dry_run; then
+    echo "[DRY_RUN] would ensure $note_path exists in vault=$VAULT" >&2
+    return 0
+  fi
+  if ! obsidian vault="$VAULT" read path="$note_path" >/dev/null 2>&1; then
+    local header_file="$TMPDIR/header.md"
+    note_header "$note_path" > "$header_file" || return 1
+    obsidian vault="$VAULT" create path="$note_path" content="$(cat "$header_file")" >/dev/null 2>&1 || return 1
     # Obsidian indexes files asynchronously; poll until the note is readable
     # before returning so load_note_cache and the first append don't race.
     local retries=$NOTE_READY_RETRIES
     while [ "$retries" -gt 0 ]; do
-      obsidian vault="$VAULT" read path="$NOTE_PATH" >/dev/null 2>&1 && return 0
+      obsidian vault="$VAULT" read path="$note_path" >/dev/null 2>&1 && return 0
       retries=$((retries - 1))
       [ "$retries" -gt 0 ] && python3 -c "import time; time.sleep($NOTE_READY_DELAY_S)"
     done
@@ -525,7 +719,37 @@ sys.stdout.write(s)
 ' "$1"
 }
 
-append_suggestion() {
+# Like redact_snippet but reads multi-line content from a file path rather
+# than a shell argument — avoids ARG_MAX limits for transcript-sized inputs.
+redact_text() {
+  python3 -c '
+import re, sys
+path = sys.argv[1]
+with open(path, encoding="utf-8", errors="replace") as fh:
+    s = fh.read()
+s = re.sub(r"(sk-|xoxb-|xoxp-|ghp_|gho_|ghu_|github_pat_|AKIA|Bearer\s+)[A-Za-z0-9_./+=-]+",
+           "[REDACTED-TOKEN]", s)
+s = re.sub(r"(password|passwd|secret|token|api[_-]?key|access[_-]?key)(\s*[=:]\s*)\S+",
+           r"\1\2[REDACTED]", s, flags=re.IGNORECASE)
+s = re.sub(r"[A-Za-z0-9_+/=-]{40,}", "[REDACTED-LONG]", s)
+sys.stdout.write(s)
+' "$1"
+}
+
+append_to_note() {
+  local note_path="$1" body="$2"
+  if is_dry_run; then
+    echo "--- would append to $note_path ---"
+    echo "$body"
+    echo
+    return 0
+  fi
+  obsidian vault="$VAULT" append path="$note_path" content="$body
+
+" >/dev/null 2>&1
+}
+
+append_idea_suggestion() {
   local kind="$1" name="$2" one_liner="$3" line="$4" snippet="$5"
   local date_iso
   date_iso=$(date -u +"%Y-%m-%d")
@@ -537,20 +761,29 @@ append_suggestion() {
     - _observed_: $date_iso
 EOF
 )
-  if is_dry_run; then
-    echo "--- would append to $NOTE_PATH ---"
-    echo "$body"
-    echo
-    return 0
-  fi
-  obsidian vault="$VAULT" append path="$NOTE_PATH" content="$body
+  append_to_note "$IDEAS_NOTE_PATH" "$body"
+}
 
-" >/dev/null 2>&1
+append_update_suggestion() {
+  local kind="$1" name="$2" target="$3" one_liner="$4" proposal="$5" line="$6" snippet="$7"
+  local date_iso
+  date_iso=$(date -u +"%Y-%m-%d")
+
+  local body
+  body=$(cat <<EOF
+- \`$name\` ($kind): $one_liner
+    - _target_: \`$target\`
+    - _proposed_change_: $proposal
+    - _evidence_: line $line — "$snippet"
+    - _observed_: $date_iso
+EOF
+)
+  append_to_note "$UPDATES_NOTE_PATH" "$body"
 }
 
 # Best-effort mutex on the write phase: two concurrent hook invocations
 # (e.g. two sessions' SessionEnd firing at once) would otherwise both load
-# NOTE_CACHE before either appends, both see no entry, and both append the
+# cached note contents before either appends, both see no entry, and both append the
 # same suggestion. Uses mkdir (atomic on local fs) with PID-based stale
 # detection so an orphaned lock from a killed process eventually releases.
 # If the lock is held by a live process, we skip this run silently —
@@ -606,11 +839,17 @@ acquire_write_lock() {
 # ----- Main ---------------------------------------------------------------
 
 main() {
-  local suggestions
+  local suggestions update_suggestions
   suggestions=$(format_regex_suggestions)
+  update_suggestions="[]"
 
-  local regex_count
+  local regex_count exchanges
   regex_count=$(echo "$suggestions" | jq -r 'length' 2>/dev/null)
+  exchanges=0
+
+  if [ "$HOOK_EVENT" = "SessionEnd" ]; then
+    exchanges=$(count_user_exchanges)
+  fi
 
   # Only run the Claude semantic fallback on a known-SessionEnd event.
   # Reasoning: a session that fires both PreCompact AND SessionEnd would
@@ -622,16 +861,22 @@ main() {
   # Regex is deterministic and runs on all events, so PreCompact still
   # contributes regex hits.
   if [ "${regex_count:-0}" = "0" ] && [ "$HOOK_EVENT" = "SessionEnd" ]; then
-    local exchanges
-    exchanges=$(count_user_exchanges)
     if [ "${exchanges:-0}" -ge "$SESSION_GATE" ]; then
       suggestions=$(invoke_claude_fallback)
     fi
   fi
 
-  local total
-  total=$(echo "$suggestions" | jq -r 'length' 2>/dev/null)
-  [ "${total:-0}" = "0" ] && exit 0
+  # Semantic update proposals target existing skills/agents and run on eligible
+  # SessionEnd events regardless of whether regex-based suggestions exist.
+  if [ "$HOOK_EVENT" = "SessionEnd" ] && [ "${exchanges:-0}" -ge "$SESSION_GATE" ]; then
+    update_suggestions=$(invoke_claude_update_proposals)
+  fi
+
+  local ideas_total updates_total total
+  ideas_total=$(echo "$suggestions" | jq -r 'length' 2>/dev/null)
+  updates_total=$(echo "$update_suggestions" | jq -r 'length' 2>/dev/null)
+  total=$(( ${ideas_total:-0} + ${updates_total:-0} ))
+  [ "$total" -eq 0 ] && exit 0
 
   # Acquire the write-phase lock BEFORE touching the note at all, so the
   # create-or-append flow is entirely inside the critical section.
@@ -641,12 +886,18 @@ main() {
   if ! is_dry_run && ! acquire_write_lock; then
     exit 0  # another instance holds the lock; skip silently
   fi
-  ensure_note_exists || exit 0
-  load_note_cache
+  if [ "${ideas_total:-0}" -gt 0 ]; then
+    ensure_note_exists "$IDEAS_NOTE_PATH" || exit 0
+    load_note_cache "$IDEAS_NOTE_PATH"
+  fi
+  if [ "${updates_total:-0}" -gt 0 ]; then
+    ensure_note_exists "$UPDATES_NOTE_PATH" || exit 0
+    load_note_cache "$UPDATES_NOTE_PATH"
+  fi
 
   # One jq call emits all suggestion fields as TSV; the while loop reads
   # each row without re-parsing the JSON array on every field access.
-  # The loop body extends NOTE_CACHE after each append so that same-run
+  # The loop body extends the per-note cache after each append so that same-run
   # duplicates (e.g. two suggestions with colliding names) are caught by
   # already_in_note on subsequent iterations.
   while IFS=$'\t' read -r kind name one_liner line snippet; do
@@ -662,11 +913,30 @@ main() {
     name=$(redact_snippet "$name")
     one_liner=$(redact_snippet "$one_liner")
     snippet=$(redact_snippet "$(echo "$snippet" | tr -d '"' | head -c 200)")
-    if [ -n "$name" ] && [ -n "$one_liner" ] && ! already_in_note "$name"; then
-      append_suggestion "$kind" "$name" "$one_liner" "$line" "$snippet"
-      NOTE_CACHE="$NOTE_CACHE"$'\n'"\`$name\`"
+    if [ -n "$name" ] && [ -n "$one_liner" ] && ! already_in_note "$IDEAS_NOTE_PATH" "$name"; then
+      append_idea_suggestion "$kind" "$name" "$one_liner" "$line" "$snippet"
+      NOTE_CACHE_IDEAS="$NOTE_CACHE_IDEAS"$'\n'"\`$name\`"
     fi
   done < <(echo "$suggestions" | jq -r '.[] | [.kind // "skill", .name // "", .one_liner // "", .evidence_line // 0, .evidence_snippet // ""] | @tsv')
+
+  while IFS=$'\t' read -r kind name target one_liner proposal line snippet; do
+    name=$(redact_snippet "$name")
+    name=$(echo "$name" | python3 -c '
+import re, sys
+s = sys.stdin.read().strip()
+s = re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+print(s[:36] or "update")
+')
+    target="${target:0:48}"
+    target=$(redact_snippet "$(echo "$target" | tr -d '"' | head -c 48)")
+    one_liner=$(redact_snippet "$one_liner")
+    proposal=$(redact_snippet "$(echo "$proposal" | tr '\n' ' ' | tr -d '"' | tr -s ' ' | head -c 280)")
+    snippet=$(redact_snippet "$(echo "$snippet" | tr -d '"' | head -c 200)")
+    if [ -n "$name" ] && [ -n "$target" ] && [ -n "$one_liner" ] && [ -n "$proposal" ] && ! already_in_note "$UPDATES_NOTE_PATH" "$name"; then
+      append_update_suggestion "$kind" "$name" "$target" "$one_liner" "$proposal" "$line" "$snippet"
+      NOTE_CACHE_UPDATES="$NOTE_CACHE_UPDATES"$'\n'"\`$name\`"
+    fi
+  done < <(echo "$update_suggestions" | jq -r '.[] | [.kind // "skill_update", .name // "", .target // "", .one_liner // "", .proposed_change // "", .evidence_line // 0, .evidence_snippet // ""] | @tsv')
 
   exit 0
 }

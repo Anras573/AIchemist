@@ -171,7 +171,7 @@ Daily notes use the "daily" template with sections for:
 
 ### Skill Suggester
 
-AIchemist ships a `PreCompact`/`SessionEnd` hook (`tools/skill-suggester.sh`) that mines your session transcripts for repeated workflow patterns and surfaces them as candidate skills/agents/hooks. Suggestions are appended to `AIchemist/Skill Ideas.md` inside your Obsidian vault so you can review them during triage.
+AIchemist ships a `PreCompact`/`SessionEnd` hook (`tools/skill-suggester.sh`) that mines your session transcripts for reusable automation opportunities. It now stages two review streams in your vault: new candidate automations and concrete update proposals for existing skills/agents.
 
 #### Requirements
 
@@ -182,7 +182,10 @@ AIchemist ships a `PreCompact`/`SessionEnd` hook (`tools/skill-suggester.sh`) th
 
 **Optional**:
 
-- `claude` CLI — when present, enables the semantic-LLM fallback that runs on sufficiently large sessions if regex detection found nothing. Without it, the hook still runs the regex detector and emits whatever it finds — `claude` is strictly additive, not a hard dependency.
+- `claude` CLI — when present, enables semantic analysis on eligible `SessionEnd` events:
+  - semantic fallback for new skill/agent/hook ideas when regex detection found nothing, and
+  - semantic update proposals that target existing skills/agents (including user-correction signals).
+  Without `claude`, the hook still runs regex detection and stages deterministic pattern suggestions.
 
 #### Vault selection (opt-in)
 
@@ -207,8 +210,10 @@ Or export `OBSIDIAN_VAULT=My\ Vault` in your shell profile.
 
 #### Output
 
-- **Note location**: `AIchemist/Skill Ideas.md` in the resolved vault. Created on first qualifying session, appended thereafter.
-- **Entry shape**: a top-level bullet per suggestion plus two sub-bullets for evidence and observation date, e.g.
+- **Note locations** (both in the resolved vault):
+  - `AIchemist/Skill Ideas.md` — candidate new skills/agents/hooks.
+  - `AIchemist/Skill Updates.md` — concrete proposals to improve existing skills/agents.
+- **Entry shape (Skill Ideas)**: a top-level bullet per suggestion plus two sub-bullets for evidence and observation date, e.g.
 
   ```markdown
   - `workflow-git-status-edit-commit` (skill): Repeated tool workflow: Bash(git status) → Edit → Bash(git commit)
@@ -217,7 +222,18 @@ Or export `OBSIDIAN_VAULT=My\ Vault` in your shell profile.
   ```
 
   The top-level bullet carries the proposed name (backticked), kind (skill/agent/hook), and a one-line rationale; the sub-bullets give the transcript line-reference and the UTC date when the suggestion was first persisted.
-- **Dedup**: per-vault lock during writes, plus name-based dedup against existing note contents.
+- **Entry shape (Skill Updates)**: staged update proposals include target skill/agent and concrete suggested wording, e.g.
+
+  ```markdown
+  - `clarify-brainstorming-approval-gate` (skill_update): Clarify approval gate before coding to prevent premature implementation
+      - _target_: `brainstorming`
+      - _proposed_change_: Add a mandatory check: do not proceed to coding until the user explicitly approves the design section.
+      - _evidence_: line 21 — "actually do not implement yet; show design first"
+      - _observed_: 2026-05-19
+  ```
+
+- **Correction signals**: the semantic update path factors in user steering cues (e.g., “actually…”, “instead…”, changed constraints) to detect where existing guidance may be unclear.
+- **Dedup**: per-vault lock during writes, plus name-based dedup against existing contents of each note.
 - **Redaction**: common token prefixes (`sk-`, `ghp_`, `Bearer ...`) and credential assignments are masked before persistence. Best-effort only; review the note before sharing.
 
 #### Disabling
@@ -230,4 +246,3 @@ To disable more permanently, edit `hooks/hooks.json` and remove the two entries 
 - Under `SessionEnd`: remove the entire `SessionEnd` block if skill-suggester is the only hook registered there, otherwise remove just the skill-suggester entry.
 
 Alternatively, `chmod -x tools/skill-suggester.sh` keeps the hook registration but prevents the script from executing.
-
