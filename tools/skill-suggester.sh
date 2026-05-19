@@ -521,9 +521,19 @@ invoke_claude_update_proposals() {
 
   local library_context transcript_snippet correction_signals
   library_context=$(build_library_context)
-  transcript_snippet=$(tail -n 500 "$TRANSCRIPT")
-  correction_signals=$(extract_correction_signals)
-  [ -z "$correction_signals" ] && correction_signals="<none detected>"
+
+  tail -n 500 "$TRANSCRIPT" > "$TMPDIR/transcript_snippet.txt"
+  transcript_snippet=$(redact_text "$TMPDIR/transcript_snippet.txt")
+
+  extract_correction_signals > "$TMPDIR/correction_signals.txt"
+  if [ -s "$TMPDIR/correction_signals.txt" ]; then
+    correction_signals=$(redact_text "$TMPDIR/correction_signals.txt")
+  else
+    correction_signals="<none detected>"
+  fi
+
+  local known_names
+  known_names=$(list_existing "$PLUGIN_ROOT"/skills/*/SKILL.md "$PLUGIN_ROOT"/agents/*.agent.md | paste -sd, -)
 
   local prompt_file="$TMPDIR/prompt-updates.txt"
   cat > "$prompt_file" <<EOF
@@ -570,7 +580,7 @@ EOF
   local raw json
   raw=$(claude -p --output-format text < "$prompt_file" 2>/dev/null | tr -d '\r')
   json=$(echo "$raw" | awk '/^\[/,/^\]$/' | head -c "$CLAUDE_OUTPUT_MAX")
-  if echo "$json" | jq -e --argjson cap "$MAX_UPDATE_SUGGESTIONS" '
+  if echo "$json" | jq -e --argjson cap "$MAX_UPDATE_SUGGESTIONS" --arg known "$known_names" '
       type == "array"
       and (length <= $cap)
       and all(
@@ -580,6 +590,11 @@ EOF
         and ((.target // "") | type == "string" and length > 0)
         and ((.one_liner // "") | type == "string" and length > 0)
         and ((.proposed_change // "") | type == "string" and length > 0)
+        and (
+          if ($known | length) > 0 then
+            ((.target // "") as $t | ($known | split(",")) | any(. == $t))
+          else true end
+        )
       )
     ' >/dev/null 2>&1; then
     echo "$json"
@@ -695,6 +710,23 @@ redact_snippet() {
   python3 -c '
 import re, sys
 s = sys.argv[1]
+s = re.sub(r"(sk-|xoxb-|xoxp-|ghp_|gho_|ghu_|github_pat_|AKIA|Bearer\s+)[A-Za-z0-9_./+=-]+",
+           "[REDACTED-TOKEN]", s)
+s = re.sub(r"(password|passwd|secret|token|api[_-]?key|access[_-]?key)(\s*[=:]\s*)\S+",
+           r"\1\2[REDACTED]", s, flags=re.IGNORECASE)
+s = re.sub(r"[A-Za-z0-9_+/=-]{40,}", "[REDACTED-LONG]", s)
+sys.stdout.write(s)
+' "$1"
+}
+
+# Like redact_snippet but reads multi-line content from a file path rather
+# than a shell argument — avoids ARG_MAX limits for transcript-sized inputs.
+redact_text() {
+  python3 -c '
+import re, sys
+path = sys.argv[1]
+with open(path, encoding="utf-8", errors="replace") as fh:
+    s = fh.read()
 s = re.sub(r"(sk-|xoxb-|xoxp-|ghp_|gho_|ghu_|github_pat_|AKIA|Bearer\s+)[A-Za-z0-9_./+=-]+",
            "[REDACTED-TOKEN]", s)
 s = re.sub(r"(password|passwd|secret|token|api[_-]?key|access[_-]?key)(\s*[=:]\s*)\S+",
@@ -888,9 +920,13 @@ main() {
   done < <(echo "$suggestions" | jq -r '.[] | [.kind // "skill", .name // "", .one_liner // "", .evidence_line // 0, .evidence_snippet // ""] | @tsv')
 
   while IFS=$'\t' read -r kind name target one_liner proposal line snippet; do
-    name="${name:0:36}"
+    name=$(echo "$name" | python3 -c '
+import re, sys
+s = sys.stdin.read().strip()
+s = re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+print(s[:36] or "update")
+')
     target="${target:0:48}"
-    name=$(redact_snippet "$name")
     target=$(redact_snippet "$(echo "$target" | tr -d '"' | head -c 48)")
     one_liner=$(redact_snippet "$one_liner")
     proposal=$(redact_snippet "$(echo "$proposal" | tr '\n' ' ' | tr -d '"' | tr -s ' ' | head -c 280)")
