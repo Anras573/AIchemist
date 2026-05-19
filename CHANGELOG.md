@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.4.0](https://github.com/Anras573/AIchemist/compare/v3.3.1...v3.4.0) (2026-05-19)
+
+
+### Features
+
+* **skills:** add pr-review-loop skill ([#104](https://github.com/Anras573/AIchemist/issues/104)) ([d558324](https://github.com/Anras573/AIchemist/commit/d5583247faa595ffe00a83874dd385c0bba21021))
+* **tools:** add semantic skill update proposals ([#108](https://github.com/Anras573/AIchemist/issues/108)) ([03228b8](https://github.com/Anras573/AIchemist/commit/03228b8dd20e8a48654cd726e2f9f2fb5156933a))
+
 ## [3.3.1](https://github.com/Anras573/AIchemist/compare/v3.3.0...v3.3.1) (2026-05-11)
 
 
