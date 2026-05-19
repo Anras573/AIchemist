@@ -622,11 +622,11 @@ set_note_cache() {
 get_note_cache() {
   local note_path="$1"
   if [ "$note_path" = "$IDEAS_NOTE_PATH" ]; then
-    echo "$NOTE_CACHE_IDEAS"
+    printf '%s' "$NOTE_CACHE_IDEAS"
   elif [ "$note_path" = "$UPDATES_NOTE_PATH" ]; then
-    echo "$NOTE_CACHE_UPDATES"
+    printf '%s' "$NOTE_CACHE_UPDATES"
   else
-    echo ""
+    printf ''
   fi
 }
 
@@ -920,6 +920,7 @@ main() {
   done < <(echo "$suggestions" | jq -r '.[] | [.kind // "skill", .name // "", .one_liner // "", .evidence_line // 0, .evidence_snippet // ""] | @tsv')
 
   while IFS=$'\t' read -r kind name target one_liner proposal line snippet; do
+    name=$(redact_snippet "$name")
     name=$(echo "$name" | python3 -c '
 import re, sys
 s = sys.stdin.read().strip()
