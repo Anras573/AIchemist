@@ -204,7 +204,7 @@ git push
 Only do this after a successful push so resolved threads always correspond to landed fixes.
 
 ```bash
-gh api --method POST /repos/OWNER/REPO/pulls/PR_NUMBER/comments/COMMENT_ID/replies \
+gh api --method POST /repos/$OWNER/$REPO/pulls/$PR_NUMBER/comments/COMMENT_ID/replies \
   --field body="Fixed: [one-line description of what was changed]"
 ```
 
