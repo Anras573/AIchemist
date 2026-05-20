@@ -44,7 +44,7 @@ Determine state for the current tick:
 
 ```bash
 # Detect open PR, repo info, and latest Copilot review in one call
-gh pr view --json number,headRefOid,url,reviews
+gh pr view --json number,headRefOid,url,reviews,headRepository
 ```
 
 Extract from JSON: `PR_URL` (`.url`), `HEAD_REF_OID` (`.headRefOid`), `PR_NUMBER` (`.number`).
@@ -56,8 +56,21 @@ OWNER=$(echo "$PR_URL" | awk -F/ '{print $4}')
 REPO=$(echo "$PR_URL" | awk -F/ '{print $5}')
 ```
 
+For fork PRs, also capture the head repository info:
+
 ```bash
-# Get server-side push timestamp for HEAD commit.
+# Extract head repo owner for forked PRs
+HEAD_REPO_OWNER=$(echo "..." | jq -r '.headRepository.owner.login // empty')
+HEAD_REPO_NAME=$(echo "..." | jq -r '.headRepository.name // empty')
+```
+
+```bash
+# Get server-side push timestamp for HEAD commit using the head repository.
+# For forks, query the head repo where the commit OID is reachable.
+# For non-forks, the head repo is the same as the base repo.
+HEAD_OWNER=${HEAD_REPO_OWNER:-$OWNER}
+HEAD_REPO=${HEAD_REPO_NAME:-$REPO}
+
 gh api graphql -f query='
   query($owner: String!, $repo: String!, $oid: GitObjectID!) {
     repository(owner: $owner, name: $repo) {
@@ -66,7 +79,7 @@ gh api graphql -f query='
       }
     }
   }
-' -f owner="$OWNER" -f repo="$REPO" -f oid="$HEAD_REF_OID" \
+' -f owner="$HEAD_OWNER" -f repo="$HEAD_REPO" -f oid="$HEAD_REF_OID" \
   --jq '.data.repository.object.pushedDate'
 ```
 
@@ -109,6 +122,13 @@ gh api graphql -f query='
   --jq '.data.repository.pullRequest.reviewThreads.nodes
         | map(select(.isResolved == false))
         | map(select(.comments.nodes[0]? != null and .comments.nodes[0].author.login == "copilot-pull-request-reviewer"))'
+```
+
+For each thread in the results, extract and store the comment database ID for use in Step 6:
+
+```bash
+COMMENT_ID=$(echo "$thread_json" | jq -r '.comments.nodes[0].databaseId')
+THREAD_ID=$(echo "$thread_json" | jq -r '.id')
 ```
 
 > `reviewThreads(first: 100)` is capped. Add cursor pagination if PRs regularly exceed this.
@@ -204,7 +224,7 @@ git push
 Only do this after a successful push so resolved threads always correspond to landed fixes.
 
 ```bash
-gh api --method POST /repos/$OWNER/$REPO/pulls/$PR_NUMBER/comments/COMMENT_ID/replies \
+gh api --method POST /repos/$OWNER/$REPO/pulls/$PR_NUMBER/comments/$COMMENT_ID/replies \
   --field body="Fixed: [one-line description of what was changed]"
 ```
 
@@ -217,7 +237,7 @@ gh api graphql -f query='
       thread { isResolved }
     }
   }
-' -f threadId="THREAD_ID"
+' -f threadId="$THREAD_ID"
 ```
 
 ### Re-request Copilot review
