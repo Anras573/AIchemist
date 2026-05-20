@@ -44,7 +44,7 @@ Determine state for the current tick:
 
 ```bash
 # Detect open PR, repo info, and latest Copilot review in one call
-gh pr view --json number,headRefOid,url,reviews,headRepository
+PR_JSON=$(gh pr view --json number,headRefOid,url,reviews,headRepository)
 ```
 
 Extract from JSON: `PR_URL` (`.url`), `HEAD_REF_OID` (`.headRefOid`), `PR_NUMBER` (`.number`).
@@ -52,16 +52,19 @@ Extract from JSON: `PR_URL` (`.url`), `HEAD_REF_OID` (`.headRefOid`), `PR_NUMBER
 Derive `OWNER` and `REPO` from `PR_URL` (base repository), not from the head fork:
 
 ```bash
+PR_URL=$(echo "$PR_JSON"       | jq -r '.url')
+HEAD_REF_OID=$(echo "$PR_JSON" | jq -r '.headRefOid')
+PR_NUMBER=$(echo "$PR_JSON"    | jq -r '.number')
 OWNER=$(echo "$PR_URL" | awk -F/ '{print $4}')
-REPO=$(echo "$PR_URL" | awk -F/ '{print $5}')
+REPO=$(echo "$PR_URL"  | awk -F/ '{print $5}')
 ```
 
 For fork PRs, also capture the head repository info:
 
 ```bash
 # Extract head repo owner for forked PRs
-HEAD_REPO_OWNER=$(echo "..." | jq -r '.headRepository.owner.login // empty')
-HEAD_REPO_NAME=$(echo "..." | jq -r '.headRepository.name // empty')
+HEAD_REPO_OWNER=$(echo "$PR_JSON" | jq -r '.headRepository.owner.login // empty')
+HEAD_REPO_NAME=$(echo "$PR_JSON"  | jq -r '.headRepository.name // empty')
 ```
 
 ```bash
@@ -243,8 +246,8 @@ gh api graphql -f query='
 ### Re-request Copilot review
 
 ```bash
-if ! err=$(gh pr edit --add-reviewer copilot-pull-request-reviewer 2>&1 >/dev/null); then
-  echo "Warning: failed to re-request Copilot review: $err"
+if ! out=$(gh pr edit --add-reviewer copilot-pull-request-reviewer 2>&1); then
+  echo "Warning: failed to re-request Copilot review: $out"
 fi
 ```
 
