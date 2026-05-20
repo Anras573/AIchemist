@@ -44,10 +44,17 @@ Determine state for the current tick:
 
 ```bash
 # Detect open PR, repo info, and latest Copilot review in one call
-gh pr view --json number,headRefOid,url,headRepository,reviews
+gh pr view --json number,headRefOid,url,reviews
 ```
 
-Extract from JSON: `owner` (`.headRepository.owner.login`), `repo` (`.headRepository.name`), `HEAD_REF_OID` (`.headRefOid`), `PR_NUMBER` (`.number`).
+Extract from JSON: `PR_URL` (`.url`), `HEAD_REF_OID` (`.headRefOid`), `PR_NUMBER` (`.number`).
+
+Derive `OWNER` and `REPO` from `PR_URL` (base repository), not from the head fork:
+
+```bash
+OWNER=$(echo "$PR_URL" | awk -F/ '{print $4}')
+REPO=$(echo "$PR_URL" | awk -F/ '{print $5}')
+```
 
 ```bash
 # Get server-side push timestamp for HEAD commit.
@@ -173,25 +180,6 @@ Wait for user decision.
 
 After fixes:
 
-### Reply to each resolved thread (sequentially)
-
-```bash
-gh api --method POST /repos/OWNER/REPO/pulls/PR_NUMBER/comments/COMMENT_ID/replies \
-  --field body="Fixed: [one-line description of what was changed]"
-```
-
-### Resolve each thread
-
-```bash
-gh api graphql -f query='
-  mutation($threadId: ID!) {
-    resolveReviewThread(input: {threadId: $threadId}) {
-      thread { isResolved }
-    }
-  }
-' -f threadId="THREAD_ID"
-```
-
 ### Confirm before commit/push
 
 Ask:
@@ -209,6 +197,27 @@ Clusters fixed:
 
 Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
 git push
+```
+
+### Reply to each resolved thread (sequentially)
+
+Only do this after a successful push so resolved threads always correspond to landed fixes.
+
+```bash
+gh api --method POST /repos/OWNER/REPO/pulls/PR_NUMBER/comments/COMMENT_ID/replies \
+  --field body="Fixed: [one-line description of what was changed]"
+```
+
+### Resolve each thread
+
+```bash
+gh api graphql -f query='
+  mutation($threadId: ID!) {
+    resolveReviewThread(input: {threadId: $threadId}) {
+      thread { isResolved }
+    }
+  }
+' -f threadId="THREAD_ID"
 ```
 
 ### Re-request Copilot review
