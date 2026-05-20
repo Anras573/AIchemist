@@ -737,4 +737,5 @@ Copilot-compatible manual-tick PR review loop for GitHub Copilot CLI. Keeps the 
 
 - GitHub Copilot CLI session with this plugin installed
 - `gh` CLI authenticated
+- `jq` installed and on `$PATH`
 - Open PR on current branch with GitHub Copilot code review enabled

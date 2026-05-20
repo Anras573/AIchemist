@@ -349,6 +349,14 @@ git push
 
 ---
 
+## Requirements
+
+- `gh` CLI authenticated
+- `jq` installed and on `$PATH`
+- Open PR on current branch with GitHub Copilot code review enabled
+
+---
+
 ## Safety Rules
 
 - Never `git add .` or `git add -A`
