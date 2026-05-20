@@ -66,7 +66,7 @@ gh api graphql -f query='
       }
     }
   }
-' -f owner=OWNER -f repo=REPO -f oid=HEAD_REF_OID \
+' -f owner="$OWNER" -f repo="$REPO" -f oid="$HEAD_REF_OID" \
   --jq '.data.repository.object.pushedDate'
 ```
 
@@ -105,7 +105,7 @@ gh api graphql -f query='
       }
     }
   }
-' -F owner=OWNER -F repo=REPO -F pr=PR_NUMBER \
+' -F owner="$OWNER" -F repo="$REPO" -F pr="$PR_NUMBER" \
   --jq '.data.repository.pullRequest.reviewThreads.nodes
         | map(select(.isResolved == false))
         | map(select(.comments.nodes[0]? != null and .comments.nodes[0].author.login == "copilot-pull-request-reviewer"))'
@@ -176,7 +176,7 @@ Wait for user decision.
 
 ---
 
-## Step 6 — Reply, Resolve, Commit, Push
+## Step 6 — Commit, Push, Reply, Resolve
 
 After fixes:
 
@@ -252,7 +252,7 @@ gh api graphql -f query='
       }
     }
   }
-' -F owner=OWNER -F repo=REPO -F pr=PR_NUMBER \
+' -F owner="$OWNER" -F repo="$REPO" -F pr="$PR_NUMBER" \
   --jq '.data.repository.pullRequest.reviewThreads.nodes
         | map(select(.comments.nodes[0]? != null and .comments.nodes[0].author.login == "copilot-pull-request-reviewer"))
         | map(.comments.nodes[0].body)'
