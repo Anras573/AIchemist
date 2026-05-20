@@ -728,7 +728,10 @@ Copilot-compatible manual-tick PR review loop for GitHub Copilot CLI. Keeps the 
 | **Write** | Edit files (SHOW-FIRST clusters) | Requires approval |
 | **Write** | Commit and push fixes | Requires explicit confirmation |
 | **Write** | Post replies, resolve threads | Automatic after confirmation |
-| **Write** | Append lessons to `CLAUDE.md` / `REVIEW_LESSONS.md` | Automatic (with gitignore safeguard for review log) |
+| **Write** | Append lessons to `CLAUDE.md` | Automatic |
+| **Write** | Commit `CLAUDE.md` lessons to branch | Requires explicit confirmation |
+| **Write** | Append to `REVIEW_LESSONS.md` (repo root, untracked until gitignore confirmed) | Automatic after gitignore confirmation |
+| **Write** | Update global gitignore (`core.excludesfile`) | Requires explicit confirmation |
 
 ### Requirements
 

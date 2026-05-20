@@ -266,10 +266,47 @@ grep -qxF 'REVIEW_LESSONS.md' "$GLOBAL_IGNORE" 2>/dev/null
 If missing, ask:
 `REVIEW_LESSONS.md is not in your global gitignore ([path]). Add it? (yes / skip)`
 
+If confirmed, append:
+
+```bash
+mkdir -p "$(dirname "$GLOBAL_IGNORE")"
+echo 'REVIEW_LESSONS.md' >> "$GLOBAL_IGNORE"
+```
+
+If skipped, do not write `REVIEW_LESSONS.md` this tick.
+
+### Audit trail
+
+Once gitignore is confirmed, append to `REVIEW_LESSONS.md` in the repo root (create if absent):
+
+```markdown
+## [DATE] — PR #NUMBER
+
+**PR:** [PR URL]
+
+### Lessons extracted
+
+**→ CLAUDE.md**
+- [lesson 1]
+
+**→ REVIEW_LESSONS.md (Universal)**
+- [lesson 1]
+```
+
 ### Confirm before committing CLAUDE.md
 
 If `CLAUDE.md` changed, show diff and ask:
 `Ready to commit CLAUDE.md lessons to the branch. Proceed? (yes / skip)`
+
+If confirmed:
+
+```bash
+git add CLAUDE.md
+git commit -m "docs(repo): add code review lessons from PR #[NUMBER]
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+git push
+```
 
 ---
 
