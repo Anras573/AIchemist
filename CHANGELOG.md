@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.0](https://github.com/Anras573/AIchemist/compare/v3.4.0...v3.5.0) (2026-05-20)
+
+
+### Features
+
+* **skills:** add copilot PR review loop skill ([#109](https://github.com/Anras573/AIchemist/issues/109)) ([27f1826](https://github.com/Anras573/AIchemist/commit/27f1826bef4d934a745e5b7b26f4e1c189332255))
+
 ## [3.4.0](https://github.com/Anras573/AIchemist/compare/v3.3.1...v3.4.0) (2026-05-19)
 
 
