@@ -700,3 +700,42 @@ Self-scheduling polling loop that autonomously drives the GitHub Copilot PR revi
 - Claude Code (uses `ScheduleWakeup` for polling — not available on other Claude surfaces)
 - `gh` CLI authenticated
 - Open PR on current branch with GitHub Copilot code review enabled
+
+---
+
+## PR Review Loop (Copilot) Skill
+
+**Source:** [`skills/pr-review-loop-copilot/SKILL.md`](../skills/pr-review-loop-copilot/SKILL.md)
+
+Copilot-compatible manual-tick PR review loop for GitHub Copilot CLI. Keeps the same review/fix/resolve/learn workflow as `pr-review-loop`, but removes Claude-only scheduling and runtime sentinels.
+
+**Trigger phrases:** "pr review loop copilot", "/pr-review-loop-copilot", "run copilot review loop", "process copilot review comments", "manual review loop", "review loop tick".
+
+### State Machine
+
+| State | Condition | Action |
+|-------|-----------|--------|
+| `WAITING` | No Copilot review newer than last push | Print status and stop; user reruns skill later |
+| `REVIEWING` | New review with unresolved threads | Fix → push → re-request review |
+| `DONE` | New review, all threads resolved | Extract lessons, exit |
+
+### Operations
+
+| Type | Operations | Behavior |
+|------|------------|----------|
+| **Read** | PR state, review timestamps, unresolved threads | Automatic |
+| **Write** | Edit files (AUTO-FIX clusters) | Automatic |
+| **Write** | Edit files (SHOW-FIRST clusters) | Requires approval |
+| **Write** | Commit and push fixes | Requires explicit confirmation |
+| **Write** | Post replies, resolve threads | Automatic after confirmation |
+| **Write** | Append lessons to `CLAUDE.md` | Automatic |
+| **Write** | Commit `CLAUDE.md` lessons to branch | Requires explicit confirmation |
+| **Write** | Append to `REVIEW_LESSONS.md` (repo root, untracked until gitignore confirmed) | Automatic after gitignore confirmation |
+| **Write** | Update global gitignore (`core.excludesfile`) | Requires explicit confirmation |
+
+### Requirements
+
+- GitHub Copilot CLI session with this plugin installed
+- `gh` CLI authenticated
+- `jq` installed and on `$PATH`
+- Open PR on current branch with GitHub Copilot code review enabled
