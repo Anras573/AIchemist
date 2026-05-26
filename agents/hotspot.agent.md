@@ -39,14 +39,14 @@ Assumes `lizard` is installed — the calling skill gates on this before invokin
 
 ## Input
 
-Receives a list of file paths to analyse (passed by the calling skill).
+Receives a list of file paths to analyze (passed by the calling skill).
 
 ## Workflow
 
 ### Step 1 — Compute churn for all input files (single git call)
 
 ```bash
-git log --since="90 days ago" --name-only --format="" -- <file1> <file2> ... \
+git log --since="90 days ago" --name-only --format="" -- "<file1>" "<file2>" ... \
   | grep -v '^$' \
   | sort | uniq -c
 ```

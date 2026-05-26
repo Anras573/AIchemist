@@ -54,21 +54,29 @@ Verify the target exists and resolves within the repo root:
 
 ```bash
 repo_root=$(git rev-parse --show-toplevel)
-target_real=$(realpath "<target>")
-# Fail if target resolves outside the repo.
-# Note: realpath does not resolve symlinks on all platforms; a symlink pointing
-# outside the repo will pass this check. The trailing slash prevents matching
-# sibling directories that share a common prefix (e.g., /repo-other).
+
+# Check existence before resolving, so missing paths produce the right error.
+[[ ! -e "<target>" ]] && echo "Path not found: \`<target>\`" && exit 1
+
+# realpath is not available on stock macOS (pre-Catalina / no GNU coreutils).
+# Fall back to python3, which ships on all supported macOS versions.
+if command -v realpath >/dev/null 2>&1; then
+  target_real=$(realpath "<target>")
+else
+  target_real=$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "<target>")
+fi
+
+# Note: realpath/os.path.realpath does not resolve symlinks consistently on all
+# platforms; a symlink pointing outside the repo will pass this check.
+# The trailing slash prevents matching sibling directories with a common prefix.
 [[ "$target_real" != "$repo_root/"* && "$target_real" != "$repo_root" ]] && echo "Error: target must be within the repository" && exit 1
 ```
-
-If the target does not exist, fail with: "Path not found: `<target>`"
 
 ### Step 3 — Compute churn per file
 
 ```bash
 # For each file in target, count commits in the last 90 days
-git log --since="90 days ago" --name-only --format="" -- <target> \
+git log --since="90 days ago" --name-only --format="" -- "<target>" \
   | grep -v '^$' \
   | sort | uniq -c \
   | sort -rn
