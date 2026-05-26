@@ -26,3 +26,11 @@ Before opening a PR that touches a file in `tools/`:
 - Commit message scopes must be derived from the actual files changed — not hardcoded; for repo-root files use `repo`, for skills use `skills`, etc.
 - GraphQL `comments(first: N)` — only fetch as many comments as you will consume; if only `nodes[0]` is used, request `first: 1`
 - PR description must accurately reflect code changes — do not describe a change (e.g. `first: 10`) that wasn't actually applied
+- Shell path validation order: check existence (`[[ ! -e "$target" ]]`) before resolving with `realpath`/`python3` — resolving a missing path produces a misleading "must be within repo" error instead of "Path not found"
+- Shell tool availability: always guard with `command -v realpath` → `command -v python3` → fail-fast with install message; never assume either is present on macOS
+- `git log` pathspecs must be repo-relative — use `${absolute#$repo_root/}` to derive; special-case `target == repo_root` → use `.` (prefix-strip is a no-op when there is no trailing `/`)
+- `git rev-parse --show-toplevel` must be wrapped in `if ! ... 2>/dev/null` to fail fast with a clear error when run outside a git repository
+- CLI flags after `--` are treated as positional arguments — always place option flags (e.g. `--csv`) before `--` in command invocations
+- No-arg default targets in shell skills should use `$repo_root`, not `.` — CWD varies when invoked from a subdirectory
+- Structured agent output tokens that bypass the validation step (e.g. `HOTSPOT_FINDING`) need an explicit exemption note in the consuming skill's Step 6
+- Always include a `location: <file>:<line>` field in structured finding tokens so the code-review skill can anchor inline PR comments

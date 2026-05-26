@@ -18,6 +18,23 @@ Read-only codebase exploration specialist for mapping patterns and architecture 
 
 ---
 
+## Hotspot Agent
+
+**Source:** [`agents/hotspot.agent.md`](../agents/hotspot.agent.md)
+
+Complexity risk assessor that identifies high-risk files by combining cyclomatic complexity with git churn. Scores files as `avg_CCN × churn_count` and flags those in the top 20% of the scanned set.
+
+**Capabilities:**
+- Batch churn computation (single `git log` call across all input files)
+- Cyclomatic complexity via `lizard --csv`
+- Dynamic confidence scoring: top 10% → 90 (Blocker), top 10–20% → 85 (Warning)
+- Returns structured `HOTSPOT_FINDING` blocks and a Risk Context table
+- Graceful degradation: returns `HOTSPOT_SKIPPED` token if `lizard` is unavailable
+
+**Invoked by:** `code-review` skill (parallel core agent); also invokable directly for refactor decisions
+
+---
+
 ## Code Review Agent
 
 **Source:** [`agents/code-review.agent.md`](../agents/code-review.agent.md)

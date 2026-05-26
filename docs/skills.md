@@ -2,6 +2,41 @@
 
 Skills are context-aware capabilities that load into the main conversation when triggered by relevant user requests. Unlike agents (which run as subprocesses via Task tool), skills extend the current conversation with specialized knowledge and workflows.
 
+## Hotspot Skill
+
+**Source:** [`skills/hotspot/SKILL.md`](../skills/hotspot/SKILL.md)
+
+Identifies high-risk code by combining cyclomatic complexity (via `lizard`) with git churn. Files that are both complex and frequently changed are hotspots — the intersection where bugs cluster. Also runs automatically as part of code review to add a Risk Context block on changed files.
+
+**Trigger phrases:** "/hotspot", "should I refactor this", "is this a hotspot", "hotspot analysis", "complexity risk", "churn analysis", "is this worth refactoring", "what's the riskiest file", "cyclomatic complexity", "which files are most complex", "what should I refactor first".
+
+### Usage
+
+```
+/hotspot                    — full repo, top 10 by score
+/hotspot <file>             — single file, function-level breakdown
+/hotspot <dir>              — directory, file-level ranking
+```
+
+### Scoring
+
+`score = avg_cyclomatic_complexity × git_churn_count (90 days)`
+
+Files scoring in the top 20% of the scanned set are flagged as hotspots.
+
+### Operations
+
+| Type | Operations | Behavior |
+|------|------------|----------|
+| **Read** | `git log`, `lizard` analysis, file reads | Automatic — no confirmation needed |
+
+### Requirements
+
+- `lizard` installed: macOS → `brew install lizard-analyzer`, other → `pip install lizard`
+- Git repository with commit history
+
+---
+
 ## MermaidJS Diagrams Skill
 
 **Source:** [`skills/mermaid/SKILL.md`](../skills/mermaid/SKILL.md)

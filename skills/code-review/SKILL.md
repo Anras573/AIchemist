@@ -152,6 +152,7 @@ All review agents inherit behavior from the **Code Review Agent** (`agents/code-
 | Guidelines Agent 2 | sonnet | Project conventions | Same as Agent 1 — redundancy to catch different violations. Review independently without seeing Agent 1's findings. |
 | Bug Detection Agent | opus | Logic errors | Scan for obvious bugs: syntax errors, type errors, null references, off-by-one errors, logic flaws. Focus only on the diff itself. Flag only issues you're certain about. |
 | Security Agent | opus | Vulnerabilities | Check for OWASP Top 10, injection vulnerabilities, auth/authz issues, hardcoded secrets, insecure data handling. Only flag clear vulnerabilities with exploitable paths. |
+| Hotspot Agent | haiku | Complexity risk | Run `agents/hotspot.agent.md` on the changed files. Append returned Risk Context block to review output. Merge any `HOTSPOT_FINDING` entries into the findings list (confidence 90 → Blocker, confidence 85 → Warning). If `HOTSPOT_SKIPPED` is returned, add to Review Stats: "Hotspot analysis skipped — lizard not installed (macOS: `brew install lizard-analyzer`, other: `pip install lizard`)." |
 
 #### Conditional Agents
 
@@ -200,6 +201,8 @@ For each issue returned by the parallel agents, launch a **validation subagent**
 | Security issues | opus | Verify the vulnerability is exploitable and not a false positive |
 
 Provide the validator with: issue description, relevant code context, PR title/description. Rejected issues are filtered out.
+
+**Hotspot findings are exempt from validation.** `HOTSPOT_FINDING` entries returned by the Hotspot Agent carry pre-computed confidence scores (90 or 85) derived from `avg_CCN × churn_count` thresholds applied inside the agent. Pass them directly to Step 7 aggregation without a validation subagent.
 
 ### Step 7 – Aggregate Validated Findings
 
