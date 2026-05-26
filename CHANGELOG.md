@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.6.0](https://github.com/Anras573/AIchemist/compare/v3.5.0...v3.6.0) (2026-05-26)
+
+
+### Features
+
+* **skills:** add hotspot skill and agent ([#111](https://github.com/Anras573/AIchemist/issues/111)) ([7e84fc3](https://github.com/Anras573/AIchemist/commit/7e84fc39804dfae727d00a02c11aecd3043c0b8f))
+
 ## [3.5.0](https://github.com/Anras573/AIchemist/compare/v3.4.0...v3.5.0) (2026-05-20)
 
 
