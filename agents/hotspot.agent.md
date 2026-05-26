@@ -102,7 +102,7 @@ Risk label:
 
 #### Block 2: Hotspot findings (one per file exceeding threshold)
 
-Confidence is dynamic based on how far the score exceeds the threshold:
+Confidence is assigned based on percentile rank within the input files:
 - Score in top 10% of input files → confidence 90 (Blocker)
 - Score in top 10–20% → confidence 85 (Warning)
 
