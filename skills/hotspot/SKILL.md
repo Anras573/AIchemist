@@ -48,12 +48,16 @@ Do not proceed.
 ### Step 2 — Determine target
 
 - If argument provided: use it as the target path
-- If no argument: use the repo root (`.`)
+- If no argument: use `$repo_root` (not `.` — `.` is the current working directory and varies when invoked from a subdirectory)
 
 Verify the target exists and resolves within the repo root:
 
 ```bash
-repo_root=$(git rev-parse --show-toplevel)
+# Fail fast if not inside a git repo, before any path validation.
+if ! repo_root=$(git rev-parse --show-toplevel 2>/dev/null); then
+  echo "Error: /hotspot must be run inside a git repository."
+  exit 1
+fi
 
 # Check existence before resolving, so missing paths produce the right error.
 [[ ! -e "<target>" ]] && echo "Path not found: \`<target>\`" && exit 1

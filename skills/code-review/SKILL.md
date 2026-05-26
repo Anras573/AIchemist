@@ -202,6 +202,8 @@ For each issue returned by the parallel agents, launch a **validation subagent**
 
 Provide the validator with: issue description, relevant code context, PR title/description. Rejected issues are filtered out.
 
+**Hotspot findings are exempt from validation.** `HOTSPOT_FINDING` entries returned by the Hotspot Agent carry pre-computed confidence scores (90 or 85) derived from `avg_CCN × churn_count` thresholds applied inside the agent. Pass them directly to Step 7 aggregation without a validation subagent.
+
 ### Step 7 – Aggregate Validated Findings
 
 1. Collect all validated issues (rejected issues already filtered)
