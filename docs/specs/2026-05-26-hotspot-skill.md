@@ -140,11 +140,11 @@ Code-review integration
 
 | Situation | Behavior |
 |---|---|
-| `lizard` not installed | Fail fast: "Hotspot analysis requires `lizard`. Install with `pip install lizard`." |
+| `lizard` not installed | Fail fast with platform-aware message: macOS → "Install with `brew install lizard-analyzer`"; other → "Install with `pip install lizard`." |
 | Target file/dir doesn't exist | Fail fast with clear path error |
 | No git history for target | Warn: "No git history found for `<target>` — churn score will be 0. Results may be incomplete." |
 | 0 commits in 90-day window | Warn and show complexity-only table; churn = 0 |
-| Agent called but lizard missing | Return degraded output: "Hotspot analysis skipped — `lizard` not installed." Code-review continues. |
+| Agent called but lizard missing | Return degraded output: "Hotspot analysis skipped — `lizard` not installed (macOS: `brew install lizard-analyzer`, other: `pip install lizard`)." Code-review continues. |
 | Unsupported file types | Note "X files skipped (unsupported language)" — do not fail |
 
 The code-review skill must never fail because the hotspot agent fails.
