@@ -50,7 +50,16 @@ Do not proceed.
 - If argument provided: use it as the target path
 - If no argument: use the repo root (`.`)
 
-Verify the target exists. If not, fail with: "Path not found: `<target>`"
+Verify the target exists and resolves within the repo root:
+
+```bash
+repo_root=$(git rev-parse --show-toplevel)
+target_real=$(realpath "<target>")
+# Fail if target resolves outside the repo
+[[ "$target_real" != "$repo_root"* ]] && echo "Error: target must be within the repository" && exit 1
+```
+
+If the target does not exist, fail with: "Path not found: `<target>`"
 
 ### Step 3 — Compute churn per file
 
@@ -67,8 +76,10 @@ This produces `churn_count` per file path.
 ### Step 4 — Compute cyclomatic complexity
 
 ```bash
-lizard <target> --csv
+lizard -- "<target>" --csv
 ```
+
+Quote `<target>` to prevent shell word-splitting on paths with spaces or special characters. Never construct this command by bare string interpolation.
 
 Parse CSV output. Fields used:
 - `CCN` — cyclomatic complexity number per function

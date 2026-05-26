@@ -22,7 +22,7 @@ Identifies high-risk code by combining cyclomatic complexity (via `lizard`) with
 
 `score = avg_cyclomatic_complexity × git_churn_count (90 days)`
 
-Files scoring in the top 20% of the repo are flagged as hotspots.
+Files scoring in the top 20% of the scanned set are flagged as hotspots.
 
 ### Operations
 

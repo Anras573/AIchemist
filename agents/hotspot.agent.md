@@ -15,6 +15,18 @@ description: |
   assistant: "I'll use the Hotspot Agent to check complexity and churn for those files."
   </example>
 
+  <example>
+  Context: User is deciding whether to refactor before adding a feature.
+  user: "Is OrderService.cs a hotspot? I'm about to add more logic to it."
+  assistant: "I'll use the Hotspot Agent to score OrderService.cs by complexity and churn before you add to it."
+  </example>
+
+  <example>
+  Context: Agent needs to assess risk on a specific directory before a large refactor.
+  user: "Which files in src/payments/ are the riskiest to touch?"
+  assistant: "I'll use the Hotspot Agent to rank files in src/payments/ by hotspot score."
+  </example>
+
 model: haiku
 used-by: ['skills/code-review']
 ---
@@ -44,8 +56,10 @@ Filter the output to only files present in the input list. This gives `churn_cou
 ### Step 2 — Compute cyclomatic complexity
 
 ```bash
-lizard <file1> <file2> ... --csv
+lizard -- "<file1>" "<file2>" ... --csv
 ```
+
+Each path must be individually quoted to prevent shell word-splitting on filenames containing spaces or special characters. Pass paths as separate quoted arguments — never by constructing a bare shell string via interpolation.
 
 Parse CSV. Compute `avg_CCN` per file (average CCN across all functions in that file).
 
@@ -57,7 +71,11 @@ Files with no lizard output (unsupported language): set avg_CCN = null, exclude 
 score = avg_CCN × churn_count
 ```
 
-Threshold = top 20% of scores among the input files. If fewer than 5 files have scores, flag files where `score > 2 × median(scores of input files)` instead.
+Threshold = top 20% of scores among the input files.
+
+If fewer than 5 files have scores, the percentile calculation is unreliable. Use this fallback instead:
+- 1 file: flag if `avg_CCN ≥ 10` (high standalone complexity regardless of churn)
+- 2–4 files: flag the highest-scoring file if its score is ≥ 3× the lowest score in the set (i.e., it is meaningfully worse than the others)
 
 ### Step 4 — Return output
 
@@ -109,4 +127,4 @@ Return only this token — no install instructions. The calling skill owns the u
 | File not found | Skip that file, note it in Risk Context as "not found" |
 | 0 commits in 90-day window | churn = 0, include in table, no hotspot flag |
 | Unsupported file types | Omit from CCN column, still show churn; note count of skipped files |
-| Fewer than 5 scoreable files | Use 2× median threshold instead of top-20% percentile |
+| Fewer than 5 scoreable files | Use fallback threshold (see Step 3) — percentile is unreliable at small N |
