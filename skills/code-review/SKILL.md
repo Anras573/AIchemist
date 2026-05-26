@@ -152,6 +152,7 @@ All review agents inherit behavior from the **Code Review Agent** (`agents/code-
 | Guidelines Agent 2 | sonnet | Project conventions | Same as Agent 1 — redundancy to catch different violations. Review independently without seeing Agent 1's findings. |
 | Bug Detection Agent | opus | Logic errors | Scan for obvious bugs: syntax errors, type errors, null references, off-by-one errors, logic flaws. Focus only on the diff itself. Flag only issues you're certain about. |
 | Security Agent | opus | Vulnerabilities | Check for OWASP Top 10, injection vulnerabilities, auth/authz issues, hardcoded secrets, insecure data handling. Only flag clear vulnerabilities with exploitable paths. |
+| Hotspot Agent | haiku | Complexity risk | Run `agents/hotspot.agent.md` on the changed files. Append returned Risk Context block to review output. Merge any `HOTSPOT_FINDING` entries into the findings list. If `HOTSPOT_SKIPPED` is returned, note it in the Review Stats and continue. |
 
 #### Conditional Agents
 
