@@ -58,35 +58,37 @@ repo_root=$(git rev-parse --show-toplevel)
 # Check existence before resolving, so missing paths produce the right error.
 [[ ! -e "<target>" ]] && echo "Path not found: \`<target>\`" && exit 1
 
-# realpath is not available on stock macOS (pre-Catalina / no GNU coreutils).
-# Fall back to python3, which ships on all supported macOS versions.
+# Resolve symlinks for an accurate prefix check. Prefer realpath (GNU coreutils);
+# fall back to python3. If neither is available, fail fast with install guidance.
 if command -v realpath >/dev/null 2>&1; then
-  target_real=$(realpath "<target>")
+  _resolve() { realpath "$1"; }
+elif command -v python3 >/dev/null 2>&1; then
+  _resolve() { python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$1"; }
 else
-  target_real=$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "<target>")
+  echo "Error: /hotspot requires either realpath or python3 to validate paths."
+  echo "macOS: install coreutils via Homebrew (brew install coreutils) or Xcode Command Line Tools."
+  exit 1
 fi
 
-# Both realpath and os.path.realpath resolve symlinks, so a symlink pointing
-# outside the repo will correctly fail this check. However, if $repo_root
-# itself is a symlink, resolve it the same way to keep the comparison accurate.
-if command -v realpath >/dev/null 2>&1; then
-  repo_root=$(realpath "$repo_root")
-else
-  repo_root=$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$repo_root")
-fi
+target_real=$(_resolve "<target>")
+repo_root=$(_resolve "$repo_root")
+
 # The trailing slash prevents matching sibling directories with a common prefix.
+# Symlinks are resolved above, so a symlink pointing outside the repo correctly fails.
 [[ "$target_real" != "$repo_root/"* && "$target_real" != "$repo_root" ]] && echo "Error: target must be within the repository" && exit 1
 
-# Use the resolved path for all subsequent steps so git and lizard receive a
-# canonical absolute path regardless of how the user specified the target.
-target="$target_real"
+# Derive a repo-relative path for git pathspecs (git resolves paths relative to
+# the repo root; absolute paths produce zero matches). Use the absolute path for
+# lizard, which accepts and prefers absolute paths.
+target_rel="${target_real#$repo_root/}"
 ```
 
 ### Step 3 — Compute churn per file
 
 ```bash
-# For each file in target, count commits in the last 90 days
-git log --since="90 days ago" --name-only --format="" -- "$target" \
+# For each file in target, count commits in the last 90 days.
+# Use the repo-relative path — git pathspecs are relative to the repo root.
+git log --since="90 days ago" --name-only --format="" -- "$target_rel" \
   | grep -v '^$' \
   | sort | uniq -c \
   | sort -rn
@@ -97,7 +99,7 @@ This produces `churn_count` per file path. When parsing `uniq -c` output, split 
 ### Step 4 — Compute cyclomatic complexity
 
 ```bash
-lizard --csv -- "$target"
+lizard --csv -- "$target_real"
 ```
 
 Place `--csv` before `--` so it is parsed as an option flag, not a filename. Always pass the path as a separate quoted argument after `--` and invoke `lizard` without `shell=True` (or its equivalent in any subprocess API) to prevent shell injection.

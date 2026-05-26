@@ -104,7 +104,7 @@ Code-review integration
 | No git history for target | Warn: churn = 0, proceed with complexity-only output |
 | 0 commits in 90-day window | Warn: "No commits in the last 90 days — churn scores are 0." |
 | Unsupported file types | Note "X files skipped (unsupported language)" — do not fail |
-| Symlinked target | Passes repo root check — document limitation; no fix |
+| Symlinked target | Symlinks are resolved by `realpath`/`os.path.realpath`; a symlink pointing outside the repo correctly fails the prefix check |
 
 ## Testing
 
