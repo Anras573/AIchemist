@@ -80,7 +80,14 @@ repo_root=$(_resolve "$repo_root")
 # Derive a repo-relative path for git pathspecs (git resolves paths relative to
 # the repo root; absolute paths produce zero matches). Use the absolute path for
 # lizard, which accepts and prefers absolute paths.
-target_rel="${target_real#$repo_root/}"
+# Special-case: when target is the repo root itself, use "." so git pathspecs
+# match all files (stripping "$repo_root/" would leave the absolute path intact
+# because there is no trailing "/" to strip).
+if [[ "$target_real" == "$repo_root" ]]; then
+  target_rel="."
+else
+  target_rel="${target_real#$repo_root/}"
+fi
 ```
 
 ### Step 3 — Compute churn per file
