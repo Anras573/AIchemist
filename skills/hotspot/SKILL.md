@@ -89,7 +89,7 @@ Files with churn data but no lizard output (unsupported language): note count, e
 
 Files with lizard output but 0 churn: include with score = avg_CCN × 0 = 0.
 
-Determine hotspot threshold: top 20% of scores in the scanned set.
+Determine hotspot threshold: top 20% of scores in the scanned set. If fewer than 5 files have scores, flag files where `score > 2 × median` instead.
 
 ### Step 6 — Present output
 
@@ -98,7 +98,7 @@ Determine hotspot threshold: top 20% of scores in the scanned set.
 ```markdown
 ## Hotspot Analysis
 
-Scanned: <N> files | Window: 90 days | Hotspot threshold: score ≥ <X>
+Scanned: <N> files | Window: 90 days | Hotspot threshold (top 20%): score ≥ <X>
 
 | File | Avg CCN | Churn (90d) | Score |    |
 |------|---------|-------------|-------|----|
