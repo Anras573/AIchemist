@@ -66,17 +66,27 @@ else
   target_real=$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "<target>")
 fi
 
-# Note: realpath/os.path.realpath does not resolve symlinks consistently on all
-# platforms; a symlink pointing outside the repo will pass this check.
+# Both realpath and os.path.realpath resolve symlinks, so a symlink pointing
+# outside the repo will correctly fail this check. However, if $repo_root
+# itself is a symlink, resolve it the same way to keep the comparison accurate.
+if command -v realpath >/dev/null 2>&1; then
+  repo_root=$(realpath "$repo_root")
+else
+  repo_root=$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$repo_root")
+fi
 # The trailing slash prevents matching sibling directories with a common prefix.
 [[ "$target_real" != "$repo_root/"* && "$target_real" != "$repo_root" ]] && echo "Error: target must be within the repository" && exit 1
+
+# Use the resolved path for all subsequent steps so git and lizard receive a
+# canonical absolute path regardless of how the user specified the target.
+target="$target_real"
 ```
 
 ### Step 3 — Compute churn per file
 
 ```bash
 # For each file in target, count commits in the last 90 days
-git log --since="90 days ago" --name-only --format="" -- "<target>" \
+git log --since="90 days ago" --name-only --format="" -- "$target" \
   | grep -v '^$' \
   | sort | uniq -c \
   | sort -rn
@@ -87,10 +97,10 @@ This produces `churn_count` per file path. When parsing `uniq -c` output, split 
 ### Step 4 — Compute cyclomatic complexity
 
 ```bash
-lizard -- "<target>" --csv
+lizard --csv -- "$target"
 ```
 
-Quote `<target>` to prevent shell word-splitting on paths with spaces or special characters. Always pass the path as a separate quoted argument and invoke `lizard` without `shell=True` (or its equivalent in any subprocess API) to prevent shell injection.
+Place `--csv` before `--` so it is parsed as an option flag, not a filename. Always pass the path as a separate quoted argument after `--` and invoke `lizard` without `shell=True` (or its equivalent in any subprocess API) to prevent shell injection.
 
 Parse CSV output. Fields used:
 - `CCN` — cyclomatic complexity number per function

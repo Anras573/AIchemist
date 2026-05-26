@@ -35,7 +35,7 @@ used-by: ['skills/code-review']
 
 Assesses complexity risk for a given set of files by scoring them with `avg_cyclomatic_complexity × git_churn_count`. Returns a Risk Context block for the review output and hotspot findings for any file that exceeds the threshold.
 
-Assumes `lizard` is installed — the calling skill gates on this before invoking the agent.
+If `lizard` is not installed the agent degrades gracefully by returning a bare `HOTSPOT_SKIPPED` token — the calling skill owns the user-facing install message.
 
 ## Input
 
@@ -56,10 +56,10 @@ Filter the output to only files present in the input list. This gives `churn_cou
 ### Step 2 — Compute cyclomatic complexity
 
 ```bash
-lizard -- "<file1>" "<file2>" ... --csv
+lizard --csv -- "<file1>" "<file2>" ...
 ```
 
-Each path must be individually quoted to prevent shell word-splitting on filenames containing spaces or special characters. Pass paths as separate quoted arguments and invoke `lizard` without `shell=True` (or its equivalent in any subprocess API) — never construct this command by bare string interpolation.
+Place `--csv` before `--` so it is parsed as an option flag, not a filename. Each path must be individually quoted to prevent shell word-splitting. Invoke `lizard` without `shell=True` (or its equivalent in any subprocess API) — never construct this command by bare string interpolation.
 
 Parse CSV. Compute `avg_CCN` per file (average CCN across all functions in that file).
 

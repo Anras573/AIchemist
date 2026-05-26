@@ -41,9 +41,9 @@ skills/code-review/SKILL.md  — one row added to parallel agent table
 1. Check `lizard` is installed; fail fast with platform-aware message if not (macOS: `brew install lizard-analyzer`, other: `pip install lizard`)
 2. Validate target path using `realpath` + repo root prefix check (trailing slash to avoid sibling-dir matches)
 3. Compute churn: single `git log --since="90 days ago" --name-only --format=""` call; parse with first-whitespace split to handle paths containing spaces
-4. Compute complexity: `lizard -- "<target>" --csv` (quoted, no `shell=True`)
+4. Compute complexity: `lizard --csv -- "$target"` (`--csv` before `--` so it is parsed as a flag; no `shell=True`)
 5. Score: `avg_CCN × churn_count` per file
-6. Threshold: top 20% of scanned set; fallback for < 5 files: `score > 2 × median`
+6. Threshold: top 20% of scanned set; fallback for < 5 files: `score > 2 × median` (see note below on intentional divergence from agent fallback)
 7. Present ranked table + function-level drill-down for hotspot files + refactor guidance
 
 ### Agent (`agents/hotspot.agent.md`)
@@ -66,6 +66,8 @@ skills/code-review/SKILL.md  — one row added to parallel agent table
 - Top 10–20% → confidence 85 (Warning)
 
 **If lizard is unavailable:** return bare `HOTSPOT_SKIPPED` token — the calling skill owns the user-facing install message.
+
+> **Note — intentional fallback divergence:** The standalone skill uses `score > 2 × median` as its small-N fallback because it scans an arbitrary repo subtree where a CCN floor would produce false positives on low-complexity codebases. The agent uses `avg_CCN ≥ 10` (1 file) / `3× ratio` (2–4 files) because it receives a small, pre-selected set of changed files where an absolute CCN floor is more meaningful. These are not inconsistencies — they reflect the different input contexts.
 
 ### Code-review integration
 
