@@ -2,14 +2,14 @@
 
 ## Problem
 
-Identifying whether a file, class, or method is worth refactoring requires two signals at once: how complex it is, and how often it changes. High complexity in code that's never touched is low risk; high complexity in code that changes every sprint is where bugs cluster. This skill surfaces that intersection — a CodeScene-style hotspot score — both as a standalone refactor-decision aid and as an enrichment layer inside the existing code-review flow.
+Identifying whether a file is worth refactoring requires two signals: how complex it is, and how often it changes. High complexity in code that's never touched is low risk; high complexity in code that changes every sprint is where bugs cluster. This skill surfaces that intersection — a CodeScene-style hotspot score — both as a standalone refactor-decision aid and as a parallel agent inside the code-review flow.
 
 ## Approach
 
-Compute `score = avg_cyclomatic_complexity × git_churn_count` per file, using `lizard` for complexity and `git log` for churn. Keep scoring simple (no LSP coupling, no configurable weights). Deliver as:
+Compute `score = avg_cyclomatic_complexity × git_churn_count` per file, using `lizard` for complexity and a single `git log` call for churn. Keep scoring simple — no LSP coupling, no configurable weights. Deliver as:
 
 1. A standalone `hotspot` skill the user or an agent can invoke directly
-2. A `hotspot.agent.md` launched in parallel by the code-review skill, which appends a Risk Context section and can return hotspot files as confidence-85 findings
+2. A `hotspot.agent.md` launched in parallel by the code-review skill, which appends a Risk Context section and promotes hotspot files to review findings
 
 ## Design
 
@@ -22,13 +22,14 @@ skills/hotspot/
 agents/
   hotspot.agent.md
 
-docs/skills.md          — new entry
-skills/code-review/SKILL.md — one-line addition to parallel agent table
+docs/skills.md               — new entry
+docs/agents.md               — new Hotspot Agent section
+skills/code-review/SKILL.md  — one row added to parallel agent table
 ```
 
 ### Skill (`skills/hotspot/SKILL.md`)
 
-**Trigger phrases:** `/hotspot`, "should I refactor this", "is this a hotspot", "hotspot analysis", "complexity risk", "churn analysis"
+**Trigger phrases:** `/hotspot`, "should I refactor this", "is this a hotspot", "hotspot analysis", "complexity risk", "churn analysis", "is this worth refactoring", "what's the riskiest file", "cyclomatic complexity", "which files are most complex", "what should I refactor first"
 
 **Optional target argument:**
 - `/hotspot` — full repo, top 10 by score
@@ -37,102 +38,56 @@ skills/code-review/SKILL.md — one-line addition to parallel agent table
 
 **Workflow (all read-only, runs automatically):**
 
-1. Compute churn per file:
-   ```bash
-   git log --follow --format="%H" --since=90.days -- <target> | wc -l
-   ```
-2. Compute cyclomatic complexity per file:
-   ```bash
-   lizard <target> --csv
-   ```
-3. Score: `avg_CCN × churn_count` per file
-4. Rank; flag files in top 20% of repo score distribution as hotspots
-5. Present ranked table with columns: File, Avg CCN, Churn (90d), Score, Flag
-
-**Output format:**
-
-```
-## Hotspot Analysis
-
-| File | Avg CCN | Churn (90d) | Score | |
-|------|---------|-------------|-------|-|
-| src/services/OrderService.ts | 12.4 | 34 | 421 | 🔥 Hotspot |
-| src/utils/validation.ts      |  4.1 |  8 |  33 |            |
-
-Top 20% threshold: score ≥ 200
-
-### Drill-down: src/services/OrderService.ts
-| Function | CCN | Line |
-|----------|-----|------|
-| processOrder | 18 | 42 |
-| validateCart | 14 | 98 |
-```
+1. Check `lizard` is installed; fail fast with platform-aware message if not (macOS: `brew install lizard-analyzer`, other: `pip install lizard`)
+2. Validate target path using `realpath` + repo root prefix check (trailing slash to avoid sibling-dir matches)
+3. Compute churn: single `git log --since="90 days ago" --name-only --format=""` call; parse with first-whitespace split to handle paths containing spaces
+4. Compute complexity: `lizard -- "<target>" --csv` (quoted, no `shell=True`)
+5. Score: `avg_CCN × churn_count` per file
+6. Threshold: top 20% of scanned set; fallback for < 5 files: `score > 2 × median`
+7. Present ranked table + function-level drill-down for hotspot files + refactor guidance
 
 ### Agent (`agents/hotspot.agent.md`)
 
-**Invoked by:** code-review skill, in parallel with other review agents
-
-**Input:** list of changed files (passed by code-review skill)
+**Invoked by:** code-review skill, in parallel with other review agents  
+**Model:** haiku (data-gathering task, not reasoning-heavy)  
+**Input:** list of changed files passed by the code-review skill
 
 **Workflow:**
-1. Same git log + lizard computation, scoped to changed files only
-2. Compare each file's score against the repo-wide top-20% threshold
-3. Return:
-   - **Risk Context block** — always appended to review output
-   - **Hotspot findings** — one finding per file that exceeds threshold, confidence 85
+1. Single batch `git log` churn call across all input files; first-whitespace split on `uniq -c` output
+2. `lizard` complexity scoped to input files
+3. Score and threshold against top 20% of input files (not repo-wide)
+4. Small-N fallback (< 5 scoreable files):
+   - 1 file: flag if `avg_CCN ≥ 10`
+   - 2–4 files: flag highest-scoring file if lowest score > 0 AND highest ≥ 3× lowest
+5. Return `Risk Context` block (always) and `HOTSPOT_FINDING` entries (one per file exceeding threshold)
 
-**Risk Context block format:**
+**Dynamic confidence:**
+- Top 10% of input files → confidence 90 (Blocker)
+- Top 10–20% → confidence 85 (Warning)
 
-```
-## Risk Context
-
-| File | Avg CCN | Churn (90d) | Score | Risk |
-|------|---------|-------------|-------|------|
-| src/services/OrderService.ts | 12.4 | 34 | 421 | 🔥 High |
-| src/utils/validation.ts      |  4.1 |  8 |  33 | ✅ Low  |
-```
-
-**Hotspot finding format (when threshold exceeded):**
-
-```
-File: src/services/OrderService.ts
-Issue: This file is a confirmed hotspot (score 421, top 20% of repo).
-       Changes here carry elevated defect risk — consider breaking up
-       processOrder (CCN 18) before extending it further.
-Confidence: 85
-```
+**If lizard is unavailable:** return bare `HOTSPOT_SKIPPED` token — the calling skill owns the user-facing install message.
 
 ### Code-review integration
 
-Add one row to the "Core Agents" table in `skills/code-review/SKILL.md`:
+One row added to the "Core Agents" table in `skills/code-review/SKILL.md`:
 
-| Agent | Model | Focus | Additional Instructions |
-|-------|-------|-------|------------------------|
-| Hotspot Agent | haiku | Complexity risk | Run `hotspot.agent.md` on changed files. Return Risk Context block and any hotspot findings. |
-
-`haiku` is appropriate — this is a data-gathering task, not reasoning-heavy analysis.
-
-### Scoring
-
-| Score | Label | Action |
-|---|---|---|
-| Top 20% of repo | Hotspot | 🔥 flag in output |
-| Top 20% AND in diff | Hotspot finding | Confidence-85 finding in code-review |
-| Below threshold | Healthy | Listed, no flag |
+> Hotspot Agent | haiku | Complexity risk | Run `agents/hotspot.agent.md` on the changed files. Append returned Risk Context block to review output. Merge any `HOTSPOT_FINDING` entries into the findings list (confidence 90 → Blocker, confidence 85 → Warning). If `HOTSPOT_SKIPPED` is returned, add to Review Stats: "Hotspot analysis skipped — lizard not installed (macOS: `brew install lizard-analyzer`, other: `pip install lizard`)."
 
 ### Data flow
 
 ```
 Standalone (/hotspot [target])
-  git log → churn_count per file
-  lizard  → avg_CCN per file
+  validate target (realpath + repo root check)
+  git log → churn_count per file  (single call, first-ws split)
+  lizard  → avg_CCN per file      (quoted args, no shell=True)
   score   = avg_CCN × churn_count
-  rank → table output
+  threshold = top 20% of scanned set
+  output: ranked table + drill-down + refactor guidance
 
 Code-review integration
   code-review skill passes changed files to Hotspot Agent
   Agent: git log + lizard scoped to changed files
-  Agent returns: Risk Context block + hotspot findings
+  Agent returns: Risk Context block + HOTSPOT_FINDING entries
   code-review skill: appends Risk Context, merges findings
 ```
 
@@ -140,14 +95,14 @@ Code-review integration
 
 | Situation | Behavior |
 |---|---|
-| `lizard` not installed | Fail fast with platform-aware message: macOS → "Install with `brew install lizard-analyzer`"; other → "Install with `pip install lizard`." |
-| Target file/dir doesn't exist | Fail fast with clear path error |
-| No git history for target | Warn: "No git history found for `<target>` — churn score will be 0. Results may be incomplete." |
-| 0 commits in 90-day window | Warn and show complexity-only table; churn = 0 |
-| Agent called but lizard missing | Return degraded output: "Hotspot analysis skipped — `lizard` not installed (macOS: `brew install lizard-analyzer`, other: `pip install lizard`)." Code-review continues. |
+| `lizard` not installed (standalone) | Fail fast with platform-aware message |
+| `lizard` not installed (agent) | Return bare `HOTSPOT_SKIPPED` token; skill owns error message |
+| Target outside repo root | Fail: "Error: target must be within the repository" |
+| Target not found | Fail: "Path not found: `<target>`" |
+| No git history for target | Warn: churn = 0, proceed with complexity-only output |
+| 0 commits in 90-day window | Warn: "No commits in the last 90 days — churn scores are 0." |
 | Unsupported file types | Note "X files skipped (unsupported language)" — do not fail |
-
-The code-review skill must never fail because the hotspot agent fails.
+| Symlinked target | Passes repo root check — document limitation; no fix |
 
 ## Testing
 
@@ -157,10 +112,12 @@ The code-review skill must never fail because the hotspot agent fails.
 | Standalone on a dir | `/hotspot src/` — verify top-10 ranking, hotspot flags on high scorers |
 | Standalone no args | `/hotspot` — verify full repo scan |
 | Code-review integration (Risk Context) | PR touching a known-complex file — verify Risk Context section in output |
-| Code-review integration (finding) | PR touching a confirmed hotspot — verify confidence-85 finding appears |
+| Code-review integration (finding) | PR touching a confirmed hotspot — verify HOTSPOT_FINDING appears |
 | `lizard` missing | Uninstall lizard, run `/hotspot` — verify error message, not stack trace |
 | Agent missing lizard | Remove lizard, run `/code-review` — verify review completes, hotspot skipped note present |
 | No git history in window | Freshly-added file — verify churn=0 warning appears |
+| Path with spaces | Target containing spaces — verify uniq-c parse correct |
+| Sibling directory | `/hotspot ../sibling-repo` — verify "must be within the repository" error |
 
 ## Out of Scope
 

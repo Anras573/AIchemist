@@ -51,7 +51,7 @@ git log --since="90 days ago" --name-only --format="" -- <file1> <file2> ... \
   | sort | uniq -c
 ```
 
-Filter the output to only files present in the input list. This gives `churn_count` per file in one process.
+Filter the output to only files present in the input list. This gives `churn_count` per file in one process. When parsing `uniq -c` output, split on the **first** whitespace only — the count is the leftmost token and the rest is the full path (which may contain spaces).
 
 ### Step 2 — Compute cyclomatic complexity
 
@@ -59,7 +59,7 @@ Filter the output to only files present in the input list. This gives `churn_cou
 lizard -- "<file1>" "<file2>" ... --csv
 ```
 
-Each path must be individually quoted to prevent shell word-splitting on filenames containing spaces or special characters. Pass paths as separate quoted arguments — never by constructing a bare shell string via interpolation.
+Each path must be individually quoted to prevent shell word-splitting on filenames containing spaces or special characters. Pass paths as separate quoted arguments and invoke `lizard` without `shell=True` (or its equivalent in any subprocess API) — never construct this command by bare string interpolation.
 
 Parse CSV. Compute `avg_CCN` per file (average CCN across all functions in that file).
 
@@ -75,7 +75,9 @@ Threshold = top 20% of scores among the input files.
 
 If fewer than 5 files have scores, the percentile calculation is unreliable. Use this fallback instead:
 - 1 file: flag if `avg_CCN ≥ 10` (high standalone complexity regardless of churn)
-- 2–4 files: flag the highest-scoring file if its score is ≥ 3× the lowest score in the set (i.e., it is meaningfully worse than the others)
+- 2–4 files: flag the highest-scoring file if **both** conditions hold:
+  1. The lowest score in the set is > 0 (ratio is undefined when the baseline is zero)
+  2. The highest score is ≥ 3× the lowest score (i.e., it is meaningfully worse than the others)
 
 ### Step 4 — Return output
 

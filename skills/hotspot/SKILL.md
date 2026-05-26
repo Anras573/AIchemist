@@ -55,8 +55,11 @@ Verify the target exists and resolves within the repo root:
 ```bash
 repo_root=$(git rev-parse --show-toplevel)
 target_real=$(realpath "<target>")
-# Fail if target resolves outside the repo
-[[ "$target_real" != "$repo_root"* ]] && echo "Error: target must be within the repository" && exit 1
+# Fail if target resolves outside the repo.
+# Note: realpath does not resolve symlinks on all platforms; a symlink pointing
+# outside the repo will pass this check. The trailing slash prevents matching
+# sibling directories that share a common prefix (e.g., /repo-other).
+[[ "$target_real" != "$repo_root/"* && "$target_real" != "$repo_root" ]] && echo "Error: target must be within the repository" && exit 1
 ```
 
 If the target does not exist, fail with: "Path not found: `<target>`"
@@ -71,7 +74,7 @@ git log --since="90 days ago" --name-only --format="" -- <target> \
   | sort -rn
 ```
 
-This produces `churn_count` per file path.
+This produces `churn_count` per file path. When parsing `uniq -c` output, split on the **first** whitespace only (count is the leftmost token; the remainder is the full path, which may contain spaces). Do not split on all whitespace.
 
 ### Step 4 — Compute cyclomatic complexity
 
@@ -79,7 +82,7 @@ This produces `churn_count` per file path.
 lizard -- "<target>" --csv
 ```
 
-Quote `<target>` to prevent shell word-splitting on paths with spaces or special characters. Never construct this command by bare string interpolation.
+Quote `<target>` to prevent shell word-splitting on paths with spaces or special characters. Always pass the path as a separate quoted argument and invoke `lizard` without `shell=True` (or its equivalent in any subprocess API) to prevent shell injection.
 
 Parse CSV output. Fields used:
 - `CCN` — cyclomatic complexity number per function
