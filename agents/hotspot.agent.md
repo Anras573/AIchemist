@@ -55,6 +55,8 @@ Filter the output to only files present in the input list. This gives `churn_cou
 
 ### Step 2 — Compute cyclomatic complexity
 
+Before invoking `lizard`, filter the input list to files that exist on disk — PR diffs routinely include deleted or renamed files that are no longer present. Track removed files separately and note them in the Risk Context output as "not found (deleted/renamed)".
+
 ```bash
 lizard --csv -- "<file1>" "<file2>" ...
 ```
@@ -107,13 +109,16 @@ Confidence is dynamic based on how far the score exceeds the threshold:
 ```
 HOTSPOT_FINDING:
 file: src/services/OrderService.ts
+location: src/services/OrderService.ts:42
 score: 421
 top_functions: processOrder (CCN 18, line 42), validateCart (CCN 14, line 98)
 issue: This file is a confirmed hotspot (score 421, top 20% of changed files). Changes here carry elevated defect risk — consider breaking up processOrder (CCN 18) before extending it further.
 confidence: 90
 ```
 
-If `lizard` is not installed (the calling skill should have caught this, but as a safeguard):
+The `location:` field is `<file>:<line>` where `<line>` is the start line of the highest-CCN function. This allows the code-review skill to anchor inline PR comments to a specific line.
+
+If `lizard` is not installed or fails to execute:
 
 ```
 HOTSPOT_SKIPPED
