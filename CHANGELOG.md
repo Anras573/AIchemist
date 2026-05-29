@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.7.0](https://github.com/Anras573/AIchemist/compare/v3.6.0...v3.7.0) (2026-05-29)
+
+
+### Features
+
+* **repo:** add machine bootstrap installer and doctor ([#114](https://github.com/Anras573/AIchemist/issues/114)) ([a6143bc](https://github.com/Anras573/AIchemist/commit/a6143bc53a09a2d1fcd44622f03c2d58bb0d63be))
+
 ## [3.6.0](https://github.com/Anras573/AIchemist/compare/v3.5.0...v3.6.0) (2026-05-26)
 
 
