@@ -6,5 +6,5 @@ brew "postgresql"
 brew "python"
 brew "uv"
 
-cask "docker"
+cask "docker-desktop"
 cask "obsidian"

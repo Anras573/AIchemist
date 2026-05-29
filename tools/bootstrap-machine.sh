@@ -149,7 +149,7 @@ doctor() {
   check_cmd "node" "brew install node"
   check_cmd "npm" "brew install node"
   check_cmd "uv" "brew install uv"
-  check_cmd "docker" "brew install --cask docker"
+  check_cmd "docker" "brew install --cask docker-desktop"
   check_cmd "lizard" "brew install lizard-analyzer"
   check_cmd "bd" "brew install beads"
   check_cmd "psql" "brew install postgresql"
@@ -162,12 +162,12 @@ doctor() {
   if [[ -x "${OBSIDIAN_MAC_PATH}" ]] || command -v obsidian >/dev/null 2>&1; then
     ok "obsidian"
   else
-    mark_missing "obsidian" "brew install --cask obsidian"
+    mark_missing "obsidian" "brew install --cask obsidian" "false"
   fi
 
-  check_env "MSGRAPH_APP_ID" "export MSGRAPH_APP_ID=<your-azure-app-id>"
-  check_env "MSGRAPH_TENANT_ID" "export MSGRAPH_TENANT_ID=<your-azure-tenant-id>"
-  check_env "POSTGRES_URL" "export POSTGRES_URL='postgresql://user:password@host:5432/database'"
+  check_env "MSGRAPH_APP_ID" "export MSGRAPH_APP_ID=<your-azure-app-id>" "false"
+  check_env "MSGRAPH_TENANT_ID" "export MSGRAPH_TENANT_ID=<your-azure-tenant-id>" "false"
+  check_env "POSTGRES_URL" "export POSTGRES_URL='postgresql://user:password@host:5432/database'" "false"
 
   if [[ -d "${MEMPALACE_HOME}" ]]; then
     ok "mempalace home (${MEMPALACE_HOME})"
