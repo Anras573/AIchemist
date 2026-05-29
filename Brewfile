@@ -1,0 +1,10 @@
+brew "beads"
+brew "jq"
+brew "lizard-analyzer"
+brew "node"
+brew "postgresql"
+brew "python"
+brew "uv"
+
+cask "docker-desktop"
+cask "obsidian"
