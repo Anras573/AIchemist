@@ -28,7 +28,14 @@ case "$(uname -s)" in
     osascript -e "display notification \"$SAFE_MESSAGE\" with title \"$SAFE_TITLE\""
     ;;
   MINGW*|CYGWIN*|MSYS*)
-    powershell.exe -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('$SAFE_MESSAGE','$SAFE_TITLE')"
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    # Backgrounded + detached so this hook returns immediately instead of
+    # blocking on the notification (a modal MessageBox previously stalled
+    # the whole session until a human clicked OK).
+    (powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden \
+        -File "$SCRIPT_DIR/notify-windows.ps1" \
+        -Title "$SAFE_TITLE" -Message "$SAFE_MESSAGE" \
+        > /dev/null 2>&1 &)
     ;;
   *)
     echo "$SAFE_TITLE: $SAFE_MESSAGE"
