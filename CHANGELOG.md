@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.7.1](https://github.com/Anras573/AIchemist/compare/v3.7.0...v3.7.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* **tools:** replace blocking Windows notification popup with async tray balloon ([#116](https://github.com/Anras573/AIchemist/issues/116)) ([2cbd2eb](https://github.com/Anras573/AIchemist/commit/2cbd2eb0c703cf0140e64bb9615884e9a0187ba8))
+
 ## [3.7.0](https://github.com/Anras573/AIchemist/compare/v3.6.0...v3.7.0) (2026-05-29)
 
 
