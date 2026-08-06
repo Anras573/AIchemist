@@ -98,7 +98,8 @@ init_mempalace() {
 
   command -v uv >/dev/null 2>&1 || die "'uv' is required to initialize mempalace."
   log "Initializing mempalace at ${MEMPALACE_HOME}"
-  uv tool run --from mempalace mempalace init "${MEMPALACE_HOME}"
+  mkdir -p "${MEMPALACE_HOME}"
+  uv tool run --from mempalace mempalace init "${MEMPALACE_HOME}" --yes
 }
 
 pull_markitdown_image() {
