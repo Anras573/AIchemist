@@ -36,18 +36,27 @@ You can specify the installation scope with `--scope user`, `--scope project`, o
 
 ## Machine Bootstrap (Personal Setup)
 
-For a full macOS machine bootstrap (dependencies + plugin install for both CLIs), run:
+For a full machine bootstrap (dependencies + plugin install for both CLIs), run the script for your OS:
 
+**macOS:**
 ```bash
 tools/bootstrap-machine.sh install
 ```
 
 This installs the dependency set defined in `Brewfile`, installs tool-specific dependencies (Playwright CLI, Microsoft 365 CLI, MemPalace), pulls the Markitdown image, and installs AIchemist from the local repo path for both Claude Code and GitHub Copilot CLI.
 
+**Windows:**
+```powershell
+tools/bootstrap-machine.ps1 install
+```
+
+Requires PowerShell 7+ and `winget` (bundled with the "App Installer" from the Microsoft Store on modern Windows). Installs the same dependency set via `winget`/`npm`/`uv`, then installs AIchemist for both CLIs. `bd` (beads) and `lizard` don't have winget packages — `doctor` reports the `npm install -g @beads/bd` / `pip install lizard` fallback commands.
+
 To verify a machine state at any time:
 
 ```bash
-tools/bootstrap-machine.sh doctor
+tools/bootstrap-machine.sh doctor   # macOS
+tools/bootstrap-machine.ps1 doctor  # Windows
 ```
 
 `doctor` reports **READY/MISSING** with exact remediation commands.
