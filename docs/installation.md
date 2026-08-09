@@ -50,13 +50,18 @@ This installs the dependency set defined in `Brewfile`, installs tool-specific d
 tools/bootstrap-machine.ps1 install
 ```
 
-Requires PowerShell 7+ and `winget` (bundled with the "App Installer" from the Microsoft Store on modern Windows). Installs the same dependency set via `winget`/`npm`/`uv`, then installs AIchemist for both CLIs. `bd` (beads) and `lizard` don't have winget packages — `doctor` reports the `npm install -g @beads/bd` / `pip install lizard` fallback commands.
+Requires PowerShell 7+ and `winget` (bundled with the "App Installer" from the Microsoft Store on modern Windows). Installs the same dependency set via `winget`/`npm`/`uv`, then installs AIchemist for both CLIs. `bd` (beads) and `lizard` don't have winget packages — `doctor` reports the `npm install -g @beads/bd` / `python -m pip install --upgrade lizard` fallback commands.
 
 To verify a machine state at any time:
 
+**macOS:**
 ```bash
-tools/bootstrap-machine.sh doctor   # macOS
-tools/bootstrap-machine.ps1 doctor  # Windows
+tools/bootstrap-machine.sh doctor
+```
+
+**Windows:**
+```powershell
+tools/bootstrap-machine.ps1 doctor
 ```
 
 `doctor` reports **READY/MISSING** with exact remediation commands.

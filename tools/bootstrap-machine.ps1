@@ -19,6 +19,7 @@ param(
 )
 
 Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
 
 $PluginName = 'aichemist'
 $MarkitdownImage = 'mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb'
@@ -95,9 +96,14 @@ function Test-EnvPresent {
 function Sync-EnvPath {
     # Long-running / reused PowerShell hosts don't auto-pick-up PATH entries that
     # winget (or Add-PathEntry) wrote to the registry after this process started.
+    # Merge Machine+User registry entries into the existing process PATH instead of
+    # replacing it, so process-scope-only entries (venv/conda activation, corporate
+    # PATH injection) survive the sync.
     $machine = [Environment]::GetEnvironmentVariable('PATH', 'Machine')
     $user = [Environment]::GetEnvironmentVariable('PATH', 'User')
-    $env:PATH = "$machine;$user"
+    $combined = @($machine, $user, $env:PATH) -join ';' -split ';' |
+        Where-Object { $_ } | Select-Object -Unique
+    $env:PATH = $combined -join ';'
 }
 
 function Add-PathEntry {
@@ -135,6 +141,10 @@ function Repair-InstalledPaths {
 
 function Install-WingetPackages {
     foreach ($pkg in $WingetPackages) {
+        if ($pkg.ContainsKey('Required') -and -not $pkg.Required) {
+            Write-Log "Skipping optional package $($pkg.Id) (not required)"
+            continue
+        }
         Write-Log "Installing $($pkg.Id) via winget"
         winget install --id $pkg.Id -e --accept-package-agreements --accept-source-agreements --silent 2>&1 | Out-Null
         if ($LASTEXITCODE -ne 0) {
@@ -246,9 +256,9 @@ function Invoke-Doctor {
     Test-CommandPresent 'npm' 'winget install --id OpenJS.NodeJS.LTS -e'
     Test-CommandPresent 'uv' 'winget install --id astral-sh.uv -e'
     Test-CommandPresent 'docker' 'winget install --id Docker.DockerDesktop -e'
-    Test-CommandPresent 'lizard' 'pip install lizard'
+    Test-CommandPresent 'lizard' 'python -m pip install --upgrade lizard'
     Test-CommandPresent 'bd' 'npm install -g @beads/bd'
-    Test-CommandPresent 'psql' 'winget install --id PostgreSQL.PostgreSQL -e (then add its bin/ dir to PATH)'
+    Test-CommandPresent 'psql' 'winget install --id PostgreSQL.PostgreSQL.17 -e (then add its bin/ dir to PATH)'
     Test-CommandPresent 'm365' 'npm install -g @pnp/cli-microsoft365'
     Test-CommandPresent 'playwright-cli' 'npm install -g @playwright/cli@latest'
     Test-CommandPresent 'mempalace' 'uv tool install mempalace'
