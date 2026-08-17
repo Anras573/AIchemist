@@ -774,3 +774,27 @@ Copilot-compatible manual-tick PR review loop for GitHub Copilot CLI. Keeps the 
 - `gh` CLI authenticated
 - `jq` installed and on `$PATH`
 - Open PR on current branch with GitHub Copilot code review enabled
+
+---
+
+## .NET Development Skill
+
+**Source:** [`skills/dotnet-dev/SKILL.md`](../skills/dotnet-dev/SKILL.md)
+
+Personal C#/.NET conventions to apply when writing, generating, reviewing, or scaffolding .NET code — distilled from [`Anras573/DnDSessionPlanner`](https://github.com/Anras573/DnDSessionPlanner) (ASP.NET Core minimal APIs, vertical-slice architecture, EF Core with the specification pattern, xunit + Moq).
+
+**Trigger phrases:** "write this in C#", "write some C#", "add a minimal API endpoint", "add an entity", "add a domain model", "strongly-typed ID", "add a repository", "add a specification", "write xunit tests", "how do I structure a .NET feature", ".editorconfig for a C# project".
+
+### Reference files
+
+| File | Covers |
+|------|--------|
+| [`references/style-and-formatting.md`](../skills/dotnet-dev/references/style-and-formatting.md) | Project settings, language-feature preferences, naming rules, copyable `.editorconfig` |
+| [`references/domain-modeling.md`](../skills/dotnet-dev/references/domain-modeling.md) | Sealed entities, private constructors + static `Create()` factories, strongly-typed IDs |
+| [`references/minimal-api-endpoints.md`](../skills/dotnet-dev/references/minimal-api-endpoints.md) | Endpoint handler classes, route registration, background services |
+| [`references/data-access.md`](../skills/dotnet-dev/references/data-access.md) | Generic repository + specification pattern |
+| [`references/testing.md`](../skills/dotnet-dev/references/testing.md) | xunit + Moq conventions, AAA naming, integration test setup |
+
+### Behavior
+
+Guidance-only skill — no automated read/write operations. It loads conventions into context so generated or reviewed C# code matches the user's style; it never edits files on its own beyond what's asked. Existing repo conventions (a target project's own `.editorconfig`/`CLAUDE.md`) take precedence over this skill.
