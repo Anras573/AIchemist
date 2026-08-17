@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.8.0](https://github.com/Anras573/AIchemist/compare/v3.7.1...v3.8.0) (2026-08-17)
+
+
+### Features
+
+* **skills:** add dotnet-dev skill for personal C# conventions ([#120](https://github.com/Anras573/AIchemist/issues/120)) ([fa781dc](https://github.com/Anras573/AIchemist/commit/fa781dcf0ded426c0563377d72a2b78187067968))
+* **tools:** add Windows counterpart to bootstrap-machine.sh ([#118](https://github.com/Anras573/AIchemist/issues/118)) ([f8343af](https://github.com/Anras573/AIchemist/commit/f8343af0c145b61ca6c9dac467d79826359719c7))
+
 ## [3.7.1](https://github.com/Anras573/AIchemist/compare/v3.7.0...v3.7.1) (2026-07-28)
 
 
