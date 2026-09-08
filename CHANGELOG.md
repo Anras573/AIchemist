@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.9.0](https://github.com/Anras573/AIchemist/compare/v3.8.0...v3.9.0) (2026-09-08)
+
+
+### Features
+
+* **skills:** add owasp-top-10 skill with live fetch instead of a cached list ([#121](https://github.com/Anras573/AIchemist/issues/121)) ([ffbc908](https://github.com/Anras573/AIchemist/commit/ffbc908589f33e3f559283dbc11dd214b5019a9b))
+
 ## [3.8.0](https://github.com/Anras573/AIchemist/compare/v3.7.1...v3.8.0) (2026-08-17)
 
 
