@@ -37,6 +37,41 @@ Files scoring in the top 20% of the scanned set are flagged as hotspots.
 
 ---
 
+## OWASP Top 10 Skill
+
+**Source:** [`skills/owasp-top-10/SKILL.md`](../skills/owasp-top-10/SKILL.md)
+
+Answers questions about the OWASP Top 10 and reviews code against it using a **live fetch** from owasp.org rather than a hardcoded list. The Top 10 is revised every few years (2013, 2017, 2021, 2025) — fetching on every invocation means the skill never needs to be updated when a new edition ships.
+
+**Trigger phrases:** "OWASP top 10", "owasp top ten", "check against owasp top 10", "review for owasp vulnerabilities", "what's the current owasp top 10", "latest owasp top 10", "owasp compliance check", "is this owasp compliant", "security review owasp".
+
+### Workflow
+
+| Step | Action |
+|------|--------|
+| 1. Discover edition | Fetch `https://owasp.org/www-project-top-ten/` to find the current edition year and its page URL |
+| 2. Fetch category list | Fetch `https://owasp.org/Top10/<year>/` for the ranked list of 10 categories (ID, title, detail link) |
+| 3. Present or drill in | List the categories directly, or fetch relevant category detail pages for prevention guidance during a code review |
+| 4. Cite source | Always attribute the edition and URL fetched |
+
+### Operations
+
+| Type | Operations | Behavior |
+|------|------------|----------|
+| **Read** | `WebFetch` against owasp.org | Automatic — no confirmation needed |
+
+No write operations — this skill only reads from owasp.org.
+
+### Error Handling
+
+Never falls back to a hardcoded or training-data list presented as current. If a fetch fails, it says so and asks to retry or for a URL, rather than guessing.
+
+### Integration with Other Skills
+
+Pairs with **`security-review`** (fetch current categories, then run the scan) and **`code-review`** (its security agent can consult live category data instead of training knowledge).
+
+---
+
 ## MermaidJS Diagrams Skill
 
 **Source:** [`skills/mermaid/SKILL.md`](../skills/mermaid/SKILL.md)
