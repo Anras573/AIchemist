@@ -240,6 +240,43 @@ function Test-ObsidianPresent {
     }
 }
 
+# The calendar skill needs one backend. Mirrors how tools/calendar.sh picks it
+# (CALENDAR_PROVIDER, else Microsoft 365, else CalDAV); that script is bash, so
+# the rule is repeated here rather than called. Optional: not every setup uses
+# the calendar skill.
+function Test-CalendarConfigured {
+    $provider = $env:CALENDAR_PROVIDER
+    if ($provider -and $provider -notin @('msgraph', 'caldav')) {
+        Add-Missing "calendar (CALENDAR_PROVIDER=$provider)" 'Remove-Item Env:CALENDAR_PROVIDER, or set it to msgraph or caldav' $false
+        return
+    }
+    if (-not $provider) {
+        if ($env:MSGRAPH_APP_ID -and $env:MSGRAPH_TENANT_ID) {
+            $provider = 'msgraph'
+        } elseif ($env:CALDAV_USERNAME) {
+            $provider = 'caldav'
+        } else {
+            Add-Missing 'calendar (Microsoft 365 or iCloud/CalDAV)' '$env:MSGRAPH_APP_ID = "<your-azure-app-id>"; $env:MSGRAPH_TENANT_ID = "<your-azure-tenant-id>" (Microsoft 365), or $env:CALDAV_USERNAME = "<your-apple-id-email>"; $env:CALDAV_PASSWORD = "<app-specific-password>" (iCloud)' $false
+            return
+        }
+    }
+
+    if ($provider -eq 'msgraph') {
+        if ($env:MSGRAPH_APP_ID -and $env:MSGRAPH_TENANT_ID) {
+            Write-Ok 'calendar (Microsoft 365; sign in once with tools/calendar.sh login)'
+        } else {
+            Test-EnvPresent 'MSGRAPH_APP_ID' '$env:MSGRAPH_APP_ID = "<your-azure-app-id>"' $false
+            Test-EnvPresent 'MSGRAPH_TENANT_ID' '$env:MSGRAPH_TENANT_ID = "<your-azure-tenant-id>"' $false
+        }
+    } elseif (-not $env:CALDAV_USERNAME) {
+        Add-Missing 'env CALDAV_USERNAME' '$env:CALDAV_USERNAME = "<your-apple-id-email>"' $false
+    } elseif ($env:CALDAV_PASSWORD -or $env:CALDAV_PASSWORD_CMD) {
+        Write-Ok 'calendar (iCloud/CalDAV; verify with tools/calendar.sh check)'
+    } else {
+        Add-Missing 'calendar password (iCloud/CalDAV)' '$env:CALDAV_PASSWORD = "<app-specific-password>", or $env:CALDAV_PASSWORD_CMD = "<command that prints it>"' $false
+    }
+}
+
 function Invoke-Doctor {
     Assert-Windows
     Sync-EnvPath
@@ -267,8 +304,7 @@ function Invoke-Doctor {
 
     Test-ObsidianPresent
 
-    Test-EnvPresent 'MSGRAPH_APP_ID' '$env:MSGRAPH_APP_ID = "<your-azure-app-id>"' $false
-    Test-EnvPresent 'MSGRAPH_TENANT_ID' '$env:MSGRAPH_TENANT_ID = "<your-azure-tenant-id>"' $false
+    Test-CalendarConfigured
     Test-EnvPresent 'POSTGRES_URL' '$env:POSTGRES_URL = "postgresql://user:password@host:5432/database"' $false
 
     if (Test-Path $MempalaceHome) {
