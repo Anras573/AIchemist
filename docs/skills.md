@@ -178,6 +178,8 @@ AI-native task tracking using [Beads](https://github.com/steveyegge/beads) (`bd`
 
 **Trigger phrases:** "track tasks with beads", "use bd", "add a beads task", "show ready tasks", "claim a task", "list bd tasks", "create a bd issue", "show my tasks", "what's ready to work on", "update task status", or beads task IDs like `bd-a1b2`.
 
+**Claude Code add-on:** the optional [Beads Band mod](mods.md#beads-band) shows your in-progress and ready tasks above the prompt.
+
 ### Prerequisites
 
 1. **`bd` CLI:** Install via one of:
