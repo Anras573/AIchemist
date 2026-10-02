@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.9.0](https://github.com/Anras573/AIchemist/compare/v3.8.0...v3.9.0) (2026-10-02)
+
+
+### Features
+
+* **mods:** add beads-band mod for in-progress and ready tasks above the prompt ([#128](https://github.com/Anras573/AIchemist/issues/128)) ([5eb32e1](https://github.com/Anras573/AIchemist/commit/5eb32e19b4bb3e5ba141d19a53bfa5d638b97fff))
+* **mods:** add calendar-status mod for the next meeting in the status line ([#123](https://github.com/Anras573/AIchemist/issues/123)) ([68940aa](https://github.com/Anras573/AIchemist/commit/68940aae70f8dfac7c06ff44a9cdeed56c3226f9))
+* **mods:** add pr-review-pane mod for a live view of the PR review loop ([#124](https://github.com/Anras573/AIchemist/issues/124)) ([cff28ba](https://github.com/Anras573/AIchemist/commit/cff28ba6f301f3b861627a189861a02ad6a13ad3))
+* **skills:** add an iCloud/CalDAV backend to the calendar skill ([#129](https://github.com/Anras573/AIchemist/issues/129)) ([f574415](https://github.com/Anras573/AIchemist/commit/f574415a9fb454a8f9196ab045e1394f82145e40))
+* **skills:** add owasp-top-10 skill with live fetch instead of a cached list ([#121](https://github.com/Anras573/AIchemist/issues/121)) ([ffbc908](https://github.com/Anras573/AIchemist/commit/ffbc908589f33e3f559283dbc11dd214b5019a9b))
+* **tools:** report the calendar backend in the bootstrap doctor ([#130](https://github.com/Anras573/AIchemist/issues/130)) ([f4f41d6](https://github.com/Anras573/AIchemist/commit/f4f41d6b069a159cf3c380c7f70571d494ebfdc6))
+
+
+### Bug Fixes
+
+* **skills:** detect a fresh Copilot review by commit, not pushedDate ([#125](https://github.com/Anras573/AIchemist/issues/125)) ([6c5cc03](https://github.com/Anras573/AIchemist/commit/6c5cc032fdb789ada9931f561d03c13ac683885c))
+* **skills:** find the beads database with bd 1.x via a shared script ([#126](https://github.com/Anras573/AIchemist/issues/126)) ([ee97b57](https://github.com/Anras573/AIchemist/commit/ee97b570a09e979fc2ec6fadfb707a7ebcfce82e))
+
 ## [3.8.0](https://github.com/Anras573/AIchemist/compare/v3.7.1...v3.8.0) (2026-08-17)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "aichemist-pr-review-pane",
-  "version": "3.8.0",
+  "version": "3.9.0",
   "description": "Claude Code mod: a read-only pane showing what the pr-review-loop skill works on (Copilot review state, CI, unresolved threads)",
   "author": {
     "name": "Anders Bo Rasmussen",
