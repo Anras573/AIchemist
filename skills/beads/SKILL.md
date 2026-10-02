@@ -2,12 +2,12 @@
 name: beads
 description: |
   This skill should be used when the user asks to "track tasks with beads", "use bd", "add a beads task", "show ready tasks", "claim a task", "list bd tasks", "create a bd issue", "show my tasks", "what's ready to work on", "update task status", or mentions beads task IDs like "bd-a1b2". Provides beads (bd) integration for AI-native task tracking with automatic sidecar storage outside the repo by default.
-version: 1.0.0
+version: 1.0.1
 ---
 
 # Beads Task Tracking Skill
 
-This skill integrates Claude Code with [Beads](https://github.com/steveyegge/beads) (`bd`), a distributed, git-backed graph issue tracker built for AI coding agents. It handles task creation, dependency tracking, and status management — with storage defaulting **outside** the working repo using the `--db` flag.
+This skill integrates Claude Code with [Beads](https://github.com/steveyegge/beads) (`bd`), a distributed, git-backed graph issue tracker built for AI coding agents. It handles task creation, dependency tracking, and status management — with storage defaulting to a sidecar **outside** the working repo, passed to `bd` with the `--db` flag.
 
 ---
 
@@ -42,91 +42,26 @@ Dolt (the database backend) is bundled with beads and its server is auto-started
 
 ## Storage Mode Detection
 
-Run this logic **once per session** to determine where the beads database lives. Store the resolved `$BD_DB` path for use in all subsequent `bd --db "$BD_DB"` calls.
-
-### Step 1 — Get repo info
+Run this **once per session** to find the beads database, and keep the printed path as `$BD_DB` for every later `bd --db "$BD_DB"` call:
 
 ```bash
-REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")
-REPO_NAME=$(basename "$REPO_ROOT")
+BD_DB=$("${CLAUDE_PLUGIN_ROOT}/tools/beads-db.sh" --init)
 ```
 
-### Step 2 — In-repo mode
+[`tools/beads-db.sh`](../../tools/beads-db.sh) holds the resolution rules (the beads-band mod uses the same script). It prints the `.beads` directory to pass as `--db` and says on stderr which storage it picked. Relay that line to the user:
 
-Check if this repo has already initialized beads:
+| stderr says | Storage | Tell the user |
+|---|---|---|
+| `using in-repo storage` | `<repo-root>/.beads` (the repo initialized beads itself) | "Using in-repo beads storage (this repo has beads initialized)." |
+| `using sidecar storage` | `~/.local/share/aichemist/beads/<repo-name>/.beads` | nothing |
+| `initialized sidecar storage` | a new sidecar at that path | "Initialized beads sidecar at `<path>`." |
+| `using legacy sidecar storage` | `~/.beads/<repo-name>/.beads`, from an older setup | "Using your existing beads sidecar under `~/.beads`. New sidecars go under `~/.local/share/aichemist/beads`." |
 
-```bash
-ls "$REPO_ROOT/.beads/"*.db 2>/dev/null
-```
+If two repos share a name, the second one's sidecar gets the parent directory's name appended, e.g. `~/.local/share/aichemist/beads/my-app-work/`. A `.beads-repo-path` marker in each sidecar records which repo owns it. Set `AICHEMIST_BEADS_HOME` to keep sidecars somewhere else.
 
-**If a `.db` file exists → use in-repo mode.** Set:
+If the script exits non-zero, show its error and stop. `bd is not installed` → see [Prerequisites](#prerequisites).
 
-```bash
-BD_DB=$(ls "$REPO_ROOT/.beads/"*.db | head -1)
-```
-
-Inform the user:
-> "Using in-repo beads storage (this repo has beads initialized)."
-
-Skip the remaining steps and proceed to [Running Commands](#running-commands). Even though `bd` can auto-discover `.beads/` when run from the repo root, `--db "$BD_DB"` is still passed explicitly for consistency and to ensure commands work regardless of the current working directory.
-
-### Step 3 — Sidecar mode (default)
-
-Build the sidecar path keyed by repo name:
-
-```bash
-SIDECAR_DIR="$HOME/.beads/$REPO_NAME"
-MARKER="$SIDECAR_DIR/.beads-repo-path"
-```
-
-#### Collision detection
-
-If `$SIDECAR_DIR` already exists, check whether it belongs to this repo:
-
-```bash
-cat "$MARKER" 2>/dev/null
-```
-
-- **Matches `$REPO_ROOT`** → use `$SIDECAR_DIR` as-is
-- **Marker missing or mismatch** → the sidecar belongs to another (or unknown) repo. Use a fallback:
-
-```bash
-# Suffix = parent directory name, e.g. /Users/alice/work/my-app → "work"
-SUFFIX=$(basename "$(dirname "$REPO_ROOT")")
-SIDECAR_DIR="$HOME/.beads/$REPO_NAME-$SUFFIX"
-```
-
-Inform the user:
-> "Note: Another repo named `my-app` has a beads sidecar. Using `~/.beads/my-app-work/` for this one (disambiguated by parent directory)."
-
-#### Initialize if new
-
-If `$SIDECAR_DIR/.beads/` does not exist:
-
-```bash
-if [ ! -d "$SIDECAR_DIR/.beads" ]; then
-  mkdir -p "$SIDECAR_DIR"
-  if cd "$SIDECAR_DIR" && bd init -p "$REPO_NAME" -q; then
-    # Write the repo path marker for future collision detection
-    echo "$REPO_ROOT" > "$SIDECAR_DIR/.beads-repo-path"
-  else
-    echo "Error: failed to initialize beads sidecar at '$SIDECAR_DIR'." >&2
-    # Do not proceed to resolve BD_DB if initialization failed
-    return 1  # Intended for use inside a shell function or script
-  fi
-fi
-```
-
-Inform the user:
-> "Initialized beads sidecar at `~/.beads/my-app/`."
-
-#### Resolve the db path
-
-```bash
-BD_DB=$(ls "$SIDECAR_DIR/.beads/"*.db | head -1)
-```
-
-Store `$BD_DB` for the session — use it in every `bd --db "$BD_DB" ...` call.
+> **Why sidecars moved out of `~/.beads`:** bd 1.x keeps its own state in `~/.beads`, refuses to `bd init` inside a `.beads` directory, and stores data in `.beads/embeddeddolt/` instead of a `.db` file. The old `~/.beads/<repo-name>` sidecars and `ls .beads/*.db` detection stopped working there. Existing `~/.beads/<repo-name>` sidecars are still picked up.
 
 ---
 
@@ -292,14 +227,11 @@ bd --db "$BD_DB" dolt start     # start it explicitly if needed
 bd --db "$BD_DB" doctor         # full health check
 ```
 
-**`bd where` shows wrong location** → verify `$BD_DB` resolves to the expected path.
+**`bd where` shows wrong location** → run `"${CLAUDE_PLUGIN_ROOT}/tools/beads-db.sh"` again and check the path it prints.
 
-**`No .db file found in sidecar`** → the sidecar directory exists but `bd init` may not have completed. Re-run:
-```bash
-cd "$SIDECAR_DIR" && bd init -p "$REPO_NAME"
-```
+**`bd init finished but … holds no database`** → the sidecar directory exists but `bd init` didn't complete. Run `bd doctor --db "<sidecar>/.beads"`, or move the sidecar directory aside and run `beads-db.sh --init` again.
 
-**Two repos with same name** → the collision fallback appends the parent directory. Check `cat ~/.beads/<name>/.beads-repo-path` to see which repo owns which sidecar. A missing marker is treated as an unknown owner — the fallback path will be used rather than risking a collision.
+**Two repos with same name** → the second sidecar gets the parent directory's name appended. Check `cat ~/.local/share/aichemist/beads/<name>/.beads-repo-path` to see which repo owns which sidecar. A missing marker counts as another repo's, so the suffixed path is used rather than risking a shared sidecar.
 
 ---
 

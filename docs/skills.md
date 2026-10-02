@@ -191,10 +191,13 @@ AI-native task tracking using [Beads](https://github.com/steveyegge/beads) (`bd`
 
 | Mode | When | Storage Location |
 |------|------|-----------------|
-| **In-repo** | `.db` file exists under `<repo-root>/.beads/` | `<repo-root>/.beads/` |
-| **Sidecar** (default) | No `.beads/*.db` in repo root | `~/.beads/<repo-name>/` |
+| **In-repo** | The repo has its own initialized `<repo-root>/.beads/` | `<repo-root>/.beads/` |
+| **Sidecar** (default) | The repo has no `.beads/` database | `~/.local/share/aichemist/beads/<repo-name>/` (override with `AICHEMIST_BEADS_HOME`) |
+| **Legacy sidecar** | Neither of the above, but an older `~/.beads/<repo-name>/` exists | `~/.beads/<repo-name>/` |
 
-Sidecar mode keeps beads data out of your repo entirely. If two repos share the same name, a collision fallback appends the parent directory (e.g. `~/.beads/my-app-work/`). See `skills/beads/references/storage-modes.md` for full details.
+Sidecar mode keeps beads data out of your repo entirely. If two repos share the same name, the second sidecar gets the parent directory's name appended (e.g. `…/beads/my-app-work/`). The rules live in [`tools/beads-db.sh`](../tools/beads-db.sh), which the skill runs once per session. See `skills/beads/references/storage-modes.md` for full details.
+
+Sidecars moved out of `~/.beads` because bd 1.x keeps its own state there and refuses to `bd init` inside a `.beads` directory. Existing `~/.beads/<repo-name>/` sidecars are still used.
 
 ### Core Operations
 
