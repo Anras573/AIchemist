@@ -78,6 +78,7 @@ Common scopes for this project:
 - `tools` - Custom tools
 - `hooks` - Event hooks
 - `mcp` - MCP server configurations
+- `mods` - Claude Code-only mods under `mods/`
 - `docs` - Documentation
 
 ## Pull Request Guidelines

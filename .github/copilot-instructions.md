@@ -12,6 +12,7 @@ agents/     *.agent.md       Specialized AI agents invoked via the Task tool
 skills/     <name>/SKILL.md  Slash commands and context-aware capabilities that extend the conversation
 tools/                       Shell utilities (notify.sh)
 hooks/      hooks.json       Claude Code event hooks
+mods/       <name>/          Claude Code-only mods, each its own plugin (see docs/mods.md)
 docs/                        User-facing documentation
 ```
 
@@ -86,6 +87,15 @@ Event hooks run shell commands in response to Claude Code lifecycle events (e.g.
 }
 ```
 
+### Mods (`mods/<name>/`)
+
+Mods are TypeScript hook modules that only Claude Code runs. Each one is its own plugin, listed in `.claude-plugin/marketplace.json` and **never** in `.github/plugin/marketplace.json`.
+
+**Rules:**
+- A mod adds a layer on top of a skill or tool and never takes its place. Skills and `tools/*.sh` stay the source of truth, so Copilot CLI users lose nothing.
+- Reuse a shared script by symlinking it into the mod (`mods/<name>/tools/x.sh -> ../../../tools/x.sh`), not by copying or reimplementing it.
+- Plugin name: `aichemist-<name>`. Its `plugin.json` version is kept in step by release-please (`extra-files`).
+
 ## Commit Messages
 
 This project uses [Conventional Commits](https://www.conventionalcommits.org/). Every commit must follow:
@@ -102,7 +112,7 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/). 
 | `refactor` | Restructuring without behavior change |
 | `chore` | Build, CI, dependency updates |
 
-**Scopes:** `agents`, `skills`, `tools`, `hooks`, `mcp`, `docs`
+**Scopes:** `agents`, `skills`, `tools`, `hooks`, `mcp`, `mods`, `docs`
 
 Breaking changes: append `!` or add `BREAKING CHANGE:` footer → triggers major version bump.
 
@@ -123,6 +133,11 @@ Breaking changes: append `!` or add `BREAKING CHANGE:` footer → triggers major
 2. Optionally add `examples/` and `references/` subdirectories
 3. Add an entry to `docs/skills.md`
 4. If the skill requires an MCP server, add it to `.mcp.json` and document setup in `docs/configuration.md`
+
+**New mod:**
+1. Create `mods/<name>/` with `.claude-plugin/plugin.json`, `hooks/hooks.json`, `hooks/register.ts` and `tests/*.test.ts`
+2. Add it to `.claude-plugin/marketplace.json` and to `extra-files` in `release-please-config.json`
+3. Document it in `docs/mods.md`
 
 ## Key Files
 
