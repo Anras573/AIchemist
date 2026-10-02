@@ -170,6 +170,38 @@ The spec written to disk is the primary artifact. Implementation follows from it
 
 ---
 
+## Danish Writing Skill
+
+**Source:** [`skills/danish-writing/SKILL.md`](../skills/danish-writing/SKILL.md)
+
+Makes Danish text read as if a Dane wrote it, not like a translation from English. The agent plans and drafts directly in Danish, then checks the draft against a list of common translation tells (split compounds, English capitalization, translated idioms, false friends, English typography, stiff noun-heavy phrasing).
+
+**Trigger phrases:** "write in Danish", "in Danish", "skriv på dansk", "på dansk", "translate to Danish", "oversæt til dansk", "Danish email", "dansk mail", "dansk tekst", "ret mit danske", "make this sound more Danish", "lyder som en oversættelse".
+
+### Workflow
+
+| Step | Action |
+|------|--------|
+| 1. Load references | Read `references/examples.md` (user's before/after pairs, highest priority) and `references/checklist.md` |
+| 2. Settle register | Reader, channel, and form of address (*du* / *I* / *De*) |
+| 3. Plan in Danish | Key points as Danish notes; take the meaning from English sources, not the sentence structure |
+| 4. Write | Compose directly in Danish: short main clauses, active voice, verbs over nouns |
+| 5. Revise | Go through the checklist, rewrite whole sentences that sound translated, then do a read-aloud test |
+| 6. Deliver | Danish text only, with no English parallel unless asked |
+
+### Operations
+
+| Type | Operations | Behavior |
+|------|------------|----------|
+| **Read** | Read `references/checklist.md` and `references/examples.md` | Automatic, no confirmation needed |
+| **Write** | Save the finished text to a file | Only when the user asks |
+
+### Improving it over time
+
+`skills/danish-writing/references/examples.md` holds real before/after pairs from your own edits. Add one whenever you fix agent-written Danish. A few pairs teach the agent your style better than generic rules.
+
+---
+
 ## Beads Task Tracking Skill
 
 **Source:** [`skills/beads/SKILL.md`](../skills/beads/SKILL.md)
