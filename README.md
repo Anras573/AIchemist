@@ -48,6 +48,7 @@ See [docs/installation.md](docs/installation.md) for alternative installation me
 **Mods** — Optional Claude Code-only add-ons, installed separately; they add to the skills above and never replace them:
 
 - **Calendar Status** — Current and next meeting in the status line, via the Calendar skill's `msgraph.sh` (`claude plugin install aichemist-calendar-status@aichemist`)
+- **Beads Band** — In-progress and ready beads tasks above the prompt, via the Beads skill's `beads-db.sh` (`claude plugin install aichemist-beads-band@aichemist`)
 - **PR Review Pane** — `/pr-pane` shows the PR Review Loop's state, CI and unresolved threads in a live pane (`claude plugin install aichemist-pr-review-pane@aichemist`)
 
 See [docs/](docs/) for detailed documentation.
