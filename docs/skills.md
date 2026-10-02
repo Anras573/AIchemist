@@ -745,6 +745,8 @@ Self-scheduling polling loop that autonomously drives the GitHub Copilot PR revi
 
 **Trigger phrases:** "pr review loop", "/pr-review-loop", "drive copilot review", "review loop", "start review loop", "copilot review loop", "run review loop".
 
+**Claude Code add-on:** the optional [PR Review Pane mod](mods.md#pr-review-pane) shows this loop's state, CI and unresolved threads in a live pane (`/pr-pane`).
+
 ### State Machine
 
 | State | Condition | Action |
