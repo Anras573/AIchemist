@@ -1,0 +1,21 @@
+{
+  "name": "aichemist-beads-band",
+  "version": "3.8.0",
+  "description": "Claude Code mod: shows your in-progress and ready beads tasks in a band above the prompt, read through the beads skill's tools/beads-db.sh",
+  "author": {
+    "name": "Anders Bo Rasmussen",
+    "email": "anras573@gmail.com"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/Anras573/AIchemist",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "refreshSeconds": {
+      "type": "number",
+      "title": "Refresh interval (seconds)",
+      "description": "How often the band re-reads beads between turns (it also refreshes after every turn)",
+      "default": 60,
+      "min": 15
+    }
+  }
+}
