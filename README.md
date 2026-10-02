@@ -45,6 +45,10 @@ See [docs/installation.md](docs/installation.md) for alternative installation me
 - **MemPalace** — Persistent local memory (vector + knowledge graph) across sessions
 - **Tool Preferences** — Consistent tool selection patterns
 
+**Mods** — Optional Claude Code-only add-ons, installed separately; they add to the skills above and never replace them:
+
+- **Calendar Status** — Current and next meeting in the status line, via the Calendar skill's `msgraph.sh` (`claude plugin install aichemist-calendar-status@aichemist`)
+
 See [docs/](docs/) for detailed documentation.
 
 ## Quick Start
