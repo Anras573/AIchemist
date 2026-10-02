@@ -15,8 +15,9 @@ const prView = (overrides: Record<string, unknown> = {}) =>
     headRefOid: 'abc123',
     isDraft: false,
     reviews: [
-      { author: { login: 'copilot-pull-request-reviewer' }, submittedAt: '2026-10-02T09:50:00Z' },
-      { author: { login: 'someone' }, submittedAt: '2026-10-02T09:55:00Z' },
+      { author: { login: 'copilot-pull-request-reviewer' }, submittedAt: '2026-10-02T09:20:00Z', commit: { oid: 'old999' } },
+      { author: { login: 'copilot-pull-request-reviewer' }, submittedAt: '2026-10-02T09:50:00Z', commit: { oid: 'abc123' } },
+      { author: { login: 'someone' }, submittedAt: '2026-10-02T09:55:00Z', commit: { oid: 'abc123' } },
     ],
     statusCheckRollup: [
       { __typename: 'CheckRun', name: 'lint', status: 'COMPLETED', conclusion: 'FAILURE' },
@@ -27,11 +28,10 @@ const prView = (overrides: Record<string, unknown> = {}) =>
     ...overrides,
   })
 
-const threads = (committedDate = '2026-10-02T09:40:00Z') =>
+const threads = () =>
   JSON.stringify({
     data: {
       repository: {
-        object: { committedDate },
         pullRequest: {
           reviewThreads: {
             nodes: [
@@ -68,35 +68,36 @@ describe('helpers', () => {
   })
 
   test('follows the pr-review-loop state machine', () => {
-    expect(loopState(undefined, NOW, 3)).toBe('WAITING')
-    expect(loopState(NOW, undefined, 3)).toBe('WAITING')
-    expect(loopState(NOW - MINUTE, NOW, 3)).toBe('WAITING')
-    expect(loopState(NOW, NOW - MINUTE, 3)).toBe('REVIEWING')
-    expect(loopState(NOW, NOW - MINUTE, 0)).toBe('DONE')
+    expect(loopState(undefined, 'abc123', 3)).toBe('WAITING')
+    expect(loopState('old999', 'abc123', 3)).toBe('WAITING')
+    expect(loopState('abc123', 'abc123', 3)).toBe('REVIEWING')
+    expect(loopState('abc123', 'abc123', 0)).toBe('DONE')
   })
 
   test('builds a snapshot of unresolved threads, Copilot first-comment summaries included', () => {
     const snap = parseSnapshot(prView(), threads(), NOW)
 
     expect(snap.state).toBe('REVIEWING')
-    expect(snap.headMs).toBe(Date.parse('2026-10-02T09:40:00Z'))
+    expect(snap.reviewedOid).toBe('abc123')
+    expect(snap.lastReviewMs).toBe(Date.parse('2026-10-02T09:50:00Z'))
     expect(snap.threads).toEqual([
       { author: 'copilot-pull-request-reviewer', isCopilot: true, location: 'hooks/register.tsx:42', summary: 'Use a `const` here.', url: 'https://x/1' },
       { author: 'alice', isCopilot: false, location: 'docs/mods.md', summary: 'Why not a band?', url: 'https://x/2' },
     ])
   })
 
-  test('waits when GitHub gives no commit time', () => {
-    const snap = parseSnapshot(prView(), JSON.stringify({ data: { repository: { object: null, pullRequest: null } } }), NOW)
+  test('waits when gh reports no commit for the review (an older gh)', () => {
+    const reviews = [{ author: { login: 'copilot-pull-request-reviewer' }, submittedAt: '2026-10-02T09:50:00Z' }]
+    const snap = parseSnapshot(prView({ reviews }), JSON.stringify({ data: { repository: { pullRequest: null } } }), NOW)
 
-    expect(snap.headMs).toBeUndefined()
+    expect(snap.reviewedOid).toBeUndefined()
     expect(snap.state).toBe('WAITING')
     expect(snap.threads).toEqual([])
   })
 
   test('waits when Copilot has not reviewed the latest push', () => {
-    expect(parseSnapshot(prView(), threads('2026-10-02T09:58:00Z'), NOW).state).toBe('WAITING')
-    expect(parseSnapshot(prView({ reviews: [] }), threads('2026-10-02T09:00:00Z'), NOW).state).toBe('WAITING')
+    expect(parseSnapshot(prView({ headRefOid: 'def456' }), threads(), NOW).state).toBe('WAITING')
+    expect(parseSnapshot(prView({ reviews: [] }), threads(), NOW).state).toBe('WAITING')
   })
 
   test('formats relative times', () => {
@@ -153,12 +154,13 @@ describe('pane', () => {
     expect(result.text).toMatch(/current branch/)
 
     expect(runs[0]?.slice(0, 3)).toEqual(['gh', 'pr', 'view'])
-    expect(runs[1]).toEqual(expect.arrayContaining(['api', 'graphql', 'owner=Anras573', 'repo=AIchemist', 'pr=124', 'oid=abc123']))
+    expect(runs[1]).toEqual(expect.arrayContaining(['api', 'graphql', 'owner=Anras573', 'repo=AIchemist', 'pr=124']))
 
     for (const surface of ['terminal', 'desktop'] as const) {
       const ui = await $.ui.mount({ plugin: 'aichemist-pr-review-pane', surface, component: 'Pane', requestId: 'pr-review', props: PANE_PROPS } as never)
       expect(await ui.find({ text: /#124 feat\(mods\): add pr-review-pane/ })).toBeDefined()
       expect(await ui.find({ text: /REVIEWING/ })).toBeDefined()
+      expect(await ui.find({ text: /on abc123 · head abc123/ })).toBeDefined()
       expect(await ui.find({ text: /Unresolved threads: 1 from Copilot, 1 from people/ })).toBeDefined()
       expect(await ui.find({ text: /failing: lint/ })).toBeDefined()
       expect(await ui.find({ key: 'run-loop' })).toBeDefined()

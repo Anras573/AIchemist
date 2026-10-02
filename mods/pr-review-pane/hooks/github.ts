@@ -17,17 +17,10 @@ export const PR_VIEW_FIELDS = [
   'statusCheckRollup',
 ].join(',')
 
-// One request for what pr-review-loop reads in Steps 1 and 2: the head
-// commit's time and the review threads (first comment only). The skill reads
-// Commit.pushedDate, which GitHub deprecated and now answers null for, so the
-// pane uses committedDate instead (earlier than the push for an amended or
-// rebased commit, so a review of an older push can read as current).
+// What pr-review-loop reads in Step 2: the review threads, first comment only.
 export const THREADS_QUERY = `
-query($owner: String!, $repo: String!, $pr: Int!, $oid: GitObjectID!) {
+query($owner: String!, $repo: String!, $pr: Int!) {
   repository(owner: $owner, name: $repo) {
-    object(oid: $oid) {
-      ... on Commit { committedDate }
-    }
     pullRequest(number: $pr) {
       reviewThreads(first: 100) {
         nodes {
@@ -48,7 +41,11 @@ type PrView = {
   headRefName: string
   headRefOid: string
   isDraft?: boolean
-  reviews?: { author?: { login?: string } | null; submittedAt?: string | null }[]
+  reviews?: {
+    author?: { login?: string } | null
+    submittedAt?: string | null
+    commit?: { oid?: string } | null
+  }[]
   statusCheckRollup?: RollupItem[] | null
 }
 
@@ -64,7 +61,6 @@ type RollupItem = {
 type ThreadsResponse = {
   data?: {
     repository?: {
-      object?: { committedDate?: string | null } | null
       pullRequest?: {
         reviewThreads?: {
           nodes?: {
@@ -122,14 +118,14 @@ export function summarizeChecks(rollup: readonly RollupItem[] | null | undefined
   return summary
 }
 
-// The pr-review-loop state machine (Step 3), with the head commit's time in
-// place of its push time.
+// The pr-review-loop state machine (Step 3): Copilot has reviewed the latest
+// push when its latest review was made on the head commit.
 export function loopState(
-  lastReviewMs: number | undefined,
-  headMs: number | undefined,
+  reviewedOid: string | undefined,
+  headOid: string,
   unresolvedCopilot: number,
 ): LoopState {
-  if (lastReviewMs === undefined || headMs === undefined || lastReviewMs <= headMs) {
+  if (reviewedOid === undefined || reviewedOid !== headOid) {
     return 'WAITING'
   }
 
@@ -147,15 +143,12 @@ export function parseSnapshot(prViewJson: string, threadsJson: string, fetchedAt
   const graph = JSON.parse(threadsJson) as ThreadsResponse
   const repository = graph.data?.repository
 
-  const copilotReviews = (pr.reviews ?? [])
-    .filter(r => r.author?.login === COPILOT_LOGIN && r.submittedAt)
-    .map(r => Date.parse(r.submittedAt!))
-    .filter(Number.isFinite)
-  const lastReviewMs = copilotReviews.length > 0 ? Math.max(...copilotReviews) : undefined
-
-  const committedDate = repository?.object?.committedDate
-  const parsedHead = committedDate ? Date.parse(committedDate) : Number.NaN
-  const headMs = Number.isFinite(parsedHead) ? parsedHead : undefined
+  const latestCopilot = (pr.reviews ?? [])
+    .filter(r => r.author?.login === COPILOT_LOGIN && r.submittedAt && Number.isFinite(Date.parse(r.submittedAt)))
+    .sort((a, b) => Date.parse(a.submittedAt!) - Date.parse(b.submittedAt!))
+    .at(-1)
+  const lastReviewMs = latestCopilot ? Date.parse(latestCopilot.submittedAt!) : undefined
+  const reviewedOid = latestCopilot?.commit?.oid || undefined
 
   const threads: Thread[] = (repository?.pullRequest?.reviewThreads?.nodes ?? [])
     .filter(node => !node.isResolved)
@@ -177,9 +170,10 @@ export function parseSnapshot(prViewJson: string, threadsJson: string, fetchedAt
     url: pr.url,
     branch: pr.headRefName,
     isDraft: pr.isDraft === true,
-    state: loopState(lastReviewMs, headMs, unresolvedCopilot),
+    state: loopState(reviewedOid, pr.headRefOid, unresolvedCopilot),
     lastReviewMs,
-    headMs,
+    reviewedOid,
+    headOid: pr.headRefOid,
     checks: summarizeChecks(pr.statusCheckRollup),
     threads,
     fetchedAtMs,

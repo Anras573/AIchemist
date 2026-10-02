@@ -23,7 +23,8 @@ export type PrSnapshot = {
   isDraft: boolean
   state: LoopState
   lastReviewMs?: number
-  headMs?: number
+  reviewedOid?: string
+  headOid: string
   checks: CheckSummary
   threads: Thread[]
   fetchedAtMs: number

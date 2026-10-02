@@ -47,7 +47,7 @@ async function fetchSnapshot($: EngineInterface): Promise<void> {
       return
     }
 
-    const pr = JSON.parse(view.stdout) as { number: number; url: string; headRefOid: string }
+    const pr = JSON.parse(view.stdout) as { number: number; url: string }
     const repo = repoFromUrl(pr.url)
     if (!repo) {
       await update($, error, () => `Could not read the repository from ${pr.url}.`)
@@ -66,8 +66,6 @@ async function fetchSnapshot($: EngineInterface): Promise<void> {
       `repo=${repo.repo}`,
       '-F',
       `pr=${pr.number}`,
-      '-F',
-      `oid=${pr.headRefOid}`,
     ])
     if (threads.exitCode !== 0) {
       await update($, error, () => describeGhError(threads.stderr))
@@ -196,7 +194,8 @@ export const register: Register = (on, options) => {
           {STATE_TEXT[pr.state]}
         </Text>
         <Text dimColor wrap="wrap">
-          Copilot reviewed {formatAgo(pr.lastReviewMs, now)} · head committed {formatAgo(pr.headMs, now)}
+          Copilot reviewed {formatAgo(pr.lastReviewMs, now)}
+          {pr.reviewedOid === undefined ? '' : ` on ${pr.reviewedOid.slice(0, 7)}`} · head {pr.headOid.slice(0, 7)}
         </Text>
         <Text wrap="wrap">
           CI: <Text color="green">✓ {checks.passed}</Text> · <Text color={checks.failed > 0 ? 'red' : undefined}>✗ {checks.failed}</Text> ·{' '}
