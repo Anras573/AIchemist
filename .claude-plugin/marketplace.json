@@ -12,6 +12,10 @@
     {
       "name": "aichemist",
       "source": "./"
+    },
+    {
+      "name": "aichemist-calendar-status",
+      "source": "./mods/calendar-status"
     }
   ]
 }

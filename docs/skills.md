@@ -449,6 +449,8 @@ Microsoft 365 calendar integration via the `m365` CLI (`@pnp/cli-microsoft365`).
 
 **Trigger phrases:** "my calendar", "what's on my schedule", "what meetings do I have", "today's agenda", "what's coming up", "next meeting", "prepare me for my next meeting", "meeting prep", "brief me on".
 
+**Claude Code add-on:** the optional [Calendar Status mod](mods.md#calendar-status) uses this skill's setup to show your next meeting in the status line.
+
 ### Prerequisites
 
 1. **Environment variables** in your shell profile:

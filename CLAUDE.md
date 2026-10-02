@@ -18,6 +18,12 @@ Before opening a PR that touches a file in `tools/`:
 
 6. **Verify `export` on variables read by child processes.** Any shell variable passed to a Python heredoc via `os.environ` must be `export`ed, not just assigned.
 
+## Pre-PR Checklist for Mods (`mods/`)
+
+1. **Keep the mod additive.** It may call a skill's tool, but it must not move logic out of the skill. Copilot CLI shares the skills and never runs mods.
+2. **Run `claude plugin validate mods/<name>` and `claude plugin test mods/<name>`**, plus `claude plugin validate .` for the marketplace entry.
+3. **Symlink shared scripts, don't copy them.** Check that `bash mods/<name>/tools/<script>.sh` still resolves.
+
 ## Code Review Lessons
 
 - Skill `name` field must be lowercase kebab-case — matches the directory name and the slash-command trigger (e.g. `name: pr-review-loop`, not `name: PR Review Loop`)

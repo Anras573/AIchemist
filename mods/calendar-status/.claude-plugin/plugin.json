@@ -1,0 +1,34 @@
+{
+  "name": "aichemist-calendar-status",
+  "version": "3.8.0",
+  "description": "Claude Code mod: shows your next Microsoft 365 meeting in the status line, via the calendar skill's tools/msgraph.sh",
+  "author": {
+    "name": "Anders Bo Rasmussen",
+    "email": "anras573@gmail.com"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/Anras573/AIchemist",
+  "userConfig": {
+    "refreshMinutes": {
+      "type": "number",
+      "title": "Refresh interval (minutes)",
+      "description": "How often to fetch events from Microsoft Graph",
+      "default": 5,
+      "min": 1
+    },
+    "lookaheadHours": {
+      "type": "number",
+      "title": "Look-ahead (hours)",
+      "description": "How far ahead to look for the next meeting",
+      "default": 8,
+      "min": 1
+    },
+    "reminderMinutes": {
+      "type": "number",
+      "title": "Reminder lead time (minutes)",
+      "description": "Show a toast this many minutes before a meeting starts; 0 turns reminders off",
+      "default": 2,
+      "min": 0
+    }
+  }
+}
