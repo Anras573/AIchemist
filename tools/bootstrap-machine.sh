@@ -70,6 +70,49 @@ check_env() {
   fi
 }
 
+# The calendar skill needs one backend. tools/calendar.sh decides which one is
+# in use, so ask it rather than re-deriving the rule here. Optional: not every
+# setup uses the calendar skill.
+check_calendar() {
+  local provider
+  if ! provider=$("${REPO_ROOT}/tools/calendar.sh" provider 2>/dev/null); then
+    case "${CALENDAR_PROVIDER:-}" in
+      ""|msgraph|caldav) ;;
+      *)
+        mark_missing "calendar (CALENDAR_PROVIDER=${CALENDAR_PROVIDER})" \
+          "unset CALENDAR_PROVIDER, or set it to msgraph or caldav" "false"
+        return
+        ;;
+    esac
+    mark_missing "calendar (Microsoft 365 or iCloud/CalDAV)" \
+      "export MSGRAPH_APP_ID=<your-azure-app-id> MSGRAPH_TENANT_ID=<your-azure-tenant-id> (Microsoft 365), or export CALDAV_USERNAME=<your-apple-id-email> CALDAV_PASSWORD_CMD='security find-generic-password -s icloud-caldav -w' (iCloud)" \
+      "false"
+    return
+  fi
+
+  case "${provider}" in
+    msgraph)
+      if [[ -n "${MSGRAPH_APP_ID:-}" && -n "${MSGRAPH_TENANT_ID:-}" ]]; then
+        ok "calendar (Microsoft 365; sign in once with tools/calendar.sh login)"
+      else
+        check_env "MSGRAPH_APP_ID" "export MSGRAPH_APP_ID=<your-azure-app-id>" "false"
+        check_env "MSGRAPH_TENANT_ID" "export MSGRAPH_TENANT_ID=<your-azure-tenant-id>" "false"
+      fi
+      ;;
+    caldav)
+      if [[ -z "${CALDAV_USERNAME:-}" ]]; then
+        mark_missing "env CALDAV_USERNAME" "export CALDAV_USERNAME=<your-apple-id-email>" "false"
+      elif [[ -n "${CALDAV_PASSWORD:-}" || -n "${CALDAV_PASSWORD_CMD:-}" ]]; then
+        ok "calendar (iCloud/CalDAV; verify with tools/calendar.sh check)"
+      else
+        mark_missing "calendar password (iCloud/CalDAV)" \
+          "export CALDAV_PASSWORD_CMD='security find-generic-password -s icloud-caldav -w' (store an app-specific password with: security add-generic-password -s icloud-caldav -a \"\$CALDAV_USERNAME\" -w)" \
+          "false"
+      fi
+      ;;
+  esac
+}
+
 install_brew_dependencies() {
   [[ -f "${BREWFILE_PATH}" ]] || die "Brewfile not found at ${BREWFILE_PATH}"
   log "Installing Homebrew dependencies from Brewfile"
@@ -166,8 +209,7 @@ doctor() {
     mark_missing "obsidian" "brew install --cask obsidian" "false"
   fi
 
-  check_env "MSGRAPH_APP_ID" "export MSGRAPH_APP_ID=<your-azure-app-id>" "false"
-  check_env "MSGRAPH_TENANT_ID" "export MSGRAPH_TENANT_ID=<your-azure-tenant-id>" "false"
+  check_calendar
   check_env "POSTGRES_URL" "export POSTGRES_URL='postgresql://user:password@host:5432/database'" "false"
 
   if [[ -d "${MEMPALACE_HOME}" ]]; then

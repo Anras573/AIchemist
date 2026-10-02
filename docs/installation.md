@@ -64,7 +64,7 @@ tools/bootstrap-machine.sh doctor
 tools/bootstrap-machine.ps1 doctor
 ```
 
-`doctor` reports **READY/MISSING** with exact remediation commands.
+`doctor` reports **READY/MISSING** with exact remediation commands. Optional items, such as the calendar backend (Microsoft 365 or iCloud/CalDAV, whichever is configured) and `POSTGRES_URL`, are reported but don't fail the check.
 
 ## Post-Installation
 
