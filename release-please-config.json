@@ -34,6 +34,11 @@
       "path": "mods/calendar-status/.claude-plugin/plugin.json",
       "type": "json",
       "jsonpath": "version"
+    },
+    {
+      "path": "mods/pr-review-pane/.claude-plugin/plugin.json",
+      "type": "json",
+      "jsonpath": "version"
     }
   ],
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"

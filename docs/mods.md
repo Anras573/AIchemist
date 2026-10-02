@@ -35,6 +35,35 @@ claude plugin install aichemist-calendar-status@aichemist
 | `lookaheadHours` | `8` | How far ahead to look for the next meeting |
 | `reminderMinutes` | `2` | Toast this many minutes before a meeting starts; `0` turns reminders off |
 
+### PR Review Pane
+
+A read-only pane showing what the [PR Review Loop skill](skills.md#pr-review-loop-skill) works on, for the current branch's PR:
+- the loop's state (`WAITING`, `REVIEWING` or `DONE`, by the skill's rule)
+- when Copilot last reviewed, compared with the head commit
+- CI totals, naming the failing checks
+- every unresolved thread, Copilot's apart from people's, with its location and first line
+
+**Source:** [`mods/pr-review-pane/`](../mods/pr-review-pane/)
+
+**Install:**
+```bash
+claude plugin install aichemist-pr-review-pane@aichemist
+```
+
+**Use:** `/pr-pane` opens it for the current branch; `/pr-pane 123` pins it to PR #123. In the pane, `r` refreshes and `q` closes it. When Copilot has reviewed and threads are open, `l` (**Run review loop**) asks Claude to run the skill for that PR.
+
+**Requirements:** [`gh`](https://cli.github.com/) installed and authenticated (`gh auth status`), run from a repository with an open PR.
+
+**How it works:** the pane runs `gh pr view` and one `gh api graphql` query, with the same fields and the same Copilot login (`copilot-pull-request-reviewer`) as the skill. It refreshes while open and does nothing while closed. It never writes to GitHub: fixing, replying and resolving stay with the skill. Review comment text is only displayed. It never goes into the prompt the button sends.
+
+The skill decides `WAITING` by comparing Copilot's review against `Commit.pushedDate`. GitHub has deprecated that field and now returns null for it, so the pane uses the head commit's `committedDate` instead. For an amended or rebased commit that time can be earlier than the push, so the pane may show a review of an older push as current.
+
+**Options:**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `refreshSeconds` | `60` | How often the open pane re-reads the PR (minimum 15) |
+
 ## Developing a Mod
 
 Each mod is its own plugin folder:
