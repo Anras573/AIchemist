@@ -85,7 +85,7 @@ describe('helpers', () => {
 describe('register', () => {
   const start = { cwd: '/repo', surface: 'terminal', isInteractive: true } as const
 
-  test('shows the next meeting fetched through msgraph.sh', async ($, on) => {
+  test('shows the next meeting fetched through calendar.sh', async ($, on) => {
     const clock = mock.clock(on, { now: NOW })
     mock.env(on, { MSGRAPH_APP_ID: 'app', MSGRAPH_TENANT_ID: 'tenant' })
     on('session.start', async (_$, e) => ({ cwd: e.cwd }))
@@ -120,8 +120,27 @@ describe('register', () => {
       '--end',
       '2026-10-02T17:00:00+00:00',
     ])
-    expect(runs[0]?.[1]).toMatch(/tools\/msgraph\.sh$/)
+    expect(runs[0]?.[1]).toMatch(/tools\/calendar\.sh$/)
     expect(statuses.at(-1)).toBe('📅 Next: Standup in 15m')
+  })
+
+  test('turns on for an iCloud/CalDAV setup too', async ($, on) => {
+    const clock = mock.clock(on, { now: NOW })
+    mock.env(on, { CALDAV_USERNAME: 'me@icloud.com' })
+    on('session.start', async (_$, e) => ({ cwd: e.cwd }))
+
+    const runs: (readonly string[])[] = []
+    on('process.run', async (_$, e) => {
+      runs.push(e.argv)
+      return { value: { exitCode: 0, stdout: '[]', stderr: '', isStdoutTruncated: false, isStderrTruncated: false } }
+    })
+    on('ui.status', async () => ({ value: undefined }))
+
+    await $.session.start(start)
+    await clock.advance(1)
+
+    expect(runs[0]?.[1]).toMatch(/tools\/calendar\.sh$/)
+    expect(runs[0]?.[2]).toBe('get-events')
   })
 
   test('stays silent when the calendar skill is not configured', async ($, on) => {

@@ -13,8 +13,9 @@ const MINUTE = 60_000
 const HOUR = 60 * MINUTE
 
 // Shows the next meeting in the status line, read through the same
-// tools/msgraph.sh the calendar skill uses. Display only: the skill stays
-// the source of truth and works the same without this mod.
+// tools/calendar.sh the calendar skill uses (Microsoft 365 or iCloud/CalDAV).
+// Display only: the skill stays the source of truth and works the same
+// without this mod.
 export const register: Register = (on, options) => {
   const refreshMs = Math.max(1, Number(options.refreshMinutes ?? 5)) * MINUTE
   const lookaheadMs = Math.max(1, Number(options.lookaheadHours ?? 8)) * HOUR
@@ -25,15 +26,15 @@ export const register: Register = (on, options) => {
   let timers: Timer[] = []
 
   on('session.start', async ($, e, next) => {
-    // msgraph.sh needs both; without them the person has not set up the
+    // Without either backend's variables the person has not set up the
     // calendar skill, so stay out of the way instead of showing an error.
-    const appId = await $.env.get('MSGRAPH_APP_ID')
-    const tenantId = await $.env.get('MSGRAPH_TENANT_ID')
-    if (!e.isInteractive || !appId || !tenantId) {
+    const hasMsgraph = Boolean((await $.env.get('MSGRAPH_APP_ID')) && (await $.env.get('MSGRAPH_TENANT_ID')))
+    const hasCaldav = Boolean(await $.env.get('CALDAV_USERNAME'))
+    if (!e.isInteractive || !(hasMsgraph || hasCaldav)) {
       return next(e)
     }
 
-    const script = `${$.plugin.root}/tools/msgraph.sh`
+    const script = `${$.plugin.root}/tools/calendar.sh`
 
     const render = async () => {
       const now = await $.clock.now()
