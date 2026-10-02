@@ -20,6 +20,10 @@
     {
       "name": "aichemist-pr-review-pane",
       "source": "./mods/pr-review-pane"
+    },
+    {
+      "name": "aichemist-beads-band",
+      "source": "./mods/beads-band"
     }
   ]
 }
