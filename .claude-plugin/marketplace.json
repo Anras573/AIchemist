@@ -16,6 +16,10 @@
     {
       "name": "aichemist-calendar-status",
       "source": "./mods/calendar-status"
+    },
+    {
+      "name": "aichemist-pr-review-pane",
+      "source": "./mods/pr-review-pane"
     }
   ]
 }
