@@ -14,7 +14,7 @@ The core `aichemist` plugin (skills, agents, tools, hooks) is shared with GitHub
 
 ### Calendar Status
 
-Shows your current and next Microsoft 365 meeting in the status line, e.g. `📅 Now: Planning (ends in 20m) · Next: 1:1 in 45m`. A toast appears shortly before each meeting starts.
+Shows your current and next meeting (Microsoft 365 or iCloud/CalDAV) in the status line, e.g. `📅 Now: Planning (ends in 20m) · Next: 1:1 in 45m`. A toast appears shortly before each meeting starts.
 
 **Source:** [`mods/calendar-status/`](../mods/calendar-status/)
 
@@ -23,9 +23,9 @@ Shows your current and next Microsoft 365 meeting in the status line, e.g. `📅
 claude plugin install aichemist-calendar-status@aichemist
 ```
 
-**Requirements:** the same setup as the [Calendar skill](skills.md#calendar-skill): `MSGRAPH_APP_ID` and `MSGRAPH_TENANT_ID` exported, `python3` on `PATH`, and a one-time `msgraph.sh login`. Without the two variables, the mod does nothing.
+**Requirements:** the same setup as the [Calendar skill](skills.md#calendar-skill): `python3` on `PATH` and one backend, either Microsoft 365 (`MSGRAPH_APP_ID` + `MSGRAPH_TENANT_ID`, and a one-time `calendar.sh login`) or iCloud/CalDAV (`CALDAV_USERNAME` + an app-specific password). With neither configured, the mod does nothing.
 
-**How it works:** on session start the mod runs `tools/msgraph.sh get-events` (the calendar skill's script, symlinked into the mod) every few minutes and redraws the countdown every minute. Cancelled and all-day events are skipped, and events marked private show as "Private event". If a fetch fails (expired login, offline), the last good list is kept. The mod skips non-interactive sessions, so `claude -p` runs are unaffected.
+**How it works:** on session start the mod runs `tools/calendar.sh get-events` (the calendar skill's script, symlinked into the mod with both backends) every few minutes and redraws the countdown every minute. Cancelled and all-day events are skipped, and events marked private show as "Private event". If a fetch fails (expired login, offline), the last good list is kept. The mod skips non-interactive sessions, so `claude -p` runs are unaffected.
 
 **Options** (`/plugin configure aichemist-calendar-status@aichemist`, or `/config`):
 

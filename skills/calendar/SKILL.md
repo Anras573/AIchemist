@@ -1,17 +1,28 @@
 ---
 name: calendar
 description: |
-  This skill should be used when the user asks about "my calendar", "what's on my schedule", "what meetings do I have", "what's today's agenda", "what's coming up this week", "next meeting", "prepare me for my next meeting", "meeting prep", "brief me on", "briefing for", or asks about specific calendar events. Provides Microsoft 365 calendar integration via the m365 CLI.
-version: 1.0.0
+  This skill should be used when the user asks about "my calendar", "what's on my schedule", "what meetings do I have", "what's today's agenda", "what's coming up this week", "next meeting", "prepare me for my next meeting", "meeting prep", "brief me on", "briefing for", or asks about specific calendar events. Provides read-only calendar integration for Microsoft 365 (via the m365 CLI) and iCloud or other CalDAV servers.
+version: 1.1.0
 ---
 
 # Calendar Skill
 
-Fetch and interpret Microsoft 365 calendar events via `tools/msgraph.sh`. Primary use cases: daily schedule overview, upcoming events, and meeting preparation briefings.
+Fetch and interpret calendar events via `tools/calendar.sh`, which runs one of two backends with the same commands and the same JSON output:
 
-Calendar queries are **read-only** — no confirmation needed. Authentication commands (`login`/`logout`) manage local credentials and are a one-time setup step.
+| Backend | Script | For |
+|---------|--------|-----|
+| Microsoft 365 | `tools/msgraph.sh` | Work calendars in Outlook / Microsoft 365, via the m365 CLI |
+| CalDAV | `tools/caldav.sh` | iCloud by default; also other CalDAV servers (Fastmail, Nextcloud, Radicale) via `CALDAV_URL` |
+
+Primary use cases: daily schedule overview, upcoming events, and meeting preparation briefings.
+
+Calendar queries are **read-only** — no confirmation needed. Microsoft 365's `login`/`logout` manage local credentials and are a one-time setup step.
 
 ## Prerequisites
+
+**python3** must be in `PATH` (pre-installed on macOS; verify with `python3 --version`). Then set up **one** backend. `calendar.sh` uses Microsoft 365 when its variables are set, otherwise CalDAV; set `CALENDAR_PROVIDER=msgraph` or `CALENDAR_PROVIDER=caldav` to choose explicitly.
+
+### Microsoft 365
 
 1. **Environment variables** exported in your shell profile (`.zshrc` / `.bash_profile`):
    ```bash
@@ -19,11 +30,9 @@ Calendar queries are **read-only** — no confirmation needed. Authentication co
    export MSGRAPH_TENANT_ID=<your-azure-tenant-id>
    ```
 
-2. **python3** available in `PATH` — used for timestamp generation and output formatting. Comes pre-installed on macOS. Verify with `python3 --version`.
-
-3. **Authenticated once**:
+2. **Authenticated once**:
    ```bash
-   ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh login
+   ${CLAUDE_PLUGIN_ROOT}/tools/calendar.sh login
    ```
    This opens a browser window for Microsoft OAuth login. Tokens are cached by m365 and auto-refreshed.
 
@@ -32,21 +41,43 @@ Calendar queries are **read-only** — no confirmation needed. Authentication co
    npm install -g @pnp/cli-microsoft365
    ```
 
+### iCloud (CalDAV)
+
+1. **Create an app-specific password** at [account.apple.com](https://account.apple.com) → Sign-In and Security → App-Specific Passwords. iCloud does not accept your Apple ID password over CalDAV.
+
+2. **Environment variables** exported in your shell profile:
+   ```bash
+   export CALDAV_USERNAME=<your-apple-id-email>
+   # Either the app-specific password itself...
+   export CALDAV_PASSWORD=<app-specific-password>
+   # ...or, better, a command that prints it, e.g. from the macOS keychain:
+   export CALDAV_PASSWORD_CMD='security find-generic-password -s icloud-caldav -w'
+   ```
+   To store it in the keychain: `security add-generic-password -s icloud-caldav -a "$CALDAV_USERNAME" -w`.
+
+   For another CalDAV server, also set `CALDAV_URL` (default `https://caldav.icloud.com/`).
+
+3. **Check the setup**:
+   ```bash
+   ${CLAUDE_PLUGIN_ROOT}/tools/calendar.sh check
+   ```
+
 ## Available Commands
 
 | Command | What it does |
 |---------|-------------|
-| `msgraph.sh list-calendars` | List all calendars (id, name, default flag, read-only flag) |
-| `msgraph.sh get-events [--start ISO] [--end ISO] [--calendar-id ID]` | List events in a time range (default: now → +7 days). Uses `calendarView` so recurring meetings are expanded into individual occurrences. |
-| `msgraph.sh get-event-detail EVENT_ID` | Full event details including body/description |
-| `msgraph.sh login` | Authenticate (browser OAuth) |
-| `msgraph.sh logout` | Clear cached tokens |
+| `calendar.sh list-calendars` | List all calendars (name and id; Microsoft 365 also flags the default, both flag read-only ones) |
+| `calendar.sh get-events [--start ISO] [--end ISO] [--calendar-id ID]` | List events in a time range (default: now → +7 days). Recurring events are expanded into individual occurrences. |
+| `calendar.sh get-event-detail EVENT_ID` | Full event details including body/description, organizer and attendees |
+| `calendar.sh provider` | Print the backend in use (`msgraph` or `caldav`) |
+| `calendar.sh login` / `logout` | Microsoft 365 only: authenticate (browser OAuth) / clear cached tokens |
+| `calendar.sh check` | CalDAV only: verify the credentials and count the event calendars |
 
-`--calendar-id` is optional; omit it to query the default calendar. Obtain IDs from `list-calendars`.
+`--calendar-id` is optional; obtain IDs from `list-calendars`. Without it, Microsoft 365 reads the default calendar and CalDAV reads **every** event calendar on the account (iCloud has no default calendar). Reminders and task lists are never included.
 
 ## ISO 8601 Time Helpers
 
-The script requires ISO 8601 timestamps with a `+HH:MM` UTC offset (e.g. `2026-05-11T09:00:00+02:00`). Use Python — `date +"%z"` on macOS (BSD) emits `+0200` without the colon, which is invalid for Microsoft Graph:
+Both backends require ISO 8601 timestamps with a `+HH:MM` UTC offset (e.g. `2026-05-11T09:00:00+02:00`). Use Python — `date +"%z"` on macOS (BSD) emits `+0200` without the colon, which is invalid:
 
 ```bash
 # Now (local time with +HH:MM offset)
@@ -67,7 +98,7 @@ python3 -c "from datetime import datetime, timezone; d=datetime.now(timezone.utc
 ### Today's Schedule
 
 ```bash
-${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh get-events \
+${CLAUDE_PLUGIN_ROOT}/tools/calendar.sh get-events \
   --start "$(python3 -c 'from datetime import datetime,timezone; d=datetime.now(timezone.utc).astimezone(); print(d.replace(hour=0,minute=0,second=0,microsecond=0).isoformat(timespec="seconds"))')" \
   --end "$(python3 -c 'from datetime import datetime,timezone; d=datetime.now(timezone.utc).astimezone(); print(d.replace(hour=23,minute=59,second=59,microsecond=0).isoformat(timespec="seconds"))')"
 ```
@@ -106,7 +137,7 @@ Use the default `get-events` (no flags = next 7 days). Group output by day:
 Fetch events from now to 2 hours from now:
 
 ```bash
-${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh get-events \
+${CLAUDE_PLUGIN_ROOT}/tools/calendar.sh get-events \
   --start "$(python3 -c 'from datetime import datetime,timezone; print(datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds"))')" \
   --end "$(python3 -c 'from datetime import datetime,timezone,timedelta; print((datetime.now(timezone.utc)+timedelta(hours=2)).astimezone().isoformat(timespec="seconds"))')"
 ```
@@ -120,9 +151,9 @@ The primary high-value workflow. When asked to "prepare for" or "brief me on" a 
 1. Run `get-events` to locate the event (use a narrow window if the meeting is specific)
 2. Take the event `id` and run `get-event-detail` for the full body:
    ```bash
-   ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh get-event-detail "EVENT_ID"
+   ${CLAUDE_PLUGIN_ROOT}/tools/calendar.sh get-event-detail "EVENT_ID"
    ```
-3. The `body.content` field may be HTML — extract readable text. Strip tracking pixels, signatures, and boilerplate footers. Keep agenda items, questions, pre-reads, and attendee lists.
+3. The `body.content` field may be HTML (Microsoft 365) or plain text (CalDAV) — extract readable text. Strip tracking pixels, signatures, and boilerplate footers. Keep agenda items, questions, pre-reads, and attendee lists (`attendees` and `organizer` hold names and addresses).
 4. Present a structured brief:
 
 ```
@@ -157,20 +188,37 @@ If a meeting description mentions Jira issue keys (e.g. `PROJ-123`), extract the
 
 ## Error Handling
 
-**Not logged in / token expired:**
+**No calendar configured** (`calendar.sh` exits 2):
+```
+No calendar is set up. Export one of these in your shell profile:
+  Microsoft 365: MSGRAPH_APP_ID and MSGRAPH_TENANT_ID
+  iCloud:        CALDAV_USERNAME and CALDAV_PASSWORD (or CALDAV_PASSWORD_CMD)
+Then open a new terminal and retry.
+```
+
+**Microsoft 365 — not logged in / token expired:**
 ```
 Calendar access requires authentication. Run:
-  ${CLAUDE_PLUGIN_ROOT}/tools/msgraph.sh login
+  ${CLAUDE_PLUGIN_ROOT}/tools/calendar.sh login
 Then retry.
 ```
 
-**MSGRAPH_APP_ID / MSGRAPH_TENANT_ID not set:**
+**Microsoft 365 — MSGRAPH_APP_ID / MSGRAPH_TENANT_ID not set:**
 ```
 Missing environment variables. Add to your shell profile:
   export MSGRAPH_APP_ID=<your-app-id>
   export MSGRAPH_TENANT_ID=<your-tenant-id>
 Then open a new terminal and retry.
 ```
+
+**CalDAV — `authentication failed (401)`:**
+```
+iCloud rejected the credentials. Check that CALDAV_USERNAME is your Apple ID email
+and that the password is an app-specific password (not your Apple ID password).
+Create one at account.apple.com → Sign-In and Security → App-Specific Passwords.
+```
+
+**CalDAV — `recurrence rule not supported here`** (a warning, not a failure): the server returned a recurring event unexpanded and its rule is beyond the built-in expansion. Only the first occurrence is listed; mention that the series may have more.
 
 **No events in range:**
 "No events found between [start] and [end]."

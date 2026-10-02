@@ -40,14 +40,14 @@ See [docs/installation.md](docs/installation.md) for alternative installation me
 - **Capture** — Quick capture of thoughts and code snippets to Obsidian
 - **Research** — Search your Obsidian vault for context during coding sessions
 - **Playwright** — Browser automation and web testing via `playwright-cli`
-- **Calendar** — Microsoft 365 calendar queries and meeting prep briefings via `m365` CLI
+- **Calendar** — Calendar queries and meeting prep briefings for Microsoft 365 (via `m365` CLI) and iCloud/CalDAV
 - **Markitdown** — Convert remote URLs and local files to clean markdown
 - **MemPalace** — Persistent local memory (vector + knowledge graph) across sessions
 - **Tool Preferences** — Consistent tool selection patterns
 
 **Mods** — Optional Claude Code-only add-ons, installed separately; they add to the skills above and never replace them:
 
-- **Calendar Status** — Current and next meeting in the status line, via the Calendar skill's `msgraph.sh` (`claude plugin install aichemist-calendar-status@aichemist`)
+- **Calendar Status** — Current and next meeting in the status line, via the Calendar skill's `calendar.sh`, for Microsoft 365 or iCloud (`claude plugin install aichemist-calendar-status@aichemist`)
 - **Beads Band** — In-progress and ready beads tasks above the prompt, via the Beads skill's `beads-db.sh` (`claude plugin install aichemist-beads-band@aichemist`)
 - **PR Review Pane** — `/pr-pane` shows the PR Review Loop's state, CI and unresolved threads in a live pane (`claude plugin install aichemist-pr-review-pane@aichemist`)
 
