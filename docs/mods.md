@@ -39,7 +39,7 @@ claude plugin install aichemist-calendar-status@aichemist
 
 A read-only pane showing what the [PR Review Loop skill](skills.md#pr-review-loop-skill) works on, for the current branch's PR:
 - the loop's state (`WAITING`, `REVIEWING` or `DONE`, by the skill's rule)
-- when Copilot last reviewed, compared with the head commit
+- when Copilot last reviewed, and on which commit, next to the head commit
 - CI totals, naming the failing checks
 - every unresolved thread, Copilot's apart from people's, with its location and first line
 
@@ -54,9 +54,9 @@ claude plugin install aichemist-pr-review-pane@aichemist
 
 **Requirements:** [`gh`](https://cli.github.com/) installed and authenticated (`gh auth status`), run from a repository with an open PR.
 
-**How it works:** the pane runs `gh pr view` and one `gh api graphql` query, with the same fields and the same Copilot login (`copilot-pull-request-reviewer`) as the skill. It refreshes while open and does nothing while closed. It never writes to GitHub: fixing, replying and resolving stay with the skill. Review comment text is only displayed. It never goes into the prompt the button sends.
+**How it works:** the pane runs `gh pr view` and one `gh api graphql` query for the review threads, with the same fields and the same Copilot login (`copilot-pull-request-reviewer`) as the skill. It refreshes while open and does nothing while closed. It never writes to GitHub: fixing, replying and resolving stay with the skill. Review comment text is only displayed. It never goes into the prompt the button sends.
 
-The skill decides `WAITING` by comparing Copilot's review against `Commit.pushedDate`. GitHub has deprecated that field and now returns null for it, so the pane uses the head commit's `committedDate` instead. For an amended or rebased commit that time can be earlier than the push, so the pane may show a review of an older push as current.
+Like the skill, the pane counts Copilot as having reviewed the latest push when its latest review was made on the PR's head commit.
 
 **Options:**
 
