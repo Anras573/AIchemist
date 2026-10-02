@@ -40,7 +40,7 @@ See [docs/installation.md](docs/installation.md) for alternative installation me
 - **Capture** — Quick capture of thoughts and code snippets to Obsidian
 - **Research** — Search your Obsidian vault for context during coding sessions
 - **Playwright** — Browser automation and web testing via `playwright-cli`
-- **Calendar** — Microsoft 365 calendar queries and meeting prep briefings via `m365` CLI
+- **Calendar** — Calendar queries and meeting prep briefings for Microsoft 365 (via `m365` CLI) and iCloud/CalDAV
 - **Markitdown** — Convert remote URLs and local files to clean markdown
 - **MemPalace** — Persistent local memory (vector + knowledge graph) across sessions
 - **Tool Preferences** — Consistent tool selection patterns
