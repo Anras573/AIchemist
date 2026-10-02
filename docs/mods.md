@@ -64,6 +64,34 @@ Like the skill, the pane counts Copilot as having reviewed the latest push when 
 |--------|---------|-------------|
 | `refreshSeconds` | `60` | How often the open pane re-reads the PR (minimum 15) |
 
+### Beads Band
+
+A band above the prompt showing your [beads](skills.md#beads-task-tracking-skill) tasks for the current repo, in up to two lines:
+
+```
+▶ In progress: P0 shop-hg9 Fix cart rounding
+◇ Ready (2): P1 shop-bfv Write checkout tests · P2 shop-k3q Update docs          [ Hide ]
+```
+
+**Source:** [`mods/beads-band/`](../mods/beads-band/)
+
+**Install:**
+```bash
+claude plugin install aichemist-beads-band@aichemist
+```
+
+**Use:** it appears by itself once the repo has a beads database. `h` (**Hide**) or `/beads-band` hides it; `/beads-band` brings it back.
+
+**Requirements:** [`bd`](https://github.com/steveyegge/beads) 1.x installed, and a beads database for the repo: one the [Beads skill](skills.md#beads-task-tracking-skill) set up (in-repo or sidecar), or the repo's own `.beads/`.
+
+**How it works:** the band finds the database with the beads skill's own [`tools/beads-db.sh`](../tools/beads-db.sh) (symlinked into the mod), so it always shows the database the skill uses. Then it runs `bd ready --json` and `bd list --status in_progress --json`. It never writes: the script runs without `--init`, so a repo the skill hasn't set up stays untouched, and every `bd` call passes `--readonly`. The band refreshes on session start, every `refreshSeconds` and after each turn, since Claude often claims or closes tasks mid-turn. With no database, no `bd` or a failing call, it steps aside.
+
+**Options:**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `refreshSeconds` | `60` | How often the band re-reads beads between turns (minimum 15) |
+
 ## Developing a Mod
 
 Each mod is its own plugin folder:
