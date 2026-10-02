@@ -47,10 +47,17 @@ You maintain three states across ticks. Determine the current state each tick:
 
 ```bash
 # Detect open PR, repo info, and latest Copilot review in one call
-gh pr view --json number,headRefOid,url,headRepository,reviews
+gh pr view --json number,headRefOid,url,reviews
 ```
 
-Extract from the JSON: `owner` (`.headRepository.owner.login`), `repo` (`.headRepository.name`), `HEAD_REF_OID` (`.headRefOid`), `PR_NUMBER` (`.number`).
+Extract from the JSON: `HEAD_REF_OID` (`.headRefOid`), `PR_NUMBER` (`.number`), `PR_URL` (`.url`).
+
+Derive `OWNER` and `REPO` from `PR_URL`, which names the base repository the review threads live on. `gh`'s `headRepository` field carries only `id`, `name` and `nameWithOwner` (no `owner`), and for a fork it names the fork rather than the base:
+
+```bash
+OWNER=$(echo "$PR_URL" | awk -F/ '{print $4}')
+REPO=$(echo "$PR_URL"  | awk -F/ '{print $5}')
+```
 
 From the same JSON, take the latest Copilot review and the commit it was made on:
 - `LAST_REVIEW_TS` → `[.reviews[] | select(.author.login == "copilot-pull-request-reviewer")] | sort_by(.submittedAt) | last | .submittedAt // empty`
