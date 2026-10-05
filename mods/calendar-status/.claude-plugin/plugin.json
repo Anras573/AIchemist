@@ -1,6 +1,6 @@
 {
   "name": "aichemist-calendar-status",
-  "version": "3.9.0",
+  "version": "3.10.0",
   "description": "Claude Code mod: shows your next meeting (Microsoft 365 or iCloud/CalDAV) in the status line, via the calendar skill's tools/calendar.sh",
   "author": {
     "name": "Anders Bo Rasmussen",

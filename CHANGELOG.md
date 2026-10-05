@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.10.0](https://github.com/Anras573/AIchemist/compare/v3.9.0...v3.10.0) (2026-10-02)
+
+
+### Features
+
+* **skills:** add danish-writing skill for idiomatic Danish ([#131](https://github.com/Anras573/AIchemist/issues/131)) ([ef53f7f](https://github.com/Anras573/AIchemist/commit/ef53f7ffbe268a8727bb00311cf403df446f9ac3))
+
 ## [3.9.0](https://github.com/Anras573/AIchemist/compare/v3.8.0...v3.9.0) (2026-10-02)
 
 
