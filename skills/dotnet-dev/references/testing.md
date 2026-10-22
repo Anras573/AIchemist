@@ -58,6 +58,7 @@ Cover, for every public mutator: the happy path, the "already in that state" no-
 - One test class per endpoint: `<Endpoint>Tests` (`SessionSignUpEndpointTests`).
 - Shared `CustomWebApplicationFactory` (swaps in a test database/config) and a `ClientFactory` helper that hands back an authenticated `HttpClient` so individual tests don't repeat login boilerplate.
 - A `TestDataSeeder` populates known fixtures rather than each test hand-rolling entities inline.
+- **Don't add `public partial class Program { }`.** On .NET 10+ the generated `Program` class is already accessible to test projects, so `WebApplicationFactory<Program>` works as-is (analyzer ASP0027 flags the declaration as unnecessary). Only add it when the project targets .NET 9 or earlier.
 
 ## Mocking
 

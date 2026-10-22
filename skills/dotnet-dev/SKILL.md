@@ -37,7 +37,7 @@ Cross-cutting infrastructure (generic repository, specification base class, emai
 | Entities & value objects | sealed class, private setters, static `Create()` factory, strongly-typed IDs | [domain-modeling.md](references/domain-modeling.md) |
 | HTTP endpoints | one static `Handle` per endpoint, minimal APIs, `Map<Feature>Endpoints` extension | [minimal-api-endpoints.md](references/minimal-api-endpoints.md) |
 | Queries & persistence | generic `IRepository<T>` + specification pattern, no raw LINQ in endpoints | [data-access.md](references/data-access.md) |
-| Tests | xunit + Moq, AAA comments, `Method_Scenario_Expected` naming | [testing.md](references/testing.md) |
+| Tests | xunit + Moq, AAA comments, `Method_Scenario_Expected` naming; on .NET 10+ don't add `public partial class Program { }` for `WebApplicationFactory<Program>` | [testing.md](references/testing.md) |
 
 Load the linked reference file for the area you're touching rather than re-deriving the pattern from scratch — each one carries real (trimmed) code from the source project.
 
