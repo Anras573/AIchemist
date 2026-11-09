@@ -11,6 +11,11 @@ A plugin for Claude Code and GitHub Copilot CLI with custom agents and skills fo
 claude plugin install aichemist
 ```
 
+Or, from inside a Claude Code session:
+```
+/plugin install aichemist --marketplace Anras573/AIchemist
+```
+
 **GitHub Copilot CLI:**
 ```bash
 copilot plugin install aichemist
