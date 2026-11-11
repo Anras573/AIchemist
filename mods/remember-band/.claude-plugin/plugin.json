@@ -1,6 +1,6 @@
 {
   "name": "aichemist-remember-band",
-  "version": "3.10.0",
+  "version": "3.11.0",
   "description": "Claude Code mod: shows the open items (## Next) from the Remember plugin's /remember handoff note in a band above the prompt",
   "author": {
     "name": "Anders Bo Rasmussen",
