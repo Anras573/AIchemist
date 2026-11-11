@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.11.0](https://github.com/Anras573/AIchemist/compare/v3.10.0...v3.11.0) (2026-11-11)
+
+
+### Features
+
+* **mods:** add remember-band mod for open items from the Remember handoff ([#135](https://github.com/Anras573/AIchemist/issues/135)) ([cc6bc50](https://github.com/Anras573/AIchemist/commit/cc6bc50ddca0e793457171f3ec556fbd5179c8c5))
+
 ## [3.10.0](https://github.com/Anras573/AIchemist/compare/v3.9.0...v3.10.0) (2026-10-02)
 
 
