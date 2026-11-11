@@ -1,0 +1,21 @@
+{
+  "name": "aichemist-remember-band",
+  "version": "3.10.0",
+  "description": "Claude Code mod: shows the open items (## Next) from the Remember plugin's /remember handoff note in a band above the prompt",
+  "author": {
+    "name": "Anders Bo Rasmussen",
+    "email": "anras573@gmail.com"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/Anras573/AIchemist",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "refreshSeconds": {
+      "type": "number",
+      "title": "Refresh interval (seconds)",
+      "description": "How often the band re-reads the handoff note between turns (it also refreshes after every turn)",
+      "default": 60,
+      "min": 15
+    }
+  }
+}

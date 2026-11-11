@@ -24,6 +24,10 @@
     {
       "name": "aichemist-beads-band",
       "source": "./mods/beads-band"
+    },
+    {
+      "name": "aichemist-remember-band",
+      "source": "./mods/remember-band"
     }
   ]
 }
