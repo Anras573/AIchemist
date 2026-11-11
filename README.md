@@ -54,6 +54,7 @@ See [docs/installation.md](docs/installation.md) for alternative installation me
 
 - **Calendar Status** — Current and next meeting in the status line, via the Calendar skill's `calendar.sh`, for Microsoft 365 or iCloud (`claude plugin install aichemist-calendar-status@aichemist`)
 - **Beads Band** — In-progress and ready beads tasks above the prompt, via the Beads skill's `beads-db.sh` (`claude plugin install aichemist-beads-band@aichemist`)
+- **Remember Band** — Open items (`## Next`) from the [Remember](https://github.com/Digital-Process-Tools/claude-remember) plugin's `/remember` handoff above the prompt (`claude plugin install aichemist-remember-band@aichemist`)
 - **PR Review Pane** — `/pr-pane` shows the PR Review Loop's state, CI and unresolved threads in a live pane (`claude plugin install aichemist-pr-review-pane@aichemist`)
 
 See [docs/](docs/) for detailed documentation.

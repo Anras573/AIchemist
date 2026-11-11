@@ -92,6 +92,36 @@ claude plugin install aichemist-beads-band@aichemist
 |--------|---------|-------------|
 | `refreshSeconds` | `60` | How often the band re-reads beads between turns (minimum 15) |
 
+### Remember Band
+
+A band above the prompt showing what's still open from your last [`/remember`](https://github.com/Digital-Process-Tools/claude-remember#handoff-between-sessions-remember) handoff, the `## Next` section of the note:
+
+```
+↪ Next (2, handoff 3h ago): Open the PR for remember-band · Run claude plugin validate .      [ Hide ]
+⚠ Same handoff loaded 4× since 2026-11-08 09:12. /remember writes a new one
+```
+
+The second line appears only when an earlier session already loaded this same note, going by Remember's own delivery record. It means the items may be done already and the note is waiting to be replaced.
+
+**Source:** [`mods/remember-band/`](../mods/remember-band/)
+
+**Install:**
+```bash
+claude plugin install aichemist-remember-band@aichemist
+```
+
+**Use:** it appears by itself once the project has a handoff with open items. `m` (**Hide**) or `/remember-band` hides it; `/remember-band` brings it back.
+
+**Requirements:** the [Remember](https://github.com/Digital-Process-Tools/claude-remember) plugin installed from any marketplace (`remember@dpt-plugins` or Anthropic's official one), in a version whose `scripts/doctor.sh` supports `--json`, plus `bash`, `git` and `cksum`.
+
+**How it works:** this mod sits on the Remember plugin, not on an AIchemist skill, so Copilot CLI loses nothing without it. It finds Remember through Claude Code's `plugins/installed_plugins.json` and asks Remember's own `doctor.sh --json` once per project where the memory store is. That way it never recomputes Remember's slug or storage-mode rules. It then reads the handoff file Remember's session start picked for this session (`remember.md`, or `remember.<session-id>.md` with `handoff_mode: "per_session"`) and lists its unchecked top-level `## Next` items. It also follows Remember's refusals: a symlinked handoff, or an in-project one the repository's git tracks, is not shown. The band never writes to the memory store. It refreshes on session start, every `refreshSeconds` and after each turn, since `/remember` replaces the note mid-turn. If Remember isn't installed, or `doctor.sh --json` answers anything but `schema_version` 1 (Remember calls that output provisional), it steps aside.
+
+**Options:**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `refreshSeconds` | `60` | How often the band re-reads the handoff between turns (minimum 15) |
+
 ## Developing a Mod
 
 Each mod is its own plugin folder:
