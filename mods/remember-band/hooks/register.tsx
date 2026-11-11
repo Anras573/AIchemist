@@ -4,13 +4,18 @@ import type { EngineInterface, Register, Timer } from 'claude-code'
 import type { Handoff } from '../types'
 import {
   bandLines,
-  cksumFingerprint,
+  cksum,
+  claudeConfigDir,
   deliveryPath,
   findRememberRoot,
+  forwardSlashes,
+  gitBashFromExecPath,
   handoffPath,
+  isWindowsPath,
   parseDelivery,
   parseDoctor,
   parseNext,
+  utf8,
 } from './remember'
 import type { RememberDir } from './remember'
 
@@ -30,10 +35,21 @@ async function locate($: EngineInterface, cache: Cache, root: string, sessionId:
     return cache.located.store
   }
 
-  const configDir = (await $.env.get('CLAUDE_CONFIG_DIR')) || `${await $.env.get('HOME')}/.claude`
+  const configDir = claudeConfigDir({
+    configDir: await $.env.get('CLAUDE_CONFIG_DIR'),
+    home: await $.env.get('HOME'),
+    userProfile: await $.env.get('USERPROFILE'),
+  })
+  if (configDir === null) {
+    return null
+  }
   const installed = await $.fs.read(`${configDir}/plugins/installed_plugins.json`).catch(() => null)
   const plugin = typeof installed === 'string' ? findRememberRoot(installed, root) : null
   if (plugin === null || !(await $.fs.exists(`${plugin}/scripts/doctor.sh`))) {
+    return null
+  }
+  const bash = await findBash($, root)
+  if (bash === null) {
     return null
   }
 
@@ -41,7 +57,7 @@ async function locate($: EngineInterface, cache: Cache, root: string, sessionId:
   if (SAFE_SESSION_ID.test(sessionId)) {
     env.CLAUDE_CODE_SESSION_ID = sessionId
   }
-  const doctor = await $.process.run(['bash', `${plugin}/scripts/doctor.sh`, '--json'], {
+  const doctor = await $.process.run([bash, `${forwardSlashes(plugin)}/scripts/doctor.sh`, '--json'], {
     cwd: root,
     env,
     timeoutMs: 15_000,
@@ -52,6 +68,22 @@ async function locate($: EngineInterface, cache: Cache, root: string, sessionId:
   }
 
   return store
+}
+
+// The bash that runs Remember's scripts. On Windows that is Git Bash, the
+// same one Claude Code runs Remember's hooks with; never WSL's `bash.exe`.
+async function findBash($: EngineInterface, root: string): Promise<string | null> {
+  if (!isWindowsPath(root)) {
+    return 'bash'
+  }
+  const configured = await $.env.get('CLAUDE_CODE_GIT_BASH_PATH')
+  if (configured && (await $.fs.exists(configured))) {
+    return forwardSlashes(configured)
+  }
+  const exec = await $.process.run(['git', '--exec-path']).catch(() => null)
+  const derived = exec?.exitCode === 0 ? gitBashFromExecPath(exec.stdout) : null
+
+  return derived !== null && (await $.fs.exists(derived)) ? derived : null
 }
 
 async function readOrNull($: EngineInterface, path: string): Promise<string | null> {
@@ -102,9 +134,7 @@ async function fetchHandoff($: EngineInterface, cache: Cache): Promise<Handoff |
     const record = await readOrNull($, deliveryPath(path, store.dir))
     const delivery = record === null ? null : parseDelivery(record)
     if (delivery !== null && delivery.deliveries >= 2) {
-      const sum = await $.process.run(['cksum', path])
-      const fingerprint = sum.exitCode === 0 ? cksumFingerprint(sum.stdout) : null
-      if (fingerprint !== null && delivery.fingerprint === fingerprint) {
+      if (delivery.fingerprint === cksum(utf8(text))) {
         redelivered = { count: delivery.deliveries, since: delivery.firstDelivered }
       }
     }

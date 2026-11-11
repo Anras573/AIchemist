@@ -114,12 +114,81 @@ export function parseDelivery(text: string): Delivery {
   }
 }
 
-// Remember fingerprints a handoff as `cksum < file | tr ' ' '-'`, i.e.
-// `<crc>-<size>`. `cksum <file>` prints `<crc> <size> <file>`.
-export function cksumFingerprint(stdout: string): string | null {
-  const [crc, size] = stdout.trim().split(/\s+/)
+// Claude Code's config folder: CLAUDE_CONFIG_DIR, else `.claude` in the home
+// folder. Windows sets USERPROFILE, not HOME, for Claude Code's own process.
+export function claudeConfigDir(env: { configDir?: string; home?: string; userProfile?: string }): string | null {
+  if (env.configDir) {
+    return env.configDir
+  }
+  const home = env.home || env.userProfile
 
-  return crc && size ? `${crc}-${size}` : null
+  return home ? `${home}/.claude` : null
+}
+
+export function isWindowsPath(path: string): boolean {
+  return /^[A-Za-z]:[\\/]/.test(path)
+}
+
+export function forwardSlashes(path: string): string {
+  return path.replace(/\\/g, '/')
+}
+
+// Git Bash from `git --exec-path` (`C:/Program Files/Git/<mingw64|ucrt64|…>/libexec/git-core`).
+// On Windows a bare `bash` is usually WSL's launcher, which cannot run a
+// Windows path, so the band never uses it there.
+export function gitBashFromExecPath(stdout: string): string | null {
+  const root = /^(.*)\/[^/]+\/libexec\/git-core\/?$/.exec(forwardSlashes(stdout.trim()))?.[1]
+
+  return root ? `${root}/bin/bash.exe` : null
+}
+
+export function utf8(text: string): Uint8Array {
+  const bytes: number[] = []
+  for (const char of text) {
+    const code = char.codePointAt(0)!
+    if (code < 0x80) {
+      bytes.push(code)
+    } else if (code < 0x800) {
+      bytes.push(0xc0 | (code >> 6), 0x80 | (code & 0x3f))
+    } else if (code < 0x10000) {
+      bytes.push(0xe0 | (code >> 12), 0x80 | ((code >> 6) & 0x3f), 0x80 | (code & 0x3f))
+    } else {
+      bytes.push(0xf0 | (code >> 18), 0x80 | ((code >> 12) & 0x3f), 0x80 | ((code >> 6) & 0x3f), 0x80 | (code & 0x3f))
+    }
+  }
+
+  return Uint8Array.from(bytes)
+}
+
+const CRC_TABLE = (() => {
+  const table = new Uint32Array(256)
+  for (let i = 0; i < 256; i++) {
+    let crc = i << 24
+    for (let bit = 0; bit < 8; bit++) {
+      crc = crc & 0x80000000 ? (crc << 1) ^ 0x04c11db7 : crc << 1
+    }
+    table[i] = crc >>> 0
+  }
+
+  return table
+})()
+
+// Remember fingerprints a handoff as `cksum < file | tr ' ' '-'`, i.e.
+// `<crc>-<size>`. This is POSIX cksum computed here, so the band needs no
+// `cksum` binary (Windows has none outside Git Bash).
+export function cksum(bytes: Uint8Array): string {
+  let crc = 0
+  const step = (byte: number) => {
+    crc = ((crc << 8) ^ CRC_TABLE[((crc >>> 24) ^ byte) & 0xff]!) >>> 0
+  }
+  for (const byte of bytes) {
+    step(byte)
+  }
+  for (let length = bytes.length; length > 0; length = Math.floor(length / 256)) {
+    step(length & 0xff)
+  }
+
+  return `${~crc >>> 0}-${bytes.length}`
 }
 
 function clean(text: string): string {

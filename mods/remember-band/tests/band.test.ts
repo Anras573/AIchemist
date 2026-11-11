@@ -4,13 +4,17 @@ import type { On, RenderElement } from 'claude-code'
 import {
   age,
   bandLines,
-  cksumFingerprint,
+  cksum,
+  claudeConfigDir,
   deliveryPath,
   findRememberRoot,
+  gitBashFromExecPath,
   handoffPath,
+  isWindowsPath,
   parseDelivery,
   parseDoctor,
   parseNext,
+  utf8,
 } from '../hooks/remember'
 
 const HOME = '/home/me'
@@ -94,15 +98,31 @@ describe('helpers', () => {
     expect(deliveryPath(`${STORE}/remember.${SESSION}.md`, STORE)).toBe(`${STORE}/tmp/remember.delivered.${SESSION}`)
   })
 
-  test('parses the delivery record and the cksum fingerprint', () => {
+  test('parses the delivery record', () => {
     expect(parseDelivery('fingerprint=123-456\nfirst_delivered=2026-11-08 09:12\ndeliveries=4\n')).toEqual({
       fingerprint: '123-456',
       firstDelivered: '2026-11-08 09:12',
       deliveries: 4,
     })
     expect(parseDelivery('deliveries=oops').deliveries).toBe(0)
-    expect(cksumFingerprint(`123 456 ${STORE}/remember.md\n`)).toBe('123-456')
-    expect(cksumFingerprint('')).toBeNull()
+  })
+
+  test('fingerprints like POSIX cksum, without running it', () => {
+    // Expected values from `printf … | cksum`.
+    expect(cksum(utf8('hello\n'))).toBe('3015617425-6')
+    expect(cksum(utf8(''))).toBe('4294967295-0')
+    expect(cksum(utf8('Ærø → ✓\n'))).toBe('184757777-14')
+  })
+
+  test('finds the config folder and Git Bash on Windows', () => {
+    expect(claudeConfigDir({ configDir: '/cfg', home: HOME })).toBe('/cfg')
+    expect(claudeConfigDir({ home: HOME, userProfile: 'C:\\Users\\me' })).toBe(`${HOME}/.claude`)
+    expect(claudeConfigDir({ userProfile: 'C:\\Users\\me' })).toBe('C:\\Users\\me/.claude')
+    expect(claudeConfigDir({})).toBeNull()
+    expect([isWindowsPath('E:\\proj'), isWindowsPath('c:/proj'), isWindowsPath('/home/me')]).toEqual([true, true, false])
+    expect(gitBashFromExecPath('C:/Program Files/Git/ucrt64/libexec/git-core\n')).toBe('C:/Program Files/Git/bin/bash.exe')
+    expect(gitBashFromExecPath('C:\\Git\\mingw64\\libexec\\git-core')).toBe('C:/Git/bin/bash.exe')
+    expect(gitBashFromExecPath('/usr/lib/git-core')).toBeNull()
   })
 
   test('takes the open items under ## Next, skipping checked ones', () => {
@@ -142,7 +162,9 @@ type Options = {
   links?: string[]
   doctor?: string
   tracked?: boolean
-  cksum?: string
+  root?: string
+  env?: Record<string, string>
+  gitExecPath?: string
 }
 
 const run = (exitCode: number, stdout: string) => ({
@@ -163,30 +185,42 @@ function mockHost(on: On, opts: Options = {}) {
   const runs: { argv: readonly string[]; env?: Record<string, string> }[] = []
   const writes: string[] = []
 
-  on('session.root', async () => ({ value: ROOT }))
+  const env = opts.env ?? { HOME }
+  // The kit hands fs paths over resolved for the OS it runs on: on Windows,
+  // `/home/me/x` arrives as `E:\home\me\x`. Match on a drive- and
+  // separator-free spelling so the same fixtures work everywhere.
+  const canon = (path: string) => path.replace(/^[A-Za-z]:/, '').replace(/\\/g, '/')
+  const lookup = (path: string) => Object.keys(files).find(key => canon(key) === canon(path))
+  const isLink = (path: string) => (opts.links ?? []).some(link => canon(link) === canon(path))
+
+  on('session.root', async () => ({ value: opts.root ?? ROOT }))
   on('session.id', async () => ({ value: SESSION }))
-  on('env.get', async (_$, e) => ({ value: e.name === 'HOME' ? HOME : undefined }))
-  on('fs.read', async (_$, e) => (e.path in files ? { value: files[e.path]! } : { deny: `ENOENT: ${e.path}` }))
-  on('fs.exists', async (_$, e) => ({ value: e.path in files }))
-  on('fs.stat', async (_$, e) =>
-    e.path in files
-      ? { value: { kind: 'file', size: files[e.path]!.length, mtimeMs: NOW - 2 * HOUR, isLink: (opts.links ?? []).includes(e.path) } }
-      : { deny: `ENOENT: ${e.path}` },
-  )
+  on('env.get', async (_$, e) => ({ value: env[e.name] }))
+  on('fs.read', async (_$, e) => {
+    const key = lookup(e.path)
+    return key === undefined ? { deny: `ENOENT: ${e.path}` } : { value: files[key]! }
+  })
+  on('fs.exists', async (_$, e) => ({ value: lookup(e.path) !== undefined }))
+  on('fs.stat', async (_$, e) => {
+    const key = lookup(e.path)
+    return key === undefined
+      ? { deny: `ENOENT: ${e.path}` }
+      : { value: { kind: 'file', size: files[key]!.length, mtimeMs: NOW - 2 * HOUR, isLink: isLink(e.path) } }
+  })
   on('fs.write', async (_$, e) => {
     writes.push(e.path)
     return { value: undefined }
   })
   on('process.run', async (_$, e) => {
     runs.push({ argv: e.argv, env: e.init?.env })
-    if (e.argv[0] === 'bash') {
+    if (/(^|\/)bash(\.exe)?$/.test(e.argv[0]!)) {
       return run(0, `${opts.doctor ?? DOCTOR}\n`)
+    }
+    if (e.argv[0] === 'git' && e.argv[1] === '--exec-path') {
+      return opts.gitExecPath ? run(0, `${opts.gitExecPath}\n`) : run(127, '')
     }
     if (e.argv[0] === 'git') {
       return run(opts.tracked ? 0 : 1, '')
-    }
-    if (e.argv[0] === 'cksum') {
-      return run(0, `${opts.cksum ?? '111 222'} ${e.argv[1]}\n`)
     }
     return run(127, '')
   })
@@ -257,8 +291,9 @@ describe('band', () => {
     mockEngine(on)
     const files = baseFiles()
     files[`${STORE}/tmp/handoff-path.${SESSION}`] = `${STORE}/remember.${SESSION}.md`
-    files[`${STORE}/remember.${SESSION}.md`] = '# Handoff\n## Next\n- Only mine\n'
-    files[`${STORE}/tmp/remember.delivered.${SESSION}`] = 'fingerprint=111-222\nfirst_delivered=2026-11-08 09:12\ndeliveries=3\n'
+    const mine = '# Handoff\n## Next\n- Only mine\n'
+    files[`${STORE}/remember.${SESSION}.md`] = mine
+    files[`${STORE}/tmp/remember.delivered.${SESSION}`] = `fingerprint=${cksum(utf8(mine))}\nfirst_delivered=2026-11-08 09:12\ndeliveries=3\n`
     mockHost(on, { files })
 
     await start($, clock)
@@ -301,6 +336,65 @@ describe('band', () => {
       expect(await ui.find({ text: 'engine band' })).toBeDefined()
     })
   }
+
+  test('on Windows, finds Remember without HOME and runs its doctor with Git Bash', async ($, on) => {
+    const clock = mock.clock(on, { now: NOW })
+    mockEngine(on)
+    const root = 'E:\\proj'
+    const plugin = 'C:\\Users\\me\\.claude\\plugins\\cache\\claude-plugins-official\\remember\\0.43.1'
+    const dir = 'E:\\proj/.remember'
+    const host = mockHost(on, {
+      root,
+      env: { USERPROFILE: 'C:\\Users\\me' },
+      gitExecPath: 'C:/Program Files/Git/ucrt64/libexec/git-core',
+      doctor: JSON.stringify({ schema_version: 1, state: 'resolved', remember_dir: dir, storage_mode: 'legacy' }),
+      files: {
+        'C:\\Users\\me/.claude/plugins/installed_plugins.json': JSON.stringify({
+          version: 2,
+          plugins: { 'remember@claude-plugins-official': [{ scope: 'user', installPath: plugin }] },
+        }),
+        [`${plugin}/scripts/doctor.sh`]: '',
+        'C:/Program Files/Git/bin/bash.exe': '',
+        [`${dir}/tmp/handoff-path`]: `${dir}/remember.md\n`,
+        [`${dir}/remember.md`]: NOTE,
+        [`${dir}/tmp/remember.delivered`]: `fingerprint=${cksum(utf8(NOTE))}\nfirst_delivered=2026-11-11 12:08\ndeliveries=2\n`,
+      },
+    })
+
+    await start($, clock)
+
+    expect(host.runs.find(r => r.argv[0]!.endsWith('bash.exe'))?.argv).toEqual([
+      'C:/Program Files/Git/bin/bash.exe',
+      'C:/Users/me/.claude/plugins/cache/claude-plugins-official/remember/0.43.1/scripts/doctor.sh',
+      '--json',
+    ])
+    expect(host.runs.some(r => r.argv[0] === 'bash' || r.argv[0] === 'cksum')).toBe(false)
+    const ui = await $.ui.mount({ plugin: 'aichemist-remember-band', surface: 'terminal', ...BAND } as never)
+    expect(await ui.find({ text: /Next \(3/ })).toBeDefined()
+    expect(await ui.find({ text: /Same handoff loaded 2× since 2026-11-11 12:08/ })).toBeDefined()
+  })
+
+  test('on Windows, stays out of the way rather than use WSL bash', async ($, on) => {
+    const clock = mock.clock(on, { now: NOW })
+    mockEngine(on)
+    const plugin = 'C:\\Users\\me\\remember'
+    const host = mockHost(on, {
+      root: 'E:\\proj',
+      env: { USERPROFILE: 'C:\\Users\\me' },
+      files: {
+        'C:\\Users\\me/.claude/plugins/installed_plugins.json': JSON.stringify({
+          plugins: { 'remember@x': [{ installPath: plugin }] },
+        }),
+        [`${plugin}/scripts/doctor.sh`]: '',
+      },
+    })
+
+    await start($, clock)
+
+    expect(host.runs.some(r => /bash/.test(r.argv[0]!))).toBe(false)
+    const ui = await $.ui.mount({ plugin: 'aichemist-remember-band', surface: 'terminal', ...BAND } as never)
+    expect(await ui.find({ text: /Next/ })).toBeUndefined()
+  })
 
   test('refuses an in-project handoff that git tracks', async ($, on) => {
     const clock = mock.clock(on, { now: NOW })
