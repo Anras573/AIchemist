@@ -187,6 +187,35 @@ Daily notes use the "daily" template with sections for:
 
 ## Hooks
 
+### Commit Gate
+
+AIchemist ships a `PreToolUse` hook (`tools/commit-gate.sh`) that runs before the agent executes `git commit` or `git push`. It runs **build → test → format check** and blocks the git command (exit 2) with the tail of each failing step's output, so the agent has to fix the problem first.
+
+Languages are auto-detected from the repo root:
+
+| Stack | Detected by | Build | Test | Format (check only) |
+|-------|-------------|-------|------|---------------------|
+| Node | `package.json` (npm/pnpm/yarn/bun via lockfile; needs `node_modules`) | `build` script | `test` script | `format:check`/`fmt:check`/`check-format`/`prettier:check` script, else prettier or biome |
+| Python | `pyproject.toml`, `setup.py`, `requirements.txt`, … | – | `pytest` | `ruff format --check`, else `black --check` |
+| Go | `go.mod` | `go build ./...` | `go test ./...` | `gofmt -l` |
+| Rust | `Cargo.toml` | `cargo build` | `cargo test` | `cargo fmt --check` |
+| .NET | `*.sln`, `*.csproj`, `*.fsproj` | `dotnet build` | `dotnet test` | `dotnet format --verify-no-changes` |
+| Maven / Gradle | `pom.xml`, `build.gradle[.kts]` | compile / build | test | – |
+| Make | `Makefile` targets | `build` | `test`/`check` | `format-check`/`fmt-check`/`check-format` |
+
+Make targets only fill steps that no language detector already provided. Formatting is never applied by the hook, only checked.
+
+The hook fails open: no git repo, an unknown project type or a missing toolchain lets the command through (missing toolchains are mentioned when something else fails). A passing run is cached per working-tree content, so `git commit` followed by `git push` runs the checks once.
+
+**Configuration** (environment variables; set them under `env` in `settings.json`):
+
+| Variable | Effect |
+|----------|--------|
+| `AICHEMIST_GATE_SKIP=1` | Disable the gate |
+| `AICHEMIST_GATE_BUILD` / `_TEST` / `_FORMAT` | Replace the detected command for that step; set to an empty string to skip the step |
+
+Requires `python3` (the hook skips itself if missing).
+
 ### Skill Suggester
 
 AIchemist ships a `PreCompact`/`SessionEnd` hook (`tools/skill-suggester.sh`) that mines your session transcripts for reusable automation opportunities. It now stages two review streams in your vault: new candidate automations and concrete update proposals for existing skills/agents.
