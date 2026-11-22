@@ -68,8 +68,11 @@ while IFS= read -r seg; do
   [[ "$seg" =~ $git_re ]] || continue
   matched="${BASH_REMATCH[0]}"
   verb="${BASH_REMATCH[$verb_group]}"
-  [[ "$seg" == *--dry-run* ]] && continue
-  [ "$verb" = push ] && [[ " $seg " == *" -n "* ]] && continue
+  # Look for dry-run flags outside quotes, so a commit message that merely
+  # mentions --dry-run does not exempt the command.
+  flags=$(printf '%s' "$seg" | sed -E "s/\"[^\"]*\"//g; s/'[^']*'//g")
+  [[ "$flags" == *--dry-run* ]] && continue
+  [ "$verb" = push ] && [[ " $flags " == *" -n "* ]] && continue
   # Follow `git -C <path>` (relative paths stack, like git does).
   dir=""
   opts="$matched"
@@ -347,8 +350,14 @@ run_gate() { # dir ("" = hook cwd)
   exit 0
 }
 
+# Gate each distinct target once and stop at the first block: re-running a
+# failing suite for `git commit && git push` would double the wait and could
+# push the hook past its timeout (which fails open).
 rc=0
+seen=" "
 for t in "${targets[@]}"; do
-  ( run_gate "$t" ) || rc=$?
+  case "$seen" in *" [$t] "*) continue ;; esac
+  seen+="[$t] "
+  ( run_gate "$t" ) || { rc=$?; [ "$rc" -eq 2 ] && break; }
 done
 exit "$rc"

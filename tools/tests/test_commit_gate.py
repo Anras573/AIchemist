@@ -204,6 +204,22 @@ class CommitGateTest(unittest.TestCase):
         self.write("pyproject.toml", "[tool.ruff]\nline-length = 88\n")
         self.assertEqual(self.gate("git commit -m x", env).returncode, 2)
 
+    def test_failing_suite_runs_once_for_chained_commands(self):
+        marker = self.repo + ".count"
+        self.addCleanup(lambda: os.path.exists(marker) and os.remove(marker))
+        self.write("Makefile", "test:\n\techo x >> %s; false\n" % marker)
+        r = self.gate("git commit -m x && git push")
+        self.assertEqual(r.returncode, 2)
+        with open(marker) as f:
+            self.assertEqual(len(f.read().splitlines()), 1)
+        self.assertEqual(r.stderr.count("Blocked"), 1)
+
+    def test_dry_run_in_commit_message_does_not_skip(self):
+        self.write("Makefile", "test:\n\tfalse\n")
+        self.assertEqual(self.gate('git commit -m "docs: explain --dry-run"').returncode, 2)
+        self.assertEqual(self.gate("git commit -m 'mention -n --dry-run'").returncode, 2)
+        self.assertEqual(self.gate('git commit --dry-run -m "x"').returncode, 0)
+
 
 if __name__ == "__main__":
     unittest.main()
