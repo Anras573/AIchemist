@@ -40,3 +40,9 @@ Before opening a PR that touches a file in `tools/`:
 - No-arg default targets in shell skills should use `$repo_root`, not `.` — CWD varies when invoked from a subdirectory
 - Structured agent output tokens that bypass the validation step (e.g. `HOTSPOT_FINDING`) need an explicit exemption note in the consuming skill's Step 6
 - Always include a `location: <file>:<line>` field in structured finding tokens so the code-review skill can anchor inline PR comments
+- Names validated by an ASCII-only regex (e.g. pad or folder names) must be built from an ASCII-only slug — transliterate (`æ`→`ae`, `ø`→`oe`, `å`→`aa`) and fall back to a default when nothing survives; otherwise a non-ASCII topic creates a folder that discovery then cannot see
+- A detached, long-lived subprocess (a local server) must send its output to a log file, not a pipe nobody reads — the `stdout=PIPE, stderr=PIPE` rule is for capturing output you consume; show the log tail when startup fails
+- Never signal a PID read from a state file unless the process is confirmed to be yours (e.g. its health endpoint answers on the recorded port) — PIDs get reused; treat an unreachable server as a stale record and remove it
+- `urlparse(...).port` raises `ValueError` on a malformed port — wrap it when parsing untrusted headers such as `Origin`, and answer 403/400 instead of letting the handler crash
+- Containment checks apply to discovery as well as access: filter listed entries with a resolved-path `inside(root, path)` check so a symlink pointing outside the root is never listed or resolved
+- Split parsers and request handlers into per-block / per-step helpers up front; a hotspot scan on the first draft flagged `render_markdown` (CCN 38) and `do_POST` (CCN 31)
