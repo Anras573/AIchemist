@@ -187,6 +187,55 @@ Daily notes use the "daily" template with sections for:
 
 ## Hooks
 
+### Commit Gate
+
+AIchemist ships a `PreToolUse` hook (`tools/commit-gate.sh`) that runs before the agent executes `git commit` or `git push`. It runs **build → test → format check** and blocks the git command (exit 2) with the tail of each failing step's output, so the agent has to fix the problem first.
+
+#### Opt-in
+
+**The gate is off by default.** Hooks run without permission prompts, and the checks execute code the repository controls (`Makefile` targets, `package.json` scripts, `./gradlew`, …). Enable it only for repos you trust:
+
+- Everywhere: set `AICHEMIST_GATE=1` (e.g. under `env` in `settings.json`).
+- Per repo or globally: `git config aichemist.gate true` (add `--global` for all repos).
+
+There is deliberately no marker file inside the repo, because an untrusted clone could ship one.
+
+#### Languages
+
+Detected from the repo root:
+
+| Stack | Detected by | Build | Test | Format (check only) |
+|-------|-------------|-------|------|---------------------|
+| Node | `package.json` (npm/pnpm/yarn/bun via lockfile; needs `node_modules`) | `build` script | `test` script | `format:check` / `fmt:check` / `check-format` / `prettier:check` / `format-check` script, else prettier or biome if listed as a dependency |
+| Python | `pyproject.toml`, `setup.py`, `requirements.txt`, … | – | `pytest`, only if the project configures it (`pytest.ini`, `[tool.pytest*]`, `conftest.py`, a `tests/` dir, …); "no tests collected" counts as a pass | `ruff format --check` if ruff is configured (`[tool.ruff]`, `ruff.toml`), else `black --check` if `[tool.black]` is set |
+| Go | `go.mod` | `go build ./...` | `go test ./...` | `gofmt -l` |
+| Rust | `Cargo.toml` | `cargo build` | `cargo test` | `cargo fmt --check` |
+| .NET | `*.sln`, `*.csproj`, `*.fsproj` | `dotnet build` | `dotnet test` | `dotnet format --verify-no-changes` |
+| Maven / Gradle | `pom.xml`, `build.gradle[.kts]` | compile / build | test | – |
+| Make | `Makefile` targets | `build` | `test` / `check` | `format-check` / `fmt-check` / `check-format` / `lint-format` |
+
+Make targets only fill steps that no language detector already provided. Formatting is never applied by the hook, only checked.
+
+#### Behavior
+
+- **Fails open.** No git repo, an unknown project type, a missing toolchain or missing `python3` lets the command through (missing toolchains are mentioned when something else fails).
+- **Checks the working tree, not the staged snapshot.** A partial commit (`git add` of some files) can pass while the committed content is broken, and a `git push` can be blocked by uncommitted work that is not being pushed. Stage everything you intend to commit, or commit from a clean tree, if that matters.
+- **Dry runs are skipped** (`git commit --dry-run`, `git push --dry-run` / `-n`), but only when the flag belongs to that git command.
+- **`git -C <path>`** gates the repository at `<path>`, not the session's working directory. A `cd dir && git commit` is not followed.
+- **Cached.** A passing run is remembered per working-tree content and override settings, so `git commit` followed by `git push` runs the checks once.
+
+#### Configuration
+
+Environment variables (set them under `env` in `settings.json`):
+
+| Variable | Effect |
+|----------|--------|
+| `AICHEMIST_GATE=1` | Enable the gate (see Opt-in) |
+| `AICHEMIST_GATE_SKIP=1` | Disable the gate even when enabled |
+| `AICHEMIST_GATE_BUILD` / `_TEST` / `_FORMAT` | Replace the detected command for that step; set to an empty string to skip the step |
+
+Requires `python3` (the hook skips itself if missing).
+
 ### Skill Suggester
 
 AIchemist ships a `PreCompact`/`SessionEnd` hook (`tools/skill-suggester.sh`) that mines your session transcripts for reusable automation opportunities. It now stages two review streams in your vault: new candidate automations and concrete update proposals for existing skills/agents.
