@@ -122,6 +122,35 @@ claude plugin install aichemist-remember-band@aichemist
 |--------|---------|-------------|
 | `refreshSeconds` | `60` | How often the band re-reads the handoff between turns (minimum 15) |
 
+### Lizard Band
+
+A band above the prompt flagging functions in your uncommitted changes whose cyclomatic complexity is above a threshold, measured by [lizard](https://www.lizard.ws/), the tool the [Hotspot skill](skills.md#hotspot-skill) uses:
+
+```
+🔥 Complexity > 15 in changed files (2): apply CCN 21 src/Discounts.ts:5 · processOrder CCN 18 src/OrderService.ts:42   [ Hide ]
+Run /hotspot to weigh these against git churn
+```
+
+**Source:** [`mods/lizard-band/`](../mods/lizard-band/)
+
+**Install:**
+```bash
+claude plugin install aichemist-lizard-band@aichemist
+```
+
+**Use:** it appears by itself once a changed file has a function above the threshold, and disappears when there is none. `l` (**Hide**) or `/lizard-band` hides it; `/lizard-band` brings it back.
+
+**Requirements:** `lizard` on `PATH` (`pip install lizard`, or `brew install lizard-analyzer`) and a git repository.
+
+**How it works:** the band lists changed and untracked files with `git status --porcelain=v1 -z` (up to 100, deleted files skipped) and runs `lizard --csv -- <files>` on them, with the paths after `--`. It only reads. It shows the complexity of what you are changing right now. The churn-weighted ranking and the refactor guidance stay with the Hotspot skill, so the mod doesn't repeat that scoring, and the band points to `/hotspot` for it. The band refreshes on session start, every `refreshSeconds` and after each turn, since Claude edits files mid-turn. With no `lizard`, no git repository or a failing call, it steps aside.
+
+**Options:**
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `ccnThreshold` | `15` | Functions with a CCN above this are flagged (lizard's own default) |
+| `refreshSeconds` | `60` | How often the band re-scans between turns (minimum 15) |
+
 ## Developing a Mod
 
 Each mod is its own plugin folder:
