@@ -28,6 +28,10 @@
     {
       "name": "aichemist-remember-band",
       "source": "./mods/remember-band"
+    },
+    {
+      "name": "aichemist-lizard-band",
+      "source": "./mods/lizard-band"
     }
   ]
 }

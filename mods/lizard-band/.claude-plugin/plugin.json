@@ -1,0 +1,28 @@
+{
+  "name": "aichemist-lizard-band",
+  "version": "3.12.0",
+  "description": "Claude Code mod: flags functions above a cyclomatic-complexity threshold (via lizard, the tool the hotspot skill uses) in your uncommitted changes, in a band above the prompt",
+  "author": {
+    "name": "Anders Bo Rasmussen",
+    "email": "anras573@gmail.com"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/Anras573/AIchemist",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "ccnThreshold": {
+      "type": "number",
+      "title": "Complexity threshold (CCN)",
+      "description": "Functions with a cyclomatic complexity above this are flagged (lizard's own default is 15)",
+      "default": 15,
+      "min": 2
+    },
+    "refreshSeconds": {
+      "type": "number",
+      "title": "Refresh interval (seconds)",
+      "description": "How often the band re-scans your changed files between turns (it also refreshes after every turn)",
+      "default": 60,
+      "min": 15
+    }
+  }
+}

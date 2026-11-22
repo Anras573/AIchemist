@@ -10,6 +10,8 @@ Identifies high-risk code by combining cyclomatic complexity (via `lizard`) with
 
 **Trigger phrases:** "/hotspot", "should I refactor this", "is this a hotspot", "hotspot analysis", "complexity risk", "churn analysis", "is this worth refactoring", "what's the riskiest file", "cyclomatic complexity", "which files are most complex", "what should I refactor first".
 
+**Claude Code add-on:** the optional [Lizard Band mod](mods.md#lizard-band) flags complex functions in your uncommitted changes above the prompt.
+
 ### Usage
 
 ```
