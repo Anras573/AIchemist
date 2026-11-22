@@ -31,6 +31,7 @@ LOG_NAME = "comments.jsonl"
 LOCK_NAME = ".lock"
 SERVER_FILE = ".server.json"
 SERVER_LOG = ".server.log"
+START_LOCK = ".start.lock"
 HEALTH_PREFIX = b"scratchpad-ok pid="
 MAX_BODY = 64 * 1024
 MAX_TEXT = 5000
@@ -81,6 +82,21 @@ def list_pages(pad_dir):
     return sorted(pages, key=natural_key)
 
 
+def pad_activity(pad_dir):
+    """Newest mtime among the pad folder, its comment log and its pages.
+
+    Appending a comment or editing a page changes that file's mtime but not the folder's.
+    """
+    newest = os.path.getmtime(pad_dir)
+    for entry in os.listdir(pad_dir):
+        if entry == LOG_NAME or entry.endswith(".md"):
+            try:
+                newest = max(newest, os.path.getmtime(os.path.join(pad_dir, entry)))
+            except OSError:
+                pass
+    return newest
+
+
 def resolve_pad(home, name=None):
     """Return the pad name. Existence is checked before any path resolution."""
     if name:
@@ -95,7 +111,7 @@ def resolve_pad(home, name=None):
     pads = list_pads(home)
     if not pads:
         raise ScratchpadError("No pads found in %s (run `scratchpad new <topic>`)" % home)
-    return max(pads, key=lambda p: (os.path.getmtime(os.path.join(home, p)), p))
+    return max(pads, key=lambda p: (pad_activity(os.path.join(home, p)), p))
 
 
 def inside(root, target):
@@ -113,13 +129,13 @@ def inside(root, target):
 # --------------------------------------------------------------------------
 
 @contextlib.contextmanager
-def file_lock(path):
+def file_lock(path, timeout=10):
     handle = open(path, "a+b")
     try:
         if os.name == "nt":
             import msvcrt
             handle.seek(0)
-            deadline = time.time() + 10
+            deadline = time.time() + timeout
             while True:
                 try:
                     msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
@@ -1060,6 +1076,14 @@ def log_tail(path, lines=8):
 
 def cmd_start(args):
     home = pad_home()
+    os.makedirs(home, exist_ok=True)
+    # Serialise concurrent starts: otherwise two callers can each spawn a server and the
+    # loser's record is overwritten, leaving an orphan that `stop` can never reach.
+    with file_lock(os.path.join(home, START_LOCK), timeout=30):
+        return _start_server(args, home)
+
+
+def _start_server(args, home):
     info = read_server_info(home)
     if info and server_healthy(info["port"]):
         print("running: http://127.0.0.1:%d/" % info["port"])
@@ -1123,6 +1147,10 @@ def cmd_status(args):
 def cmd_serve(args):
     home = pad_home()
     os.makedirs(home, exist_ok=True)
+    running = read_server_info(home)
+    if running and server_healthy(running["port"]):
+        raise ScratchpadError("A scratchpad server is already running at http://127.0.0.1:%d/"
+                              % running["port"])
     server = bind_server(home, args.port)
     port = server.server_address[1]
     with open(server_file(home), "w") as handle:
@@ -1275,7 +1303,7 @@ def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
-    except ScratchpadError as error:
+    except (ScratchpadError, OSError) as error:  # OSError: bad SCRATCHPAD_HOME, permissions, full disk
         sys.stderr.write("scratchpad: %s\n" % error)
         return 1
 

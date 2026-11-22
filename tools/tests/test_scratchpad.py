@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -243,6 +244,17 @@ class PathTests(TempDirCase):
         os.utime(os.path.join(self.root, "2026-01-01-old"), (1, 1))
         self.assertEqual(sp.resolve_pad(self.root), "2026-01-02-new")
 
+    def test_default_pad_follows_comment_and_page_activity_not_just_folder_mtime(self):
+        older = os.path.join(self.root, "2026-11-01-active")
+        newer = os.path.join(self.root, "2026-11-02-quiet")
+        os.makedirs(older)
+        os.makedirs(newer)
+        sp.Store(older).add_comment("1-a", "g", "G", "live feedback")  # appends to comments.jsonl
+        # Appends and in-place page edits do not change a folder's mtime, so pin both folders.
+        os.utime(older, (1000, 1000))
+        os.utime(newer, (2000, 2000))
+        self.assertEqual(sp.resolve_pad(self.root), "2026-11-01-active")
+
     def test_symlink_escaping_the_home_is_not_a_pad(self):
         outside = tempfile.mkdtemp(prefix="scratchpad-outside-")
         self.addCleanup(shutil.rmtree, outside, True)
@@ -407,10 +419,15 @@ class ServerIntegrationTests(TempDirCase):
 class CliTests(TempDirCase):
     def run_cli(self, *args, **kwargs):
         env = dict(os.environ)
-        env["SCRATCHPAD_HOME"] = self.root
+        env["SCRATCHPAD_HOME"] = kwargs.get("home", self.root)
         process = subprocess.Popen([sys.executable, os.path.join(TOOLS, "scratchpad.py")] + list(args),
                                    stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
-        out, err = process.communicate(kwargs.get("stdin", "").encode("utf-8"))  # always UTF-8 bytes
+        try:
+            out, err = process.communicate(kwargs.get("stdin", "").encode("utf-8"), timeout=60)  # UTF-8 bytes
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.communicate()
+            self.fail("scratchpad %s did not exit within 60s" % " ".join(args))
         return process.returncode, out.decode("utf-8"), err.decode("utf-8")
 
     def test_new_inbox_reply_done_flow(self):
@@ -527,6 +544,54 @@ class CliTests(TempDirCase):
         code, _, err = self.run_cli("new", "clash")
         self.assertEqual(code, 1)
         self.assertIn("not a directory", err)
+
+    def test_unusable_home_gives_a_message_not_a_traceback(self):
+        not_a_dir = os.path.join(self.root, "afile")
+        with open(not_a_dir, "w") as handle:
+            handle.write("x")
+        code, _, err = self.run_cli("new", "t", home=not_a_dir)
+        self.assertEqual(code, 1)
+        self.assertTrue(err.startswith("scratchpad:"), err)
+        self.assertNotIn("Traceback", err)
+
+    def test_serve_refuses_to_replace_a_running_server(self):
+        server = sp.ScratchpadServer(("127.0.0.1", 0), self.root)
+        thread = threading.Thread(target=server.serve_forever)
+        thread.daemon = True
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        record = {"pid": os.getpid(), "port": server.server_address[1]}
+        with open(os.path.join(self.root, sp.SERVER_FILE), "w") as handle:
+            json.dump(record, handle)
+        code, _, err = self.run_cli("serve", "--port", "1")
+        self.assertEqual(code, 1)
+        self.assertIn("already running", err)
+        self.assertEqual(sp.read_server_info(self.root), record)  # record untouched
+
+    def test_concurrent_starts_leave_exactly_one_server(self):
+        port = 4800 + os.getpid() % 90
+        env = dict(os.environ)
+        env["SCRATCHPAD_HOME"] = self.root
+        command = [sys.executable, os.path.join(TOOLS, "scratchpad.py"), "start", "--port", str(port)]
+        processes = [subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+                     for _ in range(2)]
+        for process in processes:
+            process.communicate()
+        live = {}
+        for candidate in range(port, port + sp.PORT_ATTEMPTS):
+            pid = sp.server_pid(candidate)
+            if pid:
+                live[candidate] = pid
+        try:
+            self.assertEqual(len(live), 1, live)
+        finally:
+            self.run_cli("stop")
+            for pid in live.values():  # also reap strays so a failure does not leak servers
+                try:
+                    os.kill(pid, signal.SIGTERM)
+                except OSError:
+                    pass
 
     def test_start_status_stop_round_trip(self):
         env_port = "47%02d" % (os.getpid() % 90 + 10)
