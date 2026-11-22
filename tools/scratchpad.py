@@ -31,7 +31,7 @@ LOG_NAME = "comments.jsonl"
 LOCK_NAME = ".lock"
 SERVER_FILE = ".server.json"
 SERVER_LOG = ".server.log"
-HEALTH_BODY = b"scratchpad-ok"
+HEALTH_PREFIX = b"scratchpad-ok pid="
 MAX_BODY = 64 * 1024
 MAX_TEXT = 5000
 NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
@@ -807,7 +807,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._error(403, "Forbidden host")
         path = urllib.parse.unquote(urllib.parse.urlparse(self.path).path)
         if path == "/health":
-            return self._send(200, HEALTH_BODY, "text/plain; charset=utf-8")
+            return self._send(200, HEALTH_PREFIX + str(os.getpid()).encode("ascii"), "text/plain; charset=utf-8")
         if path == "/favicon.ico":
             return self._send(204, b"", "image/x-icon")
         parts = [p for p in path.split("/") if p]
@@ -938,15 +938,32 @@ def read_server_info(home):
     return None
 
 
-def server_healthy(port):
+def server_pid(port):
+    """PID reported by the scratchpad server on `port`; None if nothing (or something else) answers."""
     try:
         with urllib.request.urlopen("http://127.0.0.1:%d/health" % port, timeout=1) as response:
-            return response.read() == HEALTH_BODY
+            body = response.read()
     except Exception:
-        return False
+        return None
+    digits = body[len(HEALTH_PREFIX):]
+    if body.startswith(HEALTH_PREFIX) and digits.isdigit():
+        return int(digits)
+    return None
 
 
-def remove_server_file(home):
+def server_healthy(port, pid=None):
+    """True if a scratchpad server answers on `port` (and, when given, reports this `pid`)."""
+    reported = server_pid(port)
+    return reported is not None and (pid is None or reported == pid)
+
+
+def remove_server_file(home, owner=None):
+    """Remove the server record. With `owner=(pid, port)` only remove it if it still names that server,
+    so a server shutting down never deletes the record of a newer one."""
+    if owner is not None:
+        info = read_server_info(home)
+        if not info or (info.get("pid"), info.get("port")) != owner:
+            return
     try:
         os.remove(server_file(home))
     except OSError:
@@ -1018,6 +1035,11 @@ def cmd_new(args):
     home = pad_home()
     name = "%s-%s" % (datetime.date.today().isoformat(), pad_slug(args.topic))
     pad_dir = os.path.join(home, name)
+    if os.path.lexists(pad_dir):
+        if not os.path.isdir(pad_dir):
+            raise ScratchpadError("Pad path exists but is not a directory: %s" % pad_dir)
+        if not inside(home, pad_dir):
+            raise ScratchpadError("Pad is outside SCRATCHPAD_HOME: %s" % name)
     existed = os.path.isdir(pad_dir)
     os.makedirs(pad_dir, exist_ok=True)
     print("pad: %s%s" % (name, " (already existed)" if existed else ""))
@@ -1072,9 +1094,9 @@ def cmd_stop(args):
     if not info:
         print("not running")
         return 0
-    if not server_healthy(info["port"]) or not isinstance(info.get("pid"), int):
-        # Stale record: the recorded PID may since have been reused by an unrelated process,
-        # so it is never signalled unless the scratchpad server answers on the recorded port.
+    if not isinstance(info.get("pid"), int) or not server_healthy(info["port"], info["pid"]):
+        # Stale record: the PID (and port) may since have been reused, so the PID is never signalled
+        # unless the scratchpad server on the recorded port reports that same PID.
         remove_server_file(home)
         print("not running (removed stale server record)")
         return 0
@@ -1112,7 +1134,7 @@ def cmd_serve(args):
     except KeyboardInterrupt:
         pass
     finally:
-        remove_server_file(home)
+        remove_server_file(home, (os.getpid(), port))
         server.server_close()
     return 0
 

@@ -328,7 +328,14 @@ class ServerIntegrationTests(TempDirCase):
             return error.code, error.read().decode("utf-8")
 
     def test_health(self):
-        self.assertEqual(self.get("/health"), (200, "scratchpad-ok"))
+        self.assertEqual(self.get("/health"), (200, "scratchpad-ok pid=%d" % os.getpid()))
+
+    def test_server_identity_helpers(self):
+        self.assertEqual(sp.server_pid(self.port), os.getpid())
+        self.assertTrue(sp.server_healthy(self.port))
+        self.assertTrue(sp.server_healthy(self.port, os.getpid()))
+        self.assertFalse(sp.server_healthy(self.port, os.getpid() + 1))
+        self.assertIsNone(sp.server_pid(1))  # nothing listens there
 
     def test_full_comment_and_decision_cycle(self):
         status, body = self.get("/%s/1-overview" % self.pad)
@@ -471,6 +478,55 @@ class CliTests(TempDirCase):
         self.assertEqual(code, 0)
         self.assertIn("stale", out)
         self.assertFalse(os.path.exists(os.path.join(self.root, sp.SERVER_FILE)))
+
+    def test_stop_does_not_signal_when_the_server_on_the_port_has_another_pid(self):
+        # A scratchpad server is alive on the recorded port, but it is not the recorded PID
+        # (PID and port both reused). The recorded process must be left alone.
+        bystander = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
+        self.addCleanup(lambda: (bystander.kill(), bystander.wait()))
+        server = sp.ScratchpadServer(("127.0.0.1", 0), self.root)
+        thread = threading.Thread(target=server.serve_forever)
+        thread.daemon = True
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        with open(os.path.join(self.root, sp.SERVER_FILE), "w") as handle:
+            json.dump({"pid": bystander.pid, "port": server.server_address[1]}, handle)
+        code, out, _ = self.run_cli("stop")
+        self.assertEqual(code, 0)
+        self.assertIn("stale", out)
+        self.assertIsNone(bystander.poll())  # still running
+
+    def test_remove_server_file_only_removes_its_own_record(self):
+        path = os.path.join(self.root, sp.SERVER_FILE)
+        with open(path, "w") as handle:
+            json.dump({"pid": 111, "port": 4747}, handle)
+        sp.remove_server_file(self.root, (222, 4747))   # another server shutting down
+        self.assertTrue(os.path.exists(path))
+        sp.remove_server_file(self.root, (111, 4748))   # right pid, wrong port
+        self.assertTrue(os.path.exists(path))
+        sp.remove_server_file(self.root, (111, 4747))   # the owner
+        self.assertFalse(os.path.exists(path))
+
+    def test_new_refuses_a_pad_symlink_that_points_outside_the_home(self):
+        outside = tempfile.mkdtemp(prefix="scratchpad-outside-")
+        self.addCleanup(shutil.rmtree, outside, True)
+        name = "%s-escape" % sp.datetime.date.today().isoformat()
+        try:
+            os.symlink(outside, os.path.join(self.root, name), target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("symlinks are not available here")
+        code, _, err = self.run_cli("new", "escape")
+        self.assertEqual(code, 1)
+        self.assertIn("outside SCRATCHPAD_HOME", err)
+
+    def test_new_refuses_a_pad_path_that_is_a_file(self):
+        name = "%s-clash" % sp.datetime.date.today().isoformat()
+        with open(os.path.join(self.root, name), "w") as handle:
+            handle.write("not a directory")
+        code, _, err = self.run_cli("new", "clash")
+        self.assertEqual(code, 1)
+        self.assertIn("not a directory", err)
 
     def test_start_status_stop_round_trip(self):
         env_port = "47%02d" % (os.getpid() % 90 + 10)
