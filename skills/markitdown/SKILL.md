@@ -40,14 +40,14 @@ The `uri` must be one of:
 | HTTPS URL | `https://docs.anthropic.com/en/docs/...` |
 | HTTP URL | `http://example.com` |
 | Data URI | `data:text/html;base64,<base64content>` |
-| Local file | Use `tools/markitdown.sh` (see below) |
+| Local file | Use `tools/markitdown/markitdown.sh` (see below) |
 
 ### Local files — use the helper script
 
 The MCP server runs in a Docker container with no volume mounts, so `file://` URIs passed directly to `mcp__markitdown__convert_to_markdown` will fail. For local files, use the bundled script instead:
 
 ```bash
-tools/markitdown.sh <path-to-file>
+tools/markitdown/markitdown.sh <path-to-file>
 ```
 
 The script resolves the absolute path, mounts the file's parent directory into the container as `/data`, and passes `file:///data/<filename>` to markitdown. Output is printed to stdout.
@@ -79,7 +79,7 @@ Check the scheme is `https://`, `http://`, or `data:`.
 If the user provides a local file path (or a `file://` URI), use the helper script instead of the MCP tool:
 
 ```bash
-${CLAUDE_PLUGIN_ROOT}/tools/markitdown.sh <file-path>
+${CLAUDE_PLUGIN_ROOT}/tools/markitdown/markitdown.sh <file-path>
 ```
 
 ### 3. Call the tool

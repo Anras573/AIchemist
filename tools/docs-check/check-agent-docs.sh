@@ -14,7 +14,7 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
+REPO_ROOT=$(cd "$SCRIPT_DIR/../.." && pwd)
 readonly AGENTS_DIR="$REPO_ROOT/agents"
 readonly DOCS_FILE="$REPO_ROOT/docs/agents.md"
 

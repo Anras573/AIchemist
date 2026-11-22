@@ -1,1 +1,1 @@
-../../../tools/beads-db.sh
+../../../tools/beads/beads-db.sh

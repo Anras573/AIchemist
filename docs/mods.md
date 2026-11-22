@@ -6,7 +6,7 @@ The core `aichemist` plugin (skills, agents, tools, hooks) is shared with GitHub
 
 > **A mod adds a layer on top of a skill or tool. It never takes its place.**
 
-- Skills and `tools/*.sh` stay the source of truth. A mod calls them and does not reimplement them in TypeScript.
+- Skills and `tools/<feature>/*.sh` stay the source of truth. A mod calls them and does not reimplement them in TypeScript.
 - Uninstall the mod, and Claude Code behaves exactly as Copilot CLI does.
 - Logic is never moved out of a skill into a mod, so Copilot doesn't quietly fall behind.
 
@@ -25,7 +25,7 @@ claude plugin install aichemist-calendar-status@aichemist
 
 **Requirements:** the same setup as the [Calendar skill](skills.md#calendar-skill): `python3` on `PATH` and one backend, either Microsoft 365 (`MSGRAPH_APP_ID` + `MSGRAPH_TENANT_ID`, and a one-time `calendar.sh login`) or iCloud/CalDAV (`CALDAV_USERNAME` + an app-specific password). With neither configured, the mod does nothing.
 
-**How it works:** on session start the mod runs `tools/calendar.sh get-events` (the calendar skill's script, symlinked into the mod with both backends) every few minutes and redraws the countdown every minute. Cancelled and all-day events are skipped, and events marked private show as "Private event". If a fetch fails (expired login, offline), the last good list is kept. The mod skips non-interactive sessions, so `claude -p` runs are unaffected.
+**How it works:** on session start the mod runs `tools/calendar/calendar.sh get-events` (the calendar skill's script, symlinked into the mod with both backends) every few minutes and redraws the countdown every minute. Cancelled and all-day events are skipped, and events marked private show as "Private event". If a fetch fails (expired login, offline), the last good list is kept. The mod skips non-interactive sessions, so `claude -p` runs are unaffected.
 
 **Options** (`/plugin configure aichemist-calendar-status@aichemist`, or `/config`):
 
@@ -84,7 +84,7 @@ claude plugin install aichemist-beads-band@aichemist
 
 **Requirements:** [`bd`](https://github.com/steveyegge/beads) 1.x installed, and a beads database for the repo: one the [Beads skill](skills.md#beads-task-tracking-skill) set up (in-repo or sidecar), or the repo's own `.beads/`.
 
-**How it works:** the band finds the database with the beads skill's own [`tools/beads-db.sh`](../tools/beads-db.sh) (symlinked into the mod), so it always shows the database the skill uses. Then it runs `bd ready --json` and `bd list --status in_progress --json`. It never writes: the script runs without `--init`, so a repo the skill hasn't set up stays untouched, and every `bd` call passes `--readonly`. The band refreshes on session start, every `refreshSeconds` and after each turn, since Claude often claims or closes tasks mid-turn. With no database, no `bd` or a failing call, it steps aside.
+**How it works:** the band finds the database with the beads skill's own [`tools/beads/beads-db.sh`](../tools/beads/beads-db.sh) (symlinked into the mod), so it always shows the database the skill uses. Then it runs `bd ready --json` and `bd list --status in_progress --json`. It never writes: the script runs without `--init`, so a repo the skill hasn't set up stays untouched, and every `bd` call passes `--readonly`. The band refreshes on session start, every `refreshSeconds` and after each turn, since Claude often claims or closes tasks mid-turn. With no database, no `bd` or a failing call, it steps aside.
 
 **Options:**
 
@@ -132,7 +132,7 @@ mods/<name>/
   hooks/hooks.json             { "modules": ["./register.ts"] }
   hooks/register.ts            export const register: Register = (on, options) => { ... }
   tests/*.test.ts              Run with claude plugin test
-  tools/<script>.sh            Symlink to ../../../tools/<script>.sh when reusing a shared tool
+  tools/<script>.sh            Symlink to ../../../tools/<feature>/<script>.sh when reusing a shared tool
 ```
 
 To reuse a shared script, symlink it into the mod rather than copying it. When Claude Code copies a marketplace plugin into its cache, a symlink to another file in the same marketplace is replaced by the file's content, so the installed mod gets the current script. A mod can't reach `../../tools` at runtime.

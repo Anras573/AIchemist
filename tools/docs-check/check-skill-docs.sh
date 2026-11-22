@@ -13,7 +13,7 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
+REPO_ROOT=$(cd "$SCRIPT_DIR/../.." && pwd)
 readonly SKILLS_DIR="$REPO_ROOT/skills"
 readonly DOCS_FILE="$REPO_ROOT/docs/skills.md"
 

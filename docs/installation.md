@@ -40,14 +40,14 @@ For a full machine bootstrap (dependencies + plugin install for both CLIs), run 
 
 **macOS:**
 ```bash
-tools/bootstrap-machine.sh install
+tools/bootstrap/bootstrap-machine.sh install
 ```
 
 This installs the dependency set defined in `Brewfile`, installs tool-specific dependencies (Playwright CLI, Microsoft 365 CLI, MemPalace), pulls the Markitdown image, and installs AIchemist from the local repo path for both Claude Code and GitHub Copilot CLI.
 
 **Windows:**
 ```powershell
-tools/bootstrap-machine.ps1 install
+tools/bootstrap/bootstrap-machine.ps1 install
 ```
 
 Requires PowerShell 7+ and `winget` (bundled with the "App Installer" from the Microsoft Store on modern Windows). Installs the same dependency set via `winget`/`npm`/`uv`, then installs AIchemist for both CLIs. `bd` (beads) and `lizard` don't have winget packages — `doctor` reports the `npm install -g @beads/bd` / `python -m pip install --upgrade lizard` fallback commands.
@@ -56,12 +56,12 @@ To verify a machine state at any time:
 
 **macOS:**
 ```bash
-tools/bootstrap-machine.sh doctor
+tools/bootstrap/bootstrap-machine.sh doctor
 ```
 
 **Windows:**
 ```powershell
-tools/bootstrap-machine.ps1 doctor
+tools/bootstrap/bootstrap-machine.ps1 doctor
 ```
 
 `doctor` reports **READY/MISSING** with exact remediation commands. Optional items, such as the calendar backend (Microsoft 365 or iCloud/CalDAV, whichever is configured) and `POSTGRES_URL`, are reported but don't fail the check.

@@ -45,10 +45,10 @@ Dolt (the database backend) is bundled with beads and its server is auto-started
 Run this **once per session** to find the beads database, and keep the printed path as `$BD_DB` for every later `bd --db "$BD_DB"` call:
 
 ```bash
-BD_DB=$("${CLAUDE_PLUGIN_ROOT}/tools/beads-db.sh" --init)
+BD_DB=$("${CLAUDE_PLUGIN_ROOT}/tools/beads/beads-db.sh" --init)
 ```
 
-[`tools/beads-db.sh`](../../tools/beads-db.sh) holds the resolution rules (the beads-band mod uses the same script). It prints the `.beads` directory to pass as `--db` and says on stderr which storage it picked. Relay that line to the user:
+[`tools/beads/beads-db.sh`](../../tools/beads/beads-db.sh) holds the resolution rules (the beads-band mod uses the same script). It prints the `.beads` directory to pass as `--db` and says on stderr which storage it picked. Relay that line to the user:
 
 | stderr says | Storage | Tell the user |
 |---|---|---|
@@ -227,7 +227,7 @@ bd --db "$BD_DB" dolt start     # start it explicitly if needed
 bd --db "$BD_DB" doctor         # full health check
 ```
 
-**`bd where` shows wrong location** → run `"${CLAUDE_PLUGIN_ROOT}/tools/beads-db.sh"` again and check the path it prints.
+**`bd where` shows wrong location** → run `"${CLAUDE_PLUGIN_ROOT}/tools/beads/beads-db.sh"` again and check the path it prints.
 
 **`bd init finished but … holds no database`** → the sidecar directory exists but `bd init` didn't complete. Run `bd doctor --db "<sidecar>/.beads"`, or move the sidecar directory aside and run `beads-db.sh --init` again.
 

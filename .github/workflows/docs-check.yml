@@ -7,8 +7,8 @@ on:
       - 'skills/**'
       - 'docs/agents.md'
       - 'docs/skills.md'
-      - 'tools/check-agent-docs.sh'
-      - 'tools/check-skill-docs.sh'
+      - 'tools/docs-check/check-agent-docs.sh'
+      - 'tools/docs-check/check-skill-docs.sh'
       - '.github/workflows/docs-check.yml'
   push:
     branches: [main]
@@ -17,8 +17,8 @@ on:
       - 'skills/**'
       - 'docs/agents.md'
       - 'docs/skills.md'
-      - 'tools/check-agent-docs.sh'
-      - 'tools/check-skill-docs.sh'
+      - 'tools/docs-check/check-agent-docs.sh'
+      - 'tools/docs-check/check-skill-docs.sh'
       - '.github/workflows/docs-check.yml'
 
 # Least-privilege: this workflow only reads the repo to run a local
@@ -33,11 +33,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run agent docs check
-        run: bash tools/check-agent-docs.sh
+        run: bash tools/docs-check/check-agent-docs.sh
   skill-docs-sync:
     name: Verify skills ↔ docs/skills.md sync
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Run skill docs check
-        run: bash tools/check-skill-docs.sh
+        run: bash tools/docs-check/check-skill-docs.sh
