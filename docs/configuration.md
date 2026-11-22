@@ -84,7 +84,7 @@ docker run --rm -i --entrypoint markitdown mcp/markitdown@sha256:1cef3bf50250331
 Test local file conversion via the bundled helper script:
 
 ```bash
-tools/markitdown.sh /path/to/file.pdf
+tools/markitdown/markitdown.sh /path/to/file.pdf
 ```
 
 ### Local File Conversion
@@ -92,7 +92,7 @@ tools/markitdown.sh /path/to/file.pdf
 The MCP server runs in a sandboxed Docker container with no volume mounts, so `file://` URIs cannot be passed directly to `mcp__markitdown__convert_to_markdown`. For local files, use the bundled script instead:
 
 ```bash
-tools/markitdown.sh <path-to-file>
+tools/markitdown/markitdown.sh <path-to-file>
 ```
 
 The script mounts the file's **parent directory** (read-only) into the container. Avoid running it against files in sensitive directories such as `~` or `~/.ssh`.
@@ -189,7 +189,7 @@ Daily notes use the "daily" template with sections for:
 
 ### Commit Gate
 
-AIchemist ships a `PreToolUse` hook (`tools/commit-gate.sh`) that runs before the agent executes `git commit` or `git push`. It runs **build → test → format check** and blocks the git command (exit 2) with the tail of each failing step's output, so the agent has to fix the problem first.
+AIchemist ships a `PreToolUse` hook (`tools/hooks/commit-gate.sh`) that runs before the agent executes `git commit` or `git push`. It runs **build → test → format check** and blocks the git command (exit 2) with the tail of each failing step's output, so the agent has to fix the problem first.
 
 #### Opt-in
 
@@ -238,7 +238,7 @@ Requires `python3` (the hook skips itself if missing).
 
 ### Skill Suggester
 
-AIchemist ships a `PreCompact`/`SessionEnd` hook (`tools/skill-suggester.sh`) that mines your session transcripts for reusable automation opportunities. It now stages two review streams in your vault: new candidate automations and concrete update proposals for existing skills/agents.
+AIchemist ships a `PreCompact`/`SessionEnd` hook (`tools/hooks/skill-suggester.sh`) that mines your session transcripts for reusable automation opportunities. It now stages two review streams in your vault: new candidate automations and concrete update proposals for existing skills/agents.
 
 #### Requirements
 
@@ -307,9 +307,9 @@ Or export `OBSIDIAN_VAULT=My\ Vault` in your shell profile.
 
 The simplest way to disable is to NOT configure a vault — with no `preferredVault` and no `$OBSIDIAN_VAULT`, the hook short-circuits early and does nothing.
 
-To disable more permanently, edit `hooks/hooks.json` and remove the two entries that invoke `tools/skill-suggester.sh`:
+To disable more permanently, edit `hooks/hooks.json` and remove the two entries that invoke `tools/hooks/skill-suggester.sh`:
 
-- Under `PreCompact`: remove the object whose `command` is `"${CLAUDE_PLUGIN_ROOT}/tools/skill-suggester.sh" 2>/dev/null; exit 0`. Leave any other entries (e.g. the mempalace command) in place.
+- Under `PreCompact`: remove the object whose `command` is `"${CLAUDE_PLUGIN_ROOT}/tools/hooks/skill-suggester.sh" 2>/dev/null; exit 0`. Leave any other entries (e.g. the mempalace command) in place.
 - Under `SessionEnd`: remove the entire `SessionEnd` block if skill-suggester is the only hook registered there, otherwise remove just the skill-suggester entry.
 
-Alternatively, `chmod -x tools/skill-suggester.sh` keeps the hook registration but prevents the script from executing.
+Alternatively, `chmod -x tools/hooks/skill-suggester.sh` keeps the hook registration but prevents the script from executing.

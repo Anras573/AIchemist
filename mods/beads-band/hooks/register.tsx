@@ -9,7 +9,7 @@ const COMMAND = 'beads-band'
 const snapshot = atom({ plugin: 'aichemist-beads-band', key: 'snapshot' } as const, null as BeadsSnapshot | null)
 const isHidden = atom({ plugin: 'aichemist-beads-band', key: 'isHidden' } as const, false)
 
-// Re-reads the database through the beads skill's own tools/beads-db.sh, so
+// Re-reads the database through the beads skill's own tools/beads/beads-db.sh, so
 // the band always shows the database the skill uses. Read-only throughout:
 // the script runs without --init and every bd call passes --readonly, so a
 // repo or sidecar the skill has not set up stays untouched.
@@ -20,7 +20,7 @@ async function refresh($: EngineInterface): Promise<void> {
 
 async function fetchSnapshot($: EngineInterface): Promise<BeadsSnapshot | null> {
   try {
-    const resolved = await $.process.run(['bash', `${$.plugin.root}/tools/beads-db.sh`])
+    const resolved = await $.process.run(['bash', `${$.plugin.root}/tools/beads/beads-db.sh`])
     // Exit 3: no database for this repo yet. Anything else non-zero: the
     // script failed. Either way there is nothing to show.
     const db = resolved.stdout.trim()

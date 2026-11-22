@@ -5,7 +5,7 @@ PLUGIN_NAME="aichemist"
 MARKITDOWN_IMAGE="mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb"
 MEMPALACE_HOME="${HOME}/.mempalace"
 OBSIDIAN_MAC_PATH="/Applications/Obsidian.app/Contents/MacOS/obsidian"
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BREWFILE_PATH="${REPO_ROOT}/Brewfile"
 MISSING_COUNT=0
 
@@ -16,7 +16,7 @@ die() { echo "ERROR: $*" >&2; exit 1; }
 
 usage() {
   cat <<'EOF'
-Usage: tools/bootstrap-machine.sh [install|doctor]
+Usage: tools/bootstrap/bootstrap-machine.sh [install|doctor]
 
 Commands:
   install   Install machine dependencies, plugin tool dependencies, and plugin registrations (default)
@@ -70,12 +70,12 @@ check_env() {
   fi
 }
 
-# The calendar skill needs one backend. tools/calendar.sh decides which one is
+# The calendar skill needs one backend. tools/calendar/calendar.sh decides which one is
 # in use, so ask it rather than re-deriving the rule here. Optional: not every
 # setup uses the calendar skill.
 check_calendar() {
   local provider
-  if ! provider=$("${REPO_ROOT}/tools/calendar.sh" provider 2>/dev/null); then
+  if ! provider=$("${REPO_ROOT}/tools/calendar/calendar.sh" provider 2>/dev/null); then
     case "${CALENDAR_PROVIDER:-}" in
       ""|msgraph|caldav) ;;
       *)
@@ -93,7 +93,7 @@ check_calendar() {
   case "${provider}" in
     msgraph)
       if [[ -n "${MSGRAPH_APP_ID:-}" && -n "${MSGRAPH_TENANT_ID:-}" ]]; then
-        ok "calendar (Microsoft 365; sign in once with tools/calendar.sh login)"
+        ok "calendar (Microsoft 365; sign in once with tools/calendar/calendar.sh login)"
       else
         check_env "MSGRAPH_APP_ID" "export MSGRAPH_APP_ID=<your-azure-app-id>" "false"
         check_env "MSGRAPH_TENANT_ID" "export MSGRAPH_TENANT_ID=<your-azure-tenant-id>" "false"
@@ -103,7 +103,7 @@ check_calendar() {
       if [[ -z "${CALDAV_USERNAME:-}" ]]; then
         mark_missing "env CALDAV_USERNAME" "export CALDAV_USERNAME=<your-apple-id-email>" "false"
       elif [[ -n "${CALDAV_PASSWORD:-}" || -n "${CALDAV_PASSWORD_CMD:-}" ]]; then
-        ok "calendar (iCloud/CalDAV; verify with tools/calendar.sh check)"
+        ok "calendar (iCloud/CalDAV; verify with tools/calendar/calendar.sh check)"
       else
         mark_missing "calendar password (iCloud/CalDAV)" \
           "export CALDAV_PASSWORD_CMD='security find-generic-password -s icloud-caldav -w' (store an app-specific password with: security add-generic-password -s icloud-caldav -a \"\$CALDAV_USERNAME\" -w)" \

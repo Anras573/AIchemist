@@ -10,7 +10,7 @@ AIchemist is a plugin for Claude Code and GitHub Copilot CLI that provides custo
 ```
 agents/     *.agent.md       Specialized AI agents invoked via the Task tool
 skills/     <name>/SKILL.md  Slash commands and context-aware capabilities that extend the conversation
-tools/                       Shell utilities (notify.sh)
+tools/                       Shell utilities, grouped by feature (calendar/, hooks/, scratchpad/, ...)
 hooks/      hooks.json       Claude Code event hooks
 mods/       <name>/          Claude Code-only mods, each its own plugin (see docs/mods.md)
 docs/                        User-facing documentation
@@ -92,8 +92,8 @@ Event hooks run shell commands in response to Claude Code lifecycle events (e.g.
 Mods are TypeScript hook modules that only Claude Code runs. Each one is its own plugin, listed in `.claude-plugin/marketplace.json` and **never** in `.github/plugin/marketplace.json`.
 
 **Rules:**
-- A mod adds a layer on top of a skill or tool and never takes its place. Skills and `tools/*.sh` stay the source of truth, so Copilot CLI users lose nothing.
-- Reuse a shared script by symlinking it into the mod (`mods/<name>/tools/x.sh -> ../../../tools/x.sh`), not by copying or reimplementing it.
+- A mod adds a layer on top of a skill or tool and never takes its place. Skills and `tools/<feature>/*.sh` stay the source of truth, so Copilot CLI users lose nothing.
+- Reuse a shared script by symlinking it into the mod (`mods/<name>/tools/x.sh -> ../../../tools/<feature>/x.sh`), not by copying or reimplementing it.
 - Plugin name: `aichemist-<name>`. Its `plugin.json` version is kept in step by release-please (`extra-files`).
 
 ## Commit Messages

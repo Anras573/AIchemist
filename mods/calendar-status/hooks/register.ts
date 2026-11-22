@@ -13,7 +13,7 @@ const MINUTE = 60_000
 const HOUR = 60 * MINUTE
 
 // Shows the next meeting in the status line, read through the same
-// tools/calendar.sh the calendar skill uses (Microsoft 365 or iCloud/CalDAV).
+// tools/calendar/calendar.sh the calendar skill uses (Microsoft 365 or iCloud/CalDAV).
 // Display only: the skill stays the source of truth and works the same
 // without this mod.
 export const register: Register = (on, options) => {
@@ -34,7 +34,7 @@ export const register: Register = (on, options) => {
       return next(e)
     }
 
-    const script = `${$.plugin.root}/tools/calendar.sh`
+    const script = `${$.plugin.root}/tools/calendar/calendar.sh`
 
     const render = async () => {
       const now = await $.clock.now()

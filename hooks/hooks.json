@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/tools/commit-gate.sh\"",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/tools/hooks/commit-gate.sh\"",
             "timeout": 600
           }
         ]
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/tools/notify.sh\" 'Claude Code' 'Awaiting your input'"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/tools/hooks/notify.sh\" 'Claude Code' 'Awaiting your input'"
           },
           {
             "type": "command",
@@ -37,7 +37,7 @@
           },
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/tools/skill-suggester.sh\" 2>/dev/null; exit 0"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/tools/hooks/skill-suggester.sh\" 2>/dev/null; exit 0"
           }
         ]
       }
@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}/tools/skill-suggester.sh\" 2>/dev/null; exit 0"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/tools/hooks/skill-suggester.sh\" 2>/dev/null; exit 0"
           }
         ]
       }

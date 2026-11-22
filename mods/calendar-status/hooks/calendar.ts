@@ -1,5 +1,5 @@
 // Pure helpers for the calendar status line: no `$`, so tests call them directly.
-// Event shape is what `tools/msgraph.sh get-events` prints (Graph calendarView,
+// Event shape is what `tools/calendar/msgraph.sh get-events` prints (Graph calendarView,
 // trimmed by its $select).
 
 export type GraphDateTime = {

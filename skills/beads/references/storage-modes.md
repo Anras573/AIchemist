@@ -2,7 +2,7 @@
 
 ## Overview
 
-The beads skill finds its database once per session with [`tools/beads-db.sh`](../../../tools/beads-db.sh), which prints the `.beads` directory to pass as `bd --db`. The beads-band mod reads through the same script, so both always pick the same database.
+The beads skill finds its database once per session with [`tools/beads/beads-db.sh`](../../../tools/beads/beads-db.sh), which prints the `.beads` directory to pass as `bd --db`. The beads-band mod reads through the same script, so both always pick the same database.
 
 The script checks, in order: in-repo, sidecar, legacy sidecar. `--init` creates a sidecar when none of them exists; without it the script never writes anything (exit status 3 means "no database yet").
 

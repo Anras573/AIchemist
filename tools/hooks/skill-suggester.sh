@@ -35,7 +35,7 @@ command -v claude >/dev/null 2>&1 && HAS_CLAUDE=1
 
 # ----- Config --------------------------------------------------------------
 
-readonly PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+readonly PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)}"
 readonly IDEAS_NOTE_PATH="AIchemist/Skill Ideas.md"
 readonly UPDATES_NOTE_PATH="AIchemist/Skill Updates.md"
 readonly TOOL_SEQ_LEN=3

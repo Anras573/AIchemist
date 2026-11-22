@@ -263,7 +263,7 @@ AI-native task tracking using [Beads](https://github.com/steveyegge/beads) (`bd`
 | **Sidecar** (default) | The repo has no `.beads/` database | `~/.local/share/aichemist/beads/<repo-name>/` (override with `AICHEMIST_BEADS_HOME`) |
 | **Legacy sidecar** | Neither of the above, but an older `~/.beads/<repo-name>/` exists | `~/.beads/<repo-name>/` |
 
-Sidecar mode keeps beads data out of your repo entirely. If two repos share the same name, the second sidecar gets the parent directory's name appended (e.g. `…/beads/my-app-work/`). The rules live in [`tools/beads-db.sh`](../tools/beads-db.sh), which the skill runs once per session. See `skills/beads/references/storage-modes.md` for full details.
+Sidecar mode keeps beads data out of your repo entirely. If two repos share the same name, the second sidecar gets the parent directory's name appended (e.g. `…/beads/my-app-work/`). The rules live in [`tools/beads/beads-db.sh`](../tools/beads/beads-db.sh), which the skill runs once per session. See `skills/beads/references/storage-modes.md` for full details.
 
 Sidecars moved out of `~/.beads` because bd 1.x keeps its own state there and refuses to `bd init` inside a `.beads` directory. Existing `~/.beads/<repo-name>/` sidecars are still used.
 
@@ -516,7 +516,7 @@ Use Playwright MCP for:
 
 **Source:** [`skills/calendar/SKILL.md`](../skills/calendar/SKILL.md)
 
-Read-only calendar integration for **Microsoft 365** (via the `m365` CLI, `@pnp/cli-microsoft365`) and **iCloud** or other CalDAV servers. Fetches events and generates meeting preparation briefings. Both backends sit behind [`tools/calendar.sh`](../tools/calendar.sh), with the same commands and output.
+Read-only calendar integration for **Microsoft 365** (via the `m365` CLI, `@pnp/cli-microsoft365`) and **iCloud** or other CalDAV servers. Fetches events and generates meeting preparation briefings. Both backends sit behind [`tools/calendar/calendar.sh`](../tools/calendar/calendar.sh), with the same commands and output.
 
 **Trigger phrases:** "my calendar", "what's on my schedule", "what meetings do I have", "today's agenda", "what's coming up", "next meeting", "prepare me for my next meeting", "meeting prep", "brief me on".
 
@@ -535,7 +535,7 @@ Read-only calendar integration for **Microsoft 365** (via the `m365` CLI, `@pnp/
    ```
 2. **Authenticated once** via browser OAuth:
    ```bash
-   ${CLAUDE_PLUGIN_ROOT}/tools/calendar.sh login
+   ${CLAUDE_PLUGIN_ROOT}/tools/calendar/calendar.sh login
    ```
    Tokens are cached by `m365` and auto-refreshed. The script falls back to `npx` automatically if `m365` is not installed globally — install it for faster startup:
    ```bash
@@ -551,7 +551,7 @@ Read-only calendar integration for **Microsoft 365** (via the `m365` CLI, `@pnp/
    export CALDAV_PASSWORD_CMD='security find-generic-password -s icloud-caldav -w'  # or CALDAV_PASSWORD=<app-specific-password>
    ```
    For another CalDAV server (Fastmail, Nextcloud, Radicale), also set `CALDAV_URL`.
-3. **Check it:** `${CLAUDE_PLUGIN_ROOT}/tools/calendar.sh check`
+3. **Check it:** `${CLAUDE_PLUGIN_ROOT}/tools/calendar/calendar.sh check`
 
 Without `--calendar-id`, CalDAV reads every event calendar on the account (iCloud has no default calendar). Recurring events are expanded by the server, or by the script when a server doesn't.
 
@@ -732,7 +732,7 @@ Convert remote web pages, documents, and local files to clean, structured markdo
 | "convert https://example.com to markdown" | Fetch and convert a remote URL |
 | "get the Anthropic docs page as markdown" | Fetch a docs page |
 | "convert this data URI to markdown" | Convert inline base64 content |
-| "convert /path/to/report.pdf to markdown" | Convert a local file via `tools/markitdown.sh` |
+| "convert /path/to/report.pdf to markdown" | Convert a local file via `tools/markitdown/markitdown.sh` |
 
 ### URI Support
 
@@ -741,14 +741,14 @@ Convert remote web pages, documents, and local files to clean, structured markdo
 | HTTPS URL | `https://docs.anthropic.com/...` |
 | HTTP URL | `http://example.com` |
 | Data URI | `data:text/html;base64,<content>` |
-| Local file | Use `tools/markitdown.sh <path>` |
+| Local file | Use `tools/markitdown/markitdown.sh <path>` |
 
 ### Behavior
 
 | Type | Behavior |
 |------|----------|
 | Remote URL conversion | Automatic — no confirmation needed |
-| Local file conversion | Automatic via `tools/markitdown.sh` |
+| Local file conversion | Automatic via `tools/markitdown/markitdown.sh` |
 
 ### When to Prefer Markitdown Over WebFetch
 
@@ -932,13 +932,13 @@ Guidance-only skill — no automated read/write operations. It loads conventions
 
 **Source:** [`skills/scratchpad/SKILL.md`](../skills/scratchpad/SKILL.md)
 
-A local HTML scratchpad for working through plans, options and decisions with the agent. The agent writes **markdown pages**; [`tools/scratchpad.sh`](../tools/scratchpad.sh) renders them on a local server (`127.0.0.1`), and you leave section comments and answer decision cards in the browser. The agent picks the feedback up as a batch, replies in threads and updates the pages. Chat shrinks to a status line and a link.
+A local HTML scratchpad for working through plans, options and decisions with the agent. The agent writes **markdown pages**; [`tools/scratchpad/scratchpad.sh`](../tools/scratchpad/scratchpad.sh) renders them on a local server (`127.0.0.1`), and you leave section comments and answer decision cards in the browser. The agent picks the feedback up as a batch, replies in threads and updates the pages. Chat shrinks to a status line and a link.
 
 **Trigger phrases:** "start a scratchpad", "open a scratchpad", "use the scratchpad", "put this in the scratchpad", "check the scratchpad", "any comments on the scratchpad", "collaborate in the browser", "let's work in an HTML scratchpad", "show me this as a page I can comment on".
 
 ### Prerequisites
 
-Python 3.7+ in `PATH` (`python3`, `python`, or `py -3` on Windows). No packages to install. Pads are stored in `~/scratchpads/<yyyy-mm-dd>-<topic>/`; export `SCRATCHPAD_HOME` to use another folder. On Windows PowerShell use [`tools/scratchpad.ps1`](../tools/scratchpad.ps1) in place of `scratchpad.sh` — same commands.
+Python 3.7+ in `PATH` (`python3`, `python`, or `py -3` on Windows). No packages to install. Pads are stored in `~/scratchpads/<yyyy-mm-dd>-<topic>/`; export `SCRATCHPAD_HOME` to use another folder. On Windows PowerShell use [`tools/scratchpad/scratchpad.ps1`](../tools/scratchpad/scratchpad.ps1) in place of `scratchpad.sh` — same commands.
 
 The pad folder is plain markdown plus a `comments.jsonl` log, so it can be opened in Obsidian as a read-only viewer; use the [Capture skill](#capture-skill) to promote finished pages into a vault.
 

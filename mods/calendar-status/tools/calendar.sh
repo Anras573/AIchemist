@@ -1,1 +1,1 @@
-../../../tools/calendar.sh
+../../../tools/calendar/calendar.sh

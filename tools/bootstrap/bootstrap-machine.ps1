@@ -2,14 +2,14 @@
 #Requires -Version 7.0
 <#
 .SYNOPSIS
-    Windows counterpart to tools/bootstrap-machine.sh.
+    Windows counterpart to tools/bootstrap/bootstrap-machine.sh.
 .DESCRIPTION
     Installs machine dependencies via winget/npm/uv, initializes mempalace,
     pulls the markitdown Docker image, and registers the AIchemist plugin
     with Claude Code and GitHub Copilot CLI. Mirrors the macOS bash script's
     install/doctor commands and exit-status conventions.
 .USAGE
-    tools/bootstrap-machine.ps1 [install|doctor]
+    tools/bootstrap/bootstrap-machine.ps1 [install|doctor]
 #>
 
 param(
@@ -24,7 +24,7 @@ $ErrorActionPreference = 'Stop'
 $PluginName = 'aichemist'
 $MarkitdownImage = 'mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb'
 $MempalaceHome = Join-Path $HOME '.mempalace'
-$RepoRoot = Split-Path -Parent $PSScriptRoot
+$RepoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $script:MissingCount = 0
 
 # id: winget package identifier. action: message shown when missing/failed.
@@ -45,7 +45,7 @@ function Die { param([string]$Message) Write-Host "ERROR: $Message" -ForegroundC
 
 function Show-Usage {
     @'
-Usage: tools/bootstrap-machine.ps1 [install|doctor]
+Usage: tools/bootstrap/bootstrap-machine.ps1 [install|doctor]
 
 Commands:
   install   Install machine dependencies, plugin tool dependencies, and plugin registrations (default)
@@ -55,7 +55,7 @@ Commands:
 
 function Assert-Windows {
     if (-not $IsWindows) {
-        Die 'This bootstrap script currently supports Windows only. Use tools/bootstrap-machine.sh on macOS.'
+        Die 'This bootstrap script currently supports Windows only. Use tools/bootstrap/bootstrap-machine.sh on macOS.'
     }
 }
 
@@ -240,7 +240,7 @@ function Test-ObsidianPresent {
     }
 }
 
-# The calendar skill needs one backend. Mirrors how tools/calendar.sh picks it
+# The calendar skill needs one backend. Mirrors how tools/calendar/calendar.sh picks it
 # (CALENDAR_PROVIDER, else Microsoft 365, else CalDAV); that script is bash, so
 # the rule is repeated here rather than called. Optional: not every setup uses
 # the calendar skill.
@@ -263,7 +263,7 @@ function Test-CalendarConfigured {
 
     if ($provider -eq 'msgraph') {
         if ($env:MSGRAPH_APP_ID -and $env:MSGRAPH_TENANT_ID) {
-            Write-Ok 'calendar (Microsoft 365; sign in once with tools/calendar.sh login)'
+            Write-Ok 'calendar (Microsoft 365; sign in once with tools/calendar/calendar.sh login)'
         } else {
             Test-EnvPresent 'MSGRAPH_APP_ID' '$env:MSGRAPH_APP_ID = "<your-azure-app-id>"' $false
             Test-EnvPresent 'MSGRAPH_TENANT_ID' '$env:MSGRAPH_TENANT_ID = "<your-azure-tenant-id>"' $false
@@ -271,7 +271,7 @@ function Test-CalendarConfigured {
     } elseif (-not $env:CALDAV_USERNAME) {
         Add-Missing 'env CALDAV_USERNAME' '$env:CALDAV_USERNAME = "<your-apple-id-email>"' $false
     } elseif ($env:CALDAV_PASSWORD -or $env:CALDAV_PASSWORD_CMD) {
-        Write-Ok 'calendar (iCloud/CalDAV; verify with tools/calendar.sh check)'
+        Write-Ok 'calendar (iCloud/CalDAV; verify with tools/calendar/calendar.sh check)'
     } else {
         Add-Missing 'calendar password (iCloud/CalDAV)' '$env:CALDAV_PASSWORD = "<app-specific-password>", or $env:CALDAV_PASSWORD_CMD = "<command that prints it>"' $false
     }

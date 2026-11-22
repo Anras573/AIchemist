@@ -1,1 +1,1 @@
-../../../tools/msgraph.sh
+../../../tools/calendar/msgraph.sh

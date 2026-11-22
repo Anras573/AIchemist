@@ -1,7 +1,7 @@
 {
   "name": "aichemist-beads-band",
   "version": "3.12.0",
-  "description": "Claude Code mod: shows your in-progress and ready beads tasks in a band above the prompt, read through the beads skill's tools/beads-db.sh",
+  "description": "Claude Code mod: shows your in-progress and ready beads tasks in a band above the prompt, read through the beads skill's tools/beads/beads-db.sh",
   "author": {
     "name": "Anders Bo Rasmussen",
     "email": "anras573@gmail.com"

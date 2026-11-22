@@ -7,12 +7,12 @@ version: 1.1.0
 
 # Calendar Skill
 
-Fetch and interpret calendar events via `tools/calendar.sh`, which runs one of two backends with the same commands and the same JSON output:
+Fetch and interpret calendar events via `tools/calendar/calendar.sh`, which runs one of two backends with the same commands and the same JSON output:
 
 | Backend | Script | For |
 |---------|--------|-----|
-| Microsoft 365 | `tools/msgraph.sh` | Work calendars in Outlook / Microsoft 365, via the m365 CLI |
-| CalDAV | `tools/caldav.sh` | iCloud by default; also other CalDAV servers (Fastmail, Nextcloud, Radicale) via `CALDAV_URL` |
+| Microsoft 365 | `tools/calendar/msgraph.sh` | Work calendars in Outlook / Microsoft 365, via the m365 CLI |
+| CalDAV | `tools/calendar/caldav.sh` | iCloud by default; also other CalDAV servers (Fastmail, Nextcloud, Radicale) via `CALDAV_URL` |
 
 Primary use cases: daily schedule overview, upcoming events, and meeting preparation briefings.
 
@@ -32,7 +32,7 @@ Calendar queries are **read-only** — no confirmation needed. Microsoft 365's `
 
 2. **Authenticated once**:
    ```bash
-   ${CLAUDE_PLUGIN_ROOT}/tools/calendar.sh login
+   ${CLAUDE_PLUGIN_ROOT}/tools/calendar/calendar.sh login
    ```
    This opens a browser window for Microsoft OAuth login. Tokens are cached by m365 and auto-refreshed.
 
@@ -59,7 +59,7 @@ Calendar queries are **read-only** — no confirmation needed. Microsoft 365's `
 
 3. **Check the setup**:
    ```bash
-   ${CLAUDE_PLUGIN_ROOT}/tools/calendar.sh check
+   ${CLAUDE_PLUGIN_ROOT}/tools/calendar/calendar.sh check
    ```
 
 ## Available Commands
@@ -98,7 +98,7 @@ python3 -c "from datetime import datetime, timezone; d=datetime.now(timezone.utc
 ### Today's Schedule
 
 ```bash
-${CLAUDE_PLUGIN_ROOT}/tools/calendar.sh get-events \
+${CLAUDE_PLUGIN_ROOT}/tools/calendar/calendar.sh get-events \
   --start "$(python3 -c 'from datetime import datetime,timezone; d=datetime.now(timezone.utc).astimezone(); print(d.replace(hour=0,minute=0,second=0,microsecond=0).isoformat(timespec="seconds"))')" \
   --end "$(python3 -c 'from datetime import datetime,timezone; d=datetime.now(timezone.utc).astimezone(); print(d.replace(hour=23,minute=59,second=59,microsecond=0).isoformat(timespec="seconds"))')"
 ```
@@ -137,7 +137,7 @@ Use the default `get-events` (no flags = next 7 days). Group output by day:
 Fetch events from now to 2 hours from now:
 
 ```bash
-${CLAUDE_PLUGIN_ROOT}/tools/calendar.sh get-events \
+${CLAUDE_PLUGIN_ROOT}/tools/calendar/calendar.sh get-events \
   --start "$(python3 -c 'from datetime import datetime,timezone; print(datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds"))')" \
   --end "$(python3 -c 'from datetime import datetime,timezone,timedelta; print((datetime.now(timezone.utc)+timedelta(hours=2)).astimezone().isoformat(timespec="seconds"))')"
 ```
@@ -151,7 +151,7 @@ The primary high-value workflow. When asked to "prepare for" or "brief me on" a 
 1. Run `get-events` to locate the event (use a narrow window if the meeting is specific)
 2. Take the event `id` and run `get-event-detail` for the full body:
    ```bash
-   ${CLAUDE_PLUGIN_ROOT}/tools/calendar.sh get-event-detail "EVENT_ID"
+   ${CLAUDE_PLUGIN_ROOT}/tools/calendar/calendar.sh get-event-detail "EVENT_ID"
    ```
 3. The `body.content` field may be HTML (Microsoft 365) or plain text (CalDAV) — extract readable text. Strip tracking pixels, signatures, and boilerplate footers. Keep agenda items, questions, pre-reads, and attendee lists (`attendees` and `organizer` hold names and addresses).
 4. Present a structured brief:
@@ -199,7 +199,7 @@ Then open a new terminal and retry.
 **Microsoft 365 — not logged in / token expired:**
 ```
 Calendar access requires authentication. Run:
-  ${CLAUDE_PLUGIN_ROOT}/tools/calendar.sh login
+  ${CLAUDE_PLUGIN_ROOT}/tools/calendar/calendar.sh login
 Then retry.
 ```
 
