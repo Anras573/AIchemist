@@ -65,6 +65,10 @@ class RendererTests(unittest.TestCase):
     def test_ordered_list(self):
         self.assertIn("<ol><li>one</li><li>two</li></ol>", sp.render_markdown("1. one\n2. two").body)
 
+    def test_list_type_change_at_same_indent_starts_a_new_list(self):
+        body = sp.render_markdown("- a\n1. b\n2. c").body
+        self.assertEqual(body, "<ul><li>a</li></ul><ol><li>b</li><li>c</li></ol>")
+
     def test_table(self):
         body = sp.render_markdown("| a | b |\n|---|---|\n| 1 | 2 |").body
         self.assertIn("<th>a</th>", body)
@@ -239,6 +243,35 @@ class PathTests(TempDirCase):
         os.utime(os.path.join(self.root, "2026-01-01-old"), (1, 1))
         self.assertEqual(sp.resolve_pad(self.root), "2026-01-02-new")
 
+    def test_symlink_escaping_the_home_is_not_a_pad(self):
+        outside = tempfile.mkdtemp(prefix="scratchpad-outside-")
+        self.addCleanup(shutil.rmtree, outside, True)
+        link = os.path.join(self.root, "2026-01-01-escape")
+        try:
+            os.symlink(outside, link, target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("symlinks are not available here")
+        os.makedirs(os.path.join(self.root, "2026-01-02-real"))
+        self.assertEqual(sp.list_pads(self.root), ["2026-01-02-real"])
+        with self.assertRaises(sp.ScratchpadError) as ctx:
+            sp.resolve_pad(self.root, "2026-01-01-escape")
+        self.assertIn("outside SCRATCHPAD_HOME", str(ctx.exception))
+
+    def test_pad_slug_is_ascii_and_handles_danish_letters(self):
+        self.assertEqual(sp.pad_slug(u"Révision"), "revision")
+        self.assertEqual(sp.pad_slug(u"Rødgrød på æble"), "roedgroed-paa-aeble")
+        self.assertEqual(sp.pad_slug(u"My Topic!"), "my-topic")
+        self.assertEqual(sp.pad_slug(u"日本"), "pad")
+        for topic in (u"Révision", u"Æble", u"日本"):
+            self.assertTrue(sp.NAME_RE.match("2026-11-22-" + sp.pad_slug(topic)), topic)
+
+    def test_log_tail(self):
+        path = os.path.join(self.root, "log.txt")
+        self.assertEqual(sp.log_tail(path), "(no log)")
+        with open(path, "w") as handle:
+            handle.write("\n".join("line %d" % n for n in range(20)))
+        self.assertEqual(sp.log_tail(path, 2), "line 18\nline 19")
+
     def test_inside(self):
         child = os.path.join(self.root, "a")
         os.makedirs(child)
@@ -332,6 +365,8 @@ class ServerIntegrationTests(TempDirCase):
         self.assertEqual(self.post("/api/nope/comments", good)[0], 404)
         self.assertEqual(self.post(base, good, {"Origin": "http://evil.example"})[0], 403)
         self.assertEqual(self.post(base, good, {"Host": "evil.example"})[0], 403)
+        self.assertEqual(self.post(base, good, {"Origin": "http://localhost:not-a-port"})[0], 403)
+        self.assertEqual(self.post(base, good, {"Origin": "http://localhost:99999999"})[0], 403)
         self.assertEqual(self.post("/api/%s/decisions" % self.pad,
                                    {"page": "1-overview", "decision": "nope", "answer": "proposal"})[0], 404)
         self.assertEqual(self.post("/api/%s/decisions" % self.pad,
@@ -421,6 +456,22 @@ class CliTests(TempDirCase):
         self.assertEqual(code, 1)
         self.assertIn("missing alternative", out)
 
+    def test_new_with_non_ascii_topic_creates_a_discoverable_pad(self):
+        code, out, _ = self.run_cli("new", u"Révision")
+        self.assertEqual(code, 0)
+        pad = out.splitlines()[0].split()[1]
+        self.assertTrue(pad.endswith("-revision"))
+        self.assertIn(pad, self.run_cli("pages")[1])
+
+    def test_stop_never_signals_a_pid_from_a_stale_record(self):
+        # Record this very process as the "server" on a port nothing listens on.
+        with open(os.path.join(self.root, sp.SERVER_FILE), "w") as handle:
+            json.dump({"pid": os.getpid(), "port": 1}, handle)
+        code, out, _ = self.run_cli("stop")
+        self.assertEqual(code, 0)
+        self.assertIn("stale", out)
+        self.assertFalse(os.path.exists(os.path.join(self.root, sp.SERVER_FILE)))
+
     def test_start_status_stop_round_trip(self):
         env_port = "47%02d" % (os.getpid() % 90 + 10)
         code, out, err = self.run_cli("start", "--port", env_port)
@@ -430,6 +481,7 @@ class CliTests(TempDirCase):
             code, out, _ = self.run_cli("start", "--port", env_port)
             self.assertIn("running:", out)          # idempotent
             self.assertIn("running", self.run_cli("status")[1])
+            self.assertTrue(os.path.isfile(os.path.join(self.root, sp.SERVER_LOG)))
         finally:
             self.run_cli("stop")
         self.assertIn("not running", self.run_cli("status")[1])

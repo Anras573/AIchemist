@@ -20,6 +20,7 @@ import signal
 import subprocess
 import sys
 import time
+import unicodedata
 import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -29,6 +30,7 @@ PORT_ATTEMPTS = 20
 LOG_NAME = "comments.jsonl"
 LOCK_NAME = ".lock"
 SERVER_FILE = ".server.json"
+SERVER_LOG = ".server.log"
 HEALTH_BODY = b"scratchpad-ok"
 MAX_BODY = 64 * 1024
 MAX_TEXT = 5000
@@ -64,7 +66,9 @@ def list_pads(home):
     for entry in os.listdir(home):
         if entry.startswith(".") or not NAME_RE.match(entry):
             continue
-        if os.path.isdir(os.path.join(home, entry)):
+        pad_dir = os.path.join(home, entry)
+        # A symlink that resolves outside SCRATCHPAD_HOME is not a pad.
+        if os.path.isdir(pad_dir) and inside(home, pad_dir):
             pads.append(entry)
     return sorted(pads)
 
@@ -72,7 +76,7 @@ def list_pads(home):
 def list_pages(pad_dir):
     pages = []
     for entry in os.listdir(pad_dir):
-        if entry.endswith(".md") and NAME_RE.match(entry):
+        if entry.endswith(".md") and NAME_RE.match(entry) and inside(pad_dir, os.path.join(pad_dir, entry)):
             pages.append(entry[:-3])
     return sorted(pages, key=natural_key)
 
@@ -82,8 +86,11 @@ def resolve_pad(home, name=None):
     if name:
         if not NAME_RE.match(name):
             raise ScratchpadError("Invalid pad name: %s" % name)
-        if not os.path.isdir(os.path.join(home, name)):
+        pad_dir = os.path.join(home, name)
+        if not os.path.isdir(pad_dir):
             raise ScratchpadError("Pad not found: %s" % name)
+        if not inside(home, pad_dir):
+            raise ScratchpadError("Pad is outside SCRATCHPAD_HOME: %s" % name)
         return name
     pads = list_pads(home)
     if not pads:
@@ -358,7 +365,12 @@ def _render_list(items):
         while stack and indent < stack[-1][0]:
             out.append("</li></%s>" % stack.pop()[1])
         if stack and indent == stack[-1][0]:
-            out.append("</li>")
+            if stack[-1][1] != tag:
+                # Same indent but the list type changed (- then 1.): close and reopen as the new type.
+                out.append("</li></%s><%s>" % (stack[-1][1], tag))
+                stack[-1] = (indent, tag)
+            else:
+                out.append("</li>")
         else:
             out.append("<%s>" % tag)
             stack.append((indent, tag))
@@ -439,6 +451,85 @@ class RenderResult(object):
         self.decisions = decisions    # list of decision dicts
 
 
+def _is_table_start(line, next_line):
+    return bool(line.lstrip().startswith("|") and next_line is not None
+                and _TABLE_SEP_RE.match(next_line.strip()))
+
+
+def _parse_fence(lines, i):
+    code = []
+    i += 1
+    while i < len(lines) and not lines[i].startswith("```"):
+        code.append(lines[i])
+        i += 1
+    return "<pre><code>%s</code></pre>" % html.escape("\n".join(code)), i + 1
+
+
+def _parse_decision_block(lines, i):
+    """Parse a `:::decision` block starting at lines[i]; returns (decision, next_index)."""
+    header = lines[i][3:].strip()
+    i += 1
+    close = next((j for j in range(i, len(lines)) if lines[j].strip() == ":::"), None)
+    if close is not None:
+        return parse_decision(header, lines[i:close], True), close + 1
+    # Unterminated: stop at the first blank line or heading so the rest of the page survives.
+    body = []
+    while i < len(lines) and lines[i].strip() and not _HEADING_RE.match(lines[i]):
+        body.append(lines[i])
+        i += 1
+    return parse_decision(header, body, False), i
+
+
+def _parse_quote(lines, i):
+    quote = []
+    while i < len(lines) and lines[i].startswith(">"):
+        quote.append(lines[i].lstrip(">").strip())
+        i += 1
+    return "<blockquote>%s</blockquote>" % render_inline(" ".join(quote)), i
+
+
+def _parse_table(lines, i):
+    header_cells = _split_row(lines[i])
+    i += 2  # skip the header and the separator row
+    rows = []
+    while i < len(lines) and lines[i].lstrip().startswith("|"):
+        rows.append(_split_row(lines[i]))
+        i += 1
+    table = ["<table><thead><tr>"]
+    table.extend("<th>%s</th>" % render_inline(c) for c in header_cells)
+    table.append("</tr></thead><tbody>")
+    for row in rows:
+        table.append("<tr>" + "".join("<td>%s</td>" % render_inline(c) for c in row) + "</tr>")
+    table.append("</tbody></table>")
+    return "".join(table), i
+
+
+def _parse_list(lines, i):
+    items = []
+    while i < len(lines):
+        match = _LIST_RE.match(lines[i])
+        if not match:
+            break
+        items.append((len(match.group(1).expandtabs(4)), match.group(2)[0].isdigit(), match.group(3)))
+        i += 1
+    return _render_list(items), i
+
+
+def _parse_paragraph(lines, i):
+    paragraph = [lines[i].strip()]
+    i += 1
+    while i < len(lines) and not _starts_block(lines[i], lines[i + 1] if i + 1 < len(lines) else None):
+        paragraph.append(lines[i].strip())
+        i += 1
+    return "<p>%s</p>" % render_inline(" ".join(paragraph)), i
+
+
+def _unique_slug(slugs, text):
+    base = slugify(text)
+    slugs[base] = slugs.get(base, 0) + 1
+    return base if slugs[base] == 1 else "%s-%d" % (base, slugs[base])
+
+
 def render_markdown(source, on_heading=None, on_decision=None):
     lines = source.replace("\r\n", "\n").replace("\r", "\n").split("\n")
     out = []
@@ -447,99 +538,45 @@ def render_markdown(source, on_heading=None, on_decision=None):
     slugs = {}
     seen_decisions = set()
     i = 0
-    count = len(lines)
-    while i < count:
+    while i < len(lines):
         line = lines[i]
-        nxt = lines[i + 1] if i + 1 < count else None
+        nxt = lines[i + 1] if i + 1 < len(lines) else None
+        heading = _HEADING_RE.match(line)
         if not line.strip():
             i += 1
-            continue
-        if line.startswith("```"):
-            i += 1
-            code = []
-            while i < count and not lines[i].startswith("```"):
-                code.append(lines[i])
-                i += 1
-            i += 1
-            out.append("<pre><code>%s</code></pre>" % html.escape("\n".join(code)))
-            continue
-        if line.startswith(":::decision"):
-            header = line[3:].strip()
-            body = []
-            i += 1
-            close = next((j for j in range(i, count) if lines[j].strip() == ":::"), None)
-            terminated = close is not None
-            if terminated:
-                body = lines[i:close]
-                i = close + 1
-            else:
-                # Unterminated: stop at the first blank line or heading so the rest of the page survives.
-                while i < count and lines[i].strip() and not _HEADING_RE.match(lines[i]):
-                    body.append(lines[i])
-                    i += 1
-            decision = parse_decision(header, body, terminated)
+        elif line.startswith("```"):
+            block, i = _parse_fence(lines, i)
+            out.append(block)
+        elif line.startswith(":::decision"):
+            decision, i = _parse_decision_block(lines, i)
             if not decision["error"] and decision["id"] in seen_decisions:
                 decision["error"] = "duplicate decision id on this page"
             seen_decisions.add(decision["id"])
             decisions.append(decision)
             out.append(on_decision(decision) if on_decision else decision_card(decision))
-            continue
-        match = _HEADING_RE.match(line)
-        if match:
-            level = len(match.group(1))
-            text = match.group(2)
-            base = slugify(text)
-            slugs[base] = slugs.get(base, 0) + 1
-            slug = base if slugs[base] == 1 else "%s-%d" % (base, slugs[base])
+        elif heading:
+            level, text = len(heading.group(1)), heading.group(2)
+            slug = _unique_slug(slugs, text)
             headings.append((level, text, slug))
             extra = on_heading(level, text, slug) if on_heading else ""
             out.append('<h%d id="%s">%s</h%d>%s' % (level, html.escape(slug),
                                                     render_inline(text), level, extra))
             i += 1
-            continue
-        if _HR_RE.match(line):
+        elif _HR_RE.match(line):
             out.append("<hr>")
             i += 1
-            continue
-        if line.startswith(">"):
-            quote = []
-            while i < count and lines[i].startswith(">"):
-                quote.append(lines[i].lstrip(">").strip())
-                i += 1
-            out.append("<blockquote>%s</blockquote>" % render_inline(" ".join(quote)))
-            continue
-        if line.lstrip().startswith("|") and nxt is not None and _TABLE_SEP_RE.match(nxt.strip()):
-            header_cells = _split_row(line)
-            i += 2
-            rows = []
-            while i < count and lines[i].lstrip().startswith("|"):
-                rows.append(_split_row(lines[i]))
-                i += 1
-            table = ["<table><thead><tr>"]
-            table.extend("<th>%s</th>" % render_inline(c) for c in header_cells)
-            table.append("</tr></thead><tbody>")
-            for row in rows:
-                table.append("<tr>" + "".join("<td>%s</td>" % render_inline(c) for c in row) + "</tr>")
-            table.append("</tbody></table>")
-            out.append("".join(table))
-            continue
-        match = _LIST_RE.match(line)
-        if match:
-            items = []
-            while i < count:
-                m = _LIST_RE.match(lines[i])
-                if not m:
-                    break
-                items.append((len(m.group(1).expandtabs(4)), m.group(2)[0].isdigit(), m.group(3)))
-                i += 1
-            out.append(_render_list(items))
-            continue
-        paragraph = [line.strip()]
-        i += 1
-        while i < count and not _starts_block(lines[i], lines[i + 1] if i + 1 < count else None):
-            paragraph.append(lines[i].strip())
-            i += 1
-        out.append("<p>%s</p>" % render_inline(" ".join(paragraph)))
+        elif line.startswith(">"):
+            block, i = _parse_quote(lines, i)
+            out.append(block)
+        elif _is_table_start(line, nxt):
+            block, i = _parse_table(lines, i)
+            out.append(block)
+        elif _LIST_RE.match(line):
+            block, i = _parse_list(lines, i)
+            out.append(block)
+        else:
+            block, i = _parse_paragraph(lines, i)
+            out.append(block)
     return RenderResult("\n".join(out), headings, decisions)
 
 
@@ -740,8 +777,11 @@ class Handler(BaseHTTPRequestHandler):
         origin = self.headers.get("Origin")
         if not origin:
             return True
-        parsed = urllib.parse.urlparse(origin)
-        return parsed.hostname in ("127.0.0.1", "localhost") and parsed.port == self.server.server_address[1]
+        try:
+            parsed = urllib.parse.urlparse(origin)
+            return parsed.hostname in ("127.0.0.1", "localhost") and parsed.port == self.server.server_address[1]
+        except ValueError:  # malformed Origin, e.g. a non-numeric port
+            return False
 
     def _locate(self, pad, page=None):
         """Return (pad_dir, page_file) after name, existence and containment checks."""
@@ -809,58 +849,78 @@ class Handler(BaseHTTPRequestHandler):
 
     # --- POST ----------------------------------------------------------------
 
-    def do_POST(self):
+    def _read_payload(self):
+        """Validate a POST and return its JSON object; None after sending an error."""
         if not self._host_ok() or not self._origin_ok():
-            return self._error(403, "Forbidden origin")
+            self._error(403, "Forbidden origin")
+            return None
         if not self.headers.get("Content-Type", "").startswith("application/json"):
-            return self._error(415, "JSON required")
+            self._error(415, "JSON required")
+            return None
         try:
             length = int(self.headers.get("Content-Length", "0"))
         except ValueError:
-            return self._error(400, "Bad Content-Length")
+            self._error(400, "Bad Content-Length")
+            return None
         if length <= 0 or length > MAX_BODY:
-            return self._error(413, "Body size not allowed")
+            self._error(413, "Body size not allowed")
+            return None
         try:
             payload = json.loads(self.rfile.read(length).decode("utf-8"))
         except ValueError:
-            return self._error(400, "Invalid JSON")
+            payload = None
         if not isinstance(payload, dict):
-            return self._error(400, "Invalid JSON")
+            self._error(400, "Invalid JSON")
+            return None
+        return payload
+
+    def do_POST(self):
+        payload = self._read_payload()
+        if payload is None:
+            return
         parts = [p for p in urllib.parse.urlparse(self.path).path.split("/") if p]
-        if len(parts) != 3 or parts[0] != "api":
+        if len(parts) != 3 or parts[0] != "api" or parts[2] not in POST_ROUTES:
             return self._error(404, "Not found")
-        pad, route = parts[1], parts[2]
         page = payload.get("page")
         if not isinstance(page, str):
             return self._error(400, "page required")
-        pad_dir, page_file = self._locate(pad, page)
+        pad_dir, page_file = self._locate(parts[1], page)
         if not page_file:
             return self._error(404, "Page not found")
-        store = Store(pad_dir)
-        if route == "comments":
-            text = payload.get("text")
-            anchor = payload.get("anchor", "")
-            heading = payload.get("heading", "")
-            if not isinstance(text, str) or not text.strip() or len(text) > MAX_TEXT:
-                return self._error(400, "text required (max %d chars)" % MAX_TEXT)
-            if not isinstance(anchor, str) or not ANCHOR_RE.match(anchor):
-                return self._error(400, "bad anchor")
-            if not isinstance(heading, str) or len(heading) > 300:
-                return self._error(400, "bad heading")
-            event = store.add_comment(page, anchor, heading, text.strip())
-        elif route == "decisions":
-            decision = payload.get("decision")
-            answer = payload.get("answer")
-            if answer not in ANSWERS or not isinstance(decision, str) or not DECISION_ID_RE.match(decision):
-                return self._error(400, "bad decision answer")
-            with open(page_file, "rb") as handle:
-                parsed = render_markdown(handle.read().decode("utf-8", "replace"))
-            if not [d for d in parsed.decisions if d["id"] == decision and not d["error"]]:
-                return self._error(404, "Decision not found on page")
-            event = store.add_decision_answer(page, decision, answer)
-        else:
-            return self._error(404, "Not found")
+        event, error = POST_ROUTES[parts[2]](Store(pad_dir), page, page_file, payload)
+        if error:
+            return self._error(*error)
         self._send(201, json.dumps({"id": event["id"]}), "application/json")
+
+
+def comment_event(store, page, page_file, payload):
+    """Validate a comment payload and append it. Returns (event, None) or (None, (code, message))."""
+    text = payload.get("text")
+    anchor = payload.get("anchor", "")
+    heading = payload.get("heading", "")
+    if not isinstance(text, str) or not text.strip() or len(text) > MAX_TEXT:
+        return None, (400, "text required (max %d chars)" % MAX_TEXT)
+    if not isinstance(anchor, str) or not ANCHOR_RE.match(anchor):
+        return None, (400, "bad anchor")
+    if not isinstance(heading, str) or len(heading) > 300:
+        return None, (400, "bad heading")
+    return store.add_comment(page, anchor, heading, text.strip()), None
+
+
+def decision_event(store, page, page_file, payload):
+    """Validate a decision answer against the page's decisions and append it."""
+    decision = payload.get("decision")
+    answer = payload.get("answer")
+    if answer not in ANSWERS or not isinstance(decision, str) or not DECISION_ID_RE.match(decision):
+        return None, (400, "bad decision answer")
+    with open(page_file, "rb") as handle:
+        parsed = render_markdown(handle.read().decode("utf-8", "replace"))
+    if not [d for d in parsed.decisions if d["id"] == decision and not d["error"]]:
+        return None, (404, "Decision not found on page")
+    return store.add_decision_answer(page, decision, answer), None
+
+
+POST_ROUTES = {"comments": comment_event, "decisions": decision_event}
 
 
 def server_file(home):
@@ -942,10 +1002,21 @@ def print_batch(pad, items):
         print(format_item(item))
 
 
+_DANISH_LETTERS = {u"æ": "ae", u"ø": "oe", u"å": "aa"}
+
+
+def pad_slug(topic):
+    """ASCII-only slug for a pad folder name (pad names must match NAME_RE to be discoverable)."""
+    text = topic.lower()
+    for letter, replacement in _DANISH_LETTERS.items():
+        text = text.replace(letter, replacement)
+    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"[^a-z0-9]+", "-", text).strip("-") or "pad"
+
+
 def cmd_new(args):
     home = pad_home()
-    slug = slugify(args.topic)
-    name = "%s-%s" % (datetime.date.today().isoformat(), slug)
+    name = "%s-%s" % (datetime.date.today().isoformat(), pad_slug(args.topic))
     pad_dir = os.path.join(home, name)
     existed = os.path.isdir(pad_dir)
     os.makedirs(pad_dir, exist_ok=True)
@@ -954,6 +1025,15 @@ def cmd_new(args):
     url = pad_url(home, name)
     print("url: %s" % (url or "(server not running; run `scratchpad start`)"))
     return 0
+
+
+def log_tail(path, lines=8):
+    try:
+        with open(path, "rb") as handle:
+            text = handle.read()[-4000:].decode("utf-8", "replace")
+    except OSError:
+        return "(no log)"
+    return "\n".join(text.strip().splitlines()[-lines:]) or "(log is empty)"
 
 
 def cmd_start(args):
@@ -965,13 +1045,16 @@ def cmd_start(args):
     remove_server_file(home)
     os.makedirs(home, exist_ok=True)
     command = [sys.executable, os.path.abspath(__file__), "serve", "--port", str(args.port)]
-    options = {"stdin": subprocess.DEVNULL, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
-    if os.name == "nt":
-        # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW
-        options["creationflags"] = 0x00000008 | 0x00000200 | 0x08000000
-    else:
-        options["start_new_session"] = True
-    subprocess.Popen(command, **options)
+    log_path = os.path.join(home, SERVER_LOG)
+    # The server outlives this process, so its output goes to a log file, not a pipe nobody reads.
+    with open(log_path, "ab") as log:
+        options = {"stdin": subprocess.DEVNULL, "stdout": log, "stderr": log}
+        if os.name == "nt":
+            # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW
+            options["creationflags"] = 0x00000008 | 0x00000200 | 0x08000000
+        else:
+            options["start_new_session"] = True
+        subprocess.Popen(command, **options)
     deadline = time.time() + 8
     while time.time() < deadline:
         info = read_server_info(home)
@@ -979,7 +1062,8 @@ def cmd_start(args):
             print("started: http://127.0.0.1:%d/" % info["port"])
             return 0
         time.sleep(0.2)
-    raise ScratchpadError("Server did not become healthy; run `scratchpad serve` to see errors")
+    raise ScratchpadError("Server did not become healthy. Last log lines (%s):\n%s"
+                          % (log_path, log_tail(log_path)))
 
 
 def cmd_stop(args):
@@ -988,9 +1072,15 @@ def cmd_stop(args):
     if not info:
         print("not running")
         return 0
+    if not server_healthy(info["port"]) or not isinstance(info.get("pid"), int):
+        # Stale record: the recorded PID may since have been reused by an unrelated process,
+        # so it is never signalled unless the scratchpad server answers on the recorded port.
+        remove_server_file(home)
+        print("not running (removed stale server record)")
+        return 0
     try:
         os.kill(info["pid"], signal.SIGTERM)
-    except (OSError, KeyError, TypeError):
+    except OSError:
         pass
     remove_server_file(home)
     print("stopped")
