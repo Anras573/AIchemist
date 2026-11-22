@@ -78,7 +78,9 @@ Pairs with **`security-review`** (fetch current categories, then run the scan) a
 
 Generates MermaidJS diagrams as fenced code blocks in Markdown. Diagrams render natively in GitHub, VS Code, Obsidian, and most modern Markdown viewers — no external tooling required.
 
-**Trigger phrases:** "create a diagram", "draw a flowchart", "sequence diagram", "architecture diagram", "visualise this", "add a mermaid diagram", "diagram this flow", "draw a class diagram", "ER diagram", "state machine diagram", "C4 diagram".
+> **Excalidraw is preferred.** The [Excalidraw skill](#excalidraw-diagrams-skill) is the default for diagram requests; this skill is used only when the user specifically asks for Mermaid, or when Excalidraw is not available.
+
+**Trigger phrases:** "mermaid diagram", "add a mermaid diagram", "mermaid flowchart", "mermaid sequence diagram", "as mermaid code", "mermaid block", "mermaid syntax", "mermaid class diagram", "mermaid ER diagram", "mermaid C4 diagram". Also the fallback for generic diagram requests when Excalidraw is unavailable.
 
 ### Supported Diagram Types
 
@@ -106,6 +108,38 @@ Generates MermaidJS diagrams as fenced code blocks in Markdown. Diagrams render 
 | Embed in file / save to `docs/diagrams/` | Requires explicit confirmation |
 
 Integrates with the Brainstorming skill — offers to generate diagrams for architecture, data model, interaction flow, and state lifecycle sections of a spec.
+
+---
+
+## Excalidraw Diagrams Skill
+
+**Source:** [`skills/excalidraw/SKILL.md`](../skills/excalidraw/SKILL.md)
+
+Draws diagrams on a live Excalidraw canvas through the `excalidraw` MCP server. Produces editable, hand-drawn-style diagrams that can be exported as `.excalidraw` / `.excalidraw.md` files, images, or shareable links. This is the **default diagram skill**. The Mermaid skill is used instead only when the user specifically asks for Mermaid, or when Excalidraw is not available (it falls back automatically and says why).
+
+**Trigger phrases:** "create a diagram", "draw a flowchart", "sequence diagram", "architecture diagram", "visualise this", "diagram this flow", "draw in excalidraw", "excalidraw diagram", "sketch this", "whiteboard this", "hand-drawn diagram", "export to excalidraw", "save as .excalidraw", "share an excalidraw link".
+
+### Behavior
+
+1. Asks one clarifying question at a time (skipped if the request is already specific)
+2. Reads the server's diagram design guide, then draws zones, labeled shapes, bound arrows, and annotations
+3. Takes a canvas screenshot and fixes overlaps or clipped labels before presenting
+4. Offers to export to a file, image, or shareable link
+
+### Operations
+
+| Type | Behavior |
+|------|----------|
+| Draw on canvas / screenshot | Automatic |
+| Clear a non-empty canvas | Requires explicit confirmation |
+| Export to file / image (default `docs/diagrams/<topic>.excalidraw`) | Requires explicit confirmation |
+| Shareable excalidraw.com link | Requires explicit confirmation (uploads the diagram externally) |
+
+### Requirements
+
+- The `excalidraw` MCP server connected to a running canvas server — see [Configuration](configuration.md#excalidraw)
+
+Integrates with the Brainstorming skill and hands off to the Mermaid skill when a text-based diagram is the better fit.
 
 ---
 

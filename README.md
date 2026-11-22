@@ -40,6 +40,7 @@ See [docs/installation.md](docs/installation.md) for alternative installation me
 - **Code Review** — Parallel review agents with confidence scoring and Jira integration
 - **Jira** — Issue management with confirmation gates for write operations
 - **Mermaid** — Generate diagrams (flowcharts, sequence, ER, C4, and more) as markdown
+- **Excalidraw** — Default diagram skill: editable, hand-drawn-style diagrams on a live Excalidraw canvas (Mermaid is the fallback)
 - **PostgreSQL** — Safe database querying with blocked writes by default
 - **Daily Note** — Interact with your Obsidian daily note for journaling and task tracking
 - **Capture** — Quick capture of thoughts and code snippets to Obsidian
