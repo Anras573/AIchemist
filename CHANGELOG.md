@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.13.0](https://github.com/Anras573/AIchemist/compare/v3.12.0...v3.13.0) (2026-11-22)
+
+
+### Features
+
+* **hooks:** gate git commit/push on build, test and format checks ([#140](https://github.com/Anras573/AIchemist/issues/140)) ([19a4e96](https://github.com/Anras573/AIchemist/commit/19a4e9644c7fbaeecec50381cd46d2e087c36bff))
+* **mods:** add lizard-band mod for complex functions in changed files ([#143](https://github.com/Anras573/AIchemist/issues/143)) ([562f5e7](https://github.com/Anras573/AIchemist/commit/562f5e752f4d55686ac5f99e7062420781ff3e3c))
+
 ## [3.12.0](https://github.com/Anras573/AIchemist/compare/v3.11.0...v3.12.0) (2026-11-22)
 
 
