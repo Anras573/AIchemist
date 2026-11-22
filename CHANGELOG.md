@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.12.0](https://github.com/Anras573/AIchemist/compare/v3.11.0...v3.12.0) (2026-11-22)
+
+
+### Features
+
+* add scratchpad skill and local HTML collaboration tool ([#139](https://github.com/Anras573/AIchemist/issues/139)) ([1a77b88](https://github.com/Anras573/AIchemist/commit/1a77b88e62d86a4d191cf89803c089a6274754b0))
+* **skills:** add excalidraw skill and prefer it over mermaid ([#137](https://github.com/Anras573/AIchemist/issues/137)) ([70dbb3f](https://github.com/Anras573/AIchemist/commit/70dbb3fe2ef1a073b48a1516b042370eb2a41264))
+
 ## [3.11.0](https://github.com/Anras573/AIchemist/compare/v3.10.0...v3.11.0) (2026-11-11)
 
 
