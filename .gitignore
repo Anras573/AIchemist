@@ -15,3 +15,6 @@ Thumbs.db
 # Local configuration with secrets
 *.local.json
 config.json
+
+# Python bytecode
+__pycache__/

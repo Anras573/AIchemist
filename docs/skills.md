@@ -925,3 +925,56 @@ Personal C#/.NET conventions to apply when writing, generating, reviewing, or sc
 ### Behavior
 
 Guidance-only skill — no automated read/write operations. It loads conventions into context so generated or reviewed C# code matches the user's style; it never edits files on its own beyond what's asked. Existing repo conventions (a target project's own `.editorconfig`/`CLAUDE.md`) take precedence over this skill.
+
+---
+
+## Scratchpad Skill
+
+**Source:** [`skills/scratchpad/SKILL.md`](../skills/scratchpad/SKILL.md)
+
+A local HTML scratchpad for working through plans, options and decisions with the agent. The agent writes **markdown pages**; [`tools/scratchpad.sh`](../tools/scratchpad.sh) renders them on a local server (`127.0.0.1`), and you leave section comments and answer decision cards in the browser. The agent picks the feedback up as a batch, replies in threads and updates the pages. Chat shrinks to a status line and a link.
+
+**Trigger phrases:** "start a scratchpad", "open a scratchpad", "use the scratchpad", "put this in the scratchpad", "check the scratchpad", "any comments on the scratchpad", "collaborate in the browser", "let's work in an HTML scratchpad", "show me this as a page I can comment on".
+
+### Prerequisites
+
+Python 3.7+ in `PATH` (`python3`, `python`, or `py -3` on Windows). No packages to install. Pads are stored in `~/scratchpads/<yyyy-mm-dd>-<topic>/`; export `SCRATCHPAD_HOME` to use another folder. On Windows PowerShell use [`tools/scratchpad.ps1`](../tools/scratchpad.ps1) in place of `scratchpad.sh` — same commands.
+
+The pad folder is plain markdown plus a `comments.jsonl` log, so it can be opened in Obsidian as a read-only viewer; use the [Capture skill](#capture-skill) to promote finished pages into a vault.
+
+### Operations
+
+All commands write only inside `SCRATCHPAD_HOME` and bind the server to `127.0.0.1`. Nothing is deleted or sent anywhere, so none of them need confirmation.
+
+| Command | What it does |
+|---------|--------------|
+| `new <topic>` | Create the pad folder; prints the pad name, path and URL |
+| `start [--port N]` | Start the local server if it is not running (idempotent; default port 4747, falls back to the next free one) |
+| `stop` / `status` | Stop the server / show whether it is running |
+| `pages [--pad NAME]` | List the pad's pages with their URLs |
+| `inbox [--pad NAME] [--all]` | Show unhandled comments and decision answers (`--all` includes handled ones) |
+| `wait [--pad NAME] [--quiet S] [--timeout S]` | Block until you have been quiet for `--quiet` seconds (default 10), then print the batch; prints "no items" after `--timeout` seconds (default 600) |
+| `reply [--pad NAME] <id> <text...>` | Add a threaded reply to a comment (`-` as the text reads it from stdin) |
+| `done [--pad NAME] <id>...` | Mark items handled |
+| `check [--pad NAME]` | Report malformed decision blocks, detached comments and unreadable log lines |
+
+### Decision blocks
+
+```markdown
+:::decision retry-limit
+proposal: Cap retries at 3
+alternative: Unlimited with exponential backoff
+pick: proposal
+:::
+```
+
+Rendered as a card with the agent's pick highlighted and two answer buttons. Your answer arrives in the inbox as `d-N`; once the agent has rewritten the page and marked it handled, the card shows as resolved.
+
+### Key Principles
+
+- **The agent writes markdown, never HTML** — the tool does the rendering, so no tokens are spent on UI
+- **Feedback is batched** — `wait` returns after you have been quiet, so you can keep reviewing while the agent works
+- **Comments anchor to headings** — renaming a heading detaches its comments (shown at the bottom of the page until handled)
+- **The log is append-only** — page edits can never lose feedback
+
+Inspired by Nick Tune's post [Moving to HTML-based collaboration with agents](https://nick-tune.me/blog/2026-11-21-moving-to-html-based-collaboration-with-agents/). Design ideas only; this implementation is independent.
