@@ -103,6 +103,24 @@ PDF, DOCX, PPTX, XLSX, HTML, CSV, JSON, XML, images (OCR), and plain text.
 
 ---
 
+### Excalidraw
+
+The Excalidraw skill draws on a live canvas through an Excalidraw MCP server. The server is **not** bundled in `.mcp.json` because it needs a canvas server to connect to; configure it yourself.
+
+### Requirements
+
+1. A running Excalidraw canvas server reachable over HTTP
+2. The `excalidraw` MCP server added to your Claude Code config, pointing at that canvas, e.g.:
+   ```bash
+   claude mcp add excalidraw -e EXPRESS_SERVER_URL=http://localhost:3000 -e ENABLE_CANVAS_SYNC=true -- npx -y mcp-excalidraw-server
+   ```
+
+### Verify the server is working
+
+Run `/mcp` inside Claude Code and confirm `excalidraw` is connected, then ask Claude to "draw a box in excalidraw" and check the canvas.
+
+---
+
 ### Obsidian
 
 The Obsidian skill uses the Obsidian CLI (included with Obsidian v1.5.0+) to interact with your vault. No MCP server or API key is required.

@@ -1,13 +1,24 @@
 ---
 name: mermaid
 description: |
-  This skill should be used when the user asks to "create a diagram", "draw a flowchart", "sequence diagram", "architecture diagram", "visualise this", "add a mermaid diagram", "diagram this flow", "draw a class diagram", "ER diagram", "state machine diagram", "C4 diagram", or any request to visually represent a system, process, or data model.
+  This skill should be used when the user specifically asks for Mermaid: "mermaid diagram", "add a mermaid diagram", "mermaid flowchart", "mermaid sequence diagram", "as mermaid code", "mermaid block", "mermaid syntax", "mermaid class diagram", "mermaid ER diagram", "mermaid C4 diagram". Also use it as the fallback for diagram requests when Excalidraw is not available. For generic diagram requests ("create a diagram", "draw a flowchart", "architecture diagram", "visualise this"), the excalidraw skill is the default.
 version: 1.0.0
 ---
 
 # MermaidJS Diagrams Skill
 
 Generate MermaidJS diagrams as fenced code blocks in Markdown. Diagrams render natively in GitHub, VS Code, Obsidian, and most modern Markdown viewers — no external tooling required.
+
+## Prefer Excalidraw
+
+**Default to the `excalidraw` skill** for diagram requests. Use Mermaid only when:
+
+- the user specifically asks for Mermaid (e.g. "mermaid diagram", "add a mermaid block", "as mermaid code"), or
+- Excalidraw is not available — the `mcp__excalidraw__*` tools are missing (check deferred tools too) or the canvas is unreachable.
+
+When falling back because Excalidraw is unavailable, say so in one line before presenting the Mermaid diagram so the user knows why.
+
+Requests that ask for a diagram embedded as text (e.g. "add a diagram to the README") do not by themselves count as a Mermaid request — offer Excalidraw first, and note that it can export an image or `.excalidraw` file to embed.
 
 ## Supported Diagram Types
 
