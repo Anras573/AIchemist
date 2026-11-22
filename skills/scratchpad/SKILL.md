@@ -35,7 +35,7 @@ All commands write only inside `SCRATCHPAD_HOME` and start a server bound to `12
 | `done [--pad NAME] <id>...` | Mark items handled |
 | `check [--pad NAME]` | Report malformed decision blocks, detached comments and unreadable log lines |
 
-`--pad` defaults to the most recently modified pad. Option flags always go before positional arguments.
+`--pad` defaults to the pad with the most recent activity (a new comment or an edited page, not just a new file). With more than one active pad, pass `--pad` explicitly. Option flags always go before positional arguments.
 
 ## Workflow
 
