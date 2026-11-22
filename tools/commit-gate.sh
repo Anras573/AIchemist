@@ -12,14 +12,24 @@
 # Formatting is only ever *checked* here, never applied, so the hook cannot
 # change files underneath a commit. The report says how to fix a failure.
 #
+# OPT-IN. Hooks run outside permission prompts, and the checks execute
+# repo-controlled code (Makefile targets, package.json scripts, ./gradlew ...),
+# so the gate does nothing until you turn it on:
+#   AICHEMIST_GATE=1             enable everywhere (e.g. "env" in settings.json)
+#   git config aichemist.gate true   enable for one repo (or --global)
+# Deliberately not a marker file in the repo: an untrusted clone could ship one.
+#
 # Configuration (environment variables, e.g. via "env" in settings.json):
 #   AICHEMIST_GATE_SKIP=1        disable the gate entirely
 #   AICHEMIST_GATE_BUILD=<cmd>   replace the detected build step ("" = skip it)
 #   AICHEMIST_GATE_TEST=<cmd>    replace the detected test step   ("" = skip it)
 #   AICHEMIST_GATE_FORMAT=<cmd>  replace the detected format step ("" = skip it)
 #
-# A successful run is cached per working-tree content, so `git commit`
-# followed by `git push` does not run everything twice.
+# The checks run against the WORKING TREE, not the staged snapshot, so a
+# partial commit can pass while the committed content is broken, and a push can
+# be blocked by uncommitted work. A successful run is cached per working-tree
+# content and override settings, so `git commit` followed by `git push` does
+# not run everything twice.
 #
 # Fail-open: anything unexpected (no git, no python3, unknown project type,
 # missing toolchain) lets the command through. Only a real failing check blocks.
@@ -47,36 +57,31 @@ cwd=$(printf '%s\n' "$parsed" | sed -n '1p')
 cmd=$(printf '%s\n' "$parsed" | sed -n '2p')
 [ -n "$cmd" ] || exit 0
 
-# Only `git commit` / `git push`, allowing global options (-C path, -c k=v).
-git_re='(^|[;&|(]|[[:space:]])git([[:space:]]+(-C|-c)[[:space:]]+[^[:space:]]+|[[:space:]]+--[a-z-]+(=[^[:space:]]+)?)*[[:space:]]+(commit|push)([[:space:]]|$)'
-[[ "$cmd" =~ $git_re ]] || exit 0
-[[ "$cmd" == *--dry-run* ]] && exit 0
+# Find `git commit` / `git push` segments (allowing global options such as
+# -C path and -c k=v). Each segment is judged on its own, so `--dry-run` on an
+# unrelated command does not exempt a later `git push`.
+git_re='(^|[[:space:](])git(([[:space:]]+(-C|-c)[[:space:]]+[^[:space:]]+)|([[:space:]]+--[a-z-]+(=[^[:space:]]+)?))*[[:space:]]+(commit|push)([[:space:]]|$)'
+verb_group=7
 
-[ -n "$cwd" ] && cd "$cwd" 2>/dev/null
-if ! repo_root=$(git rev-parse --show-toplevel 2>/dev/null); then
-  exit 0
-fi
-cd "$repo_root" || exit 0
+targets=()   # directories to gate; "" means the hook's cwd
+while IFS= read -r seg; do
+  [[ "$seg" =~ $git_re ]] || continue
+  matched="${BASH_REMATCH[0]}"
+  verb="${BASH_REMATCH[$verb_group]}"
+  [[ "$seg" == *--dry-run* ]] && continue
+  [ "$verb" = push ] && [[ " $seg " == *" -n "* ]] && continue
+  # Follow `git -C <path>` (relative paths stack, like git does).
+  dir=""
+  opts="$matched"
+  while [[ "$opts" =~ (^|[[:space:]])-C[[:space:]]+([^[:space:]]+) ]]; do
+    c="${BASH_REMATCH[2]}"; c="${c#[\"\']}"; c="${c%[\"\']}"
+    case "$c" in /*) dir="$c" ;; *) dir="${dir:+$dir/}$c" ;; esac
+    opts="${opts#*"${BASH_REMATCH[0]}"}"
+  done
+  targets+=("$dir")
+done < <(printf '%s\n' "$cmd" | tr ';&|' '\n\n\n')
 
-# --- Cache: skip when this exact working tree already passed ---------------
-
-git_dir=$(git rev-parse --absolute-git-dir 2>/dev/null) || exit 0
-cache_file="$git_dir/aichemist-gate-ok"
-
-tree_hash() {
-  local tmp
-  tmp=$(mktemp "${TMPDIR:-/tmp}/gate-index-XXXXXX") || return 1
-  # An empty file is a corrupt index; start from a missing one instead.
-  if [ -f "$git_dir/index" ]; then cp "$git_dir/index" "$tmp"; else rm -f "$tmp"; fi
-  GIT_INDEX_FILE="$tmp" git add -A >/dev/null 2>&1
-  GIT_INDEX_FILE="$tmp" git write-tree 2>/dev/null
-  rm -f "$tmp"
-}
-
-current_hash=$(tree_hash) || current_hash=""
-if [ -n "$current_hash" ] && [ -f "$cache_file" ] && [ "$(cat "$cache_file" 2>/dev/null)" = "$current_hash" ]; then
-  exit 0
-fi
+[ "${#targets[@]}" -gt 0 ] || exit 0
 
 # --- Step detection ---------------------------------------------------------
 
@@ -152,15 +157,37 @@ detect_node() {
   fi
 }
 
+has_section() { # file regex -> 0 when the file has a matching line
+  [ -f "$1" ] && grep -Eq "$2" "$1"
+}
+
 detect_python() {
   [ -f pyproject.toml ] || [ -f setup.py ] || [ -f setup.cfg ] || [ -f requirements.txt ] || [ -f pytest.ini ] || return 0
-  local py=python3
   have python3 || return 0
-  if have pytest; then add_step test "pytest" "pytest -q"
-  elif $py -c 'import pytest' 2>/dev/null; then add_step test "pytest" "$py -m pytest -q"
+  local py=python3
+
+  # Run a tool only when the project configures it, not merely because it is
+  # on PATH: most existing code is not formatted with whatever happens to be
+  # installed, and a repo without tests should not be blocked by pytest.
+  local pytest_cfg=0
+  if [ -f pytest.ini ] || [ -f conftest.py ] || [ -d tests ] || [ -d test ] \
+     || has_section pyproject.toml '^\[tool\.pytest' \
+     || has_section setup.cfg '^\[tool:pytest\]' \
+     || has_section tox.ini '^\[pytest\]'; then
+    pytest_cfg=1
   fi
-  if have ruff; then add_step format "ruff format --check" "ruff format --check ."
-  elif have black; then add_step format "black --check" "black --check ."
+  # pytest exits 5 when it collects no tests; that is not a failure here.
+  local run_pytest='; rc=$?; [ "$rc" -eq 5 ] && exit 0; exit "$rc"'
+  if [ "$pytest_cfg" = 1 ]; then
+    if have pytest; then add_step test "pytest" "pytest -q$run_pytest"
+    elif $py -c 'import pytest' 2>/dev/null; then add_step test "pytest" "$py -m pytest -q$run_pytest"
+    fi
+  fi
+
+  if { [ -f ruff.toml ] || [ -f .ruff.toml ] || has_section pyproject.toml '^\[tool\.ruff'; } && have ruff; then
+    add_step format "ruff format --check" "ruff format --check ."
+  elif has_section pyproject.toml '^\[tool\.black\]' && have black; then
+    add_step format "black --check" "black --check ."
   fi
 }
 
@@ -237,43 +264,91 @@ apply_override() { # kind ENVVAR
   return 0
 }
 
-detect_node; detect_python; detect_go; detect_rust; detect_dotnet; detect_jvm; detect_make
-apply_override build AICHEMIST_GATE_BUILD
-apply_override test AICHEMIST_GATE_TEST
-apply_override format AICHEMIST_GATE_FORMAT
+tree_hash() { # git_dir -> hash of the working tree (tracked + untracked, minus ignored)
+  local git_dir="$1" tmp
+  tmp=$(mktemp "${TMPDIR:-/tmp}/gate-index-XXXXXX") || return 1
+  # An empty file is a corrupt index; start from a missing one instead.
+  if [ -f "$git_dir/index" ]; then cp "$git_dir/index" "$tmp"; else rm -f "$tmp"; fi
+  GIT_INDEX_FILE="$tmp" git add -A >/dev/null 2>&1
+  GIT_INDEX_FILE="$tmp" git write-tree 2>/dev/null
+  rm -f "$tmp"
+}
 
-if [ "${#STEP_CMDS[@]}" -eq 0 ]; then
-  exit 0
-fi
+run_gate() { # dir ("" = hook cwd)
+  local dir="$1"
+  if [ -n "$dir" ]; then
+    case "$dir" in /*) cd "$dir" 2>/dev/null || exit 0 ;; *) cd "${cwd:-.}/$dir" 2>/dev/null || exit 0 ;; esac
+  elif [ -n "$cwd" ]; then
+    cd "$cwd" 2>/dev/null || exit 0
+  fi
+  local repo_root
+  repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+  cd "$repo_root" || exit 0
 
-# --- Run the steps in order: build, test, format ----------------------------
+  # Opt-in: env var, or git config (never a file inside the repo).
+  if [ "${AICHEMIST_GATE:-0}" != "1" ]; then
+    [ "$(git config --type=bool --get aichemist.gate 2>/dev/null)" = true ] || exit 0
+  fi
 
-failures=0
-report=""
-for kind in build test format; do
-  for i in "${!STEP_KINDS[@]}"; do
-    [ "${STEP_KINDS[$i]}" = "$kind" ] || continue
-    log=$(mktemp "${TMPDIR:-/tmp}/gate-log-XXXXXX") || continue
-    if bash -c "${STEP_CMDS[$i]}" >"$log" 2>&1 </dev/null; then
-      :
-    else
-      failures=$((failures + 1))
-      report+=$'\n'"✗ ${kind}: ${STEP_LABELS[$i]}  (\`${STEP_CMDS[$i]}\`)"$'\n'
-      report+="$(tail -n 40 "$log" | sed 's/^/    /')"$'\n'
-    fi
-    rm -f "$log"
+  # Cache: skip when this exact working tree + override set already passed.
+  local git_dir cache_file current_hash
+  git_dir=$(git rev-parse --absolute-git-dir 2>/dev/null) || exit 0
+  cache_file="$git_dir/aichemist-gate-ok"
+  current_hash=$(tree_hash "$git_dir") || current_hash=""
+  if [ -n "$current_hash" ]; then
+    current_hash=$(printf '%s|b=%s|t=%s|f=%s' "$current_hash" \
+      "${AICHEMIST_GATE_BUILD+set:$AICHEMIST_GATE_BUILD}" \
+      "${AICHEMIST_GATE_TEST+set:$AICHEMIST_GATE_TEST}" \
+      "${AICHEMIST_GATE_FORMAT+set:$AICHEMIST_GATE_FORMAT}" | git hash-object --stdin 2>/dev/null) || current_hash=""
+  fi
+  if [ -n "$current_hash" ] && [ -f "$cache_file" ] && [ "$(cat "$cache_file" 2>/dev/null)" = "$current_hash" ]; then
+    exit 0
+  fi
+
+  detect_node; detect_python; detect_go; detect_rust; detect_dotnet; detect_jvm; detect_make
+  apply_override build AICHEMIST_GATE_BUILD
+  apply_override test AICHEMIST_GATE_TEST
+  apply_override format AICHEMIST_GATE_FORMAT
+
+  if [ "${#STEP_CMDS[@]}" -eq 0 ]; then
+    exit 0
+  fi
+
+  # --- Run the steps in order: build, test, format ----------------------------
+
+  failures=0
+  report=""
+  for kind in build test format; do
+    for i in "${!STEP_KINDS[@]}"; do
+      [ "${STEP_KINDS[$i]}" = "$kind" ] || continue
+      log=$(mktemp "${TMPDIR:-/tmp}/gate-log-XXXXXX") || continue
+      if bash -c "${STEP_CMDS[$i]}" >"$log" 2>&1 </dev/null; then
+        :
+      else
+        failures=$((failures + 1))
+        report+=$'\n'"✗ ${kind}: ${STEP_LABELS[$i]}  (\`${STEP_CMDS[$i]}\`)"$'\n'
+        report+="$(tail -n 40 "$log" | sed 's/^/    /')"$'\n'
+      fi
+      rm -f "$log"
+    done
   done
+
+  if [ "$failures" -gt 0 ]; then
+    {
+      echo "Blocked: pre-commit checks failed ($failures step(s)). Fix these, then retry the git command."
+      printf '%s' "$report"
+      [ "${#SKIPPED[@]}" -gt 0 ] && printf 'Skipped: %s\n' "${SKIPPED[*]}"
+      echo "(Set AICHEMIST_GATE_SKIP=1 to bypass this gate.)"
+    } >&2
+    exit 2
+  fi
+
+  [ -n "$current_hash" ] && printf '%s\n' "$current_hash" >"$cache_file" 2>/dev/null
+  exit 0
+}
+
+rc=0
+for t in "${targets[@]}"; do
+  ( run_gate "$t" ) || rc=$?
 done
-
-if [ "$failures" -gt 0 ]; then
-  {
-    echo "Blocked: pre-commit checks failed ($failures step(s)). Fix these, then retry the git command."
-    printf '%s' "$report"
-    [ "${#SKIPPED[@]}" -gt 0 ] && printf 'Skipped: %s\n' "${SKIPPED[*]}"
-    echo "(Set AICHEMIST_GATE_SKIP=1 to bypass this gate.)"
-  } >&2
-  exit 2
-fi
-
-[ -n "$current_hash" ] && printf '%s\n' "$current_hash" >"$cache_file" 2>/dev/null
-exit 0
+exit "$rc"

@@ -22,14 +22,20 @@ class CommitGateTest(unittest.TestCase):
         run(["git", "config", "user.name", "t"], self.repo)
         self.env = {k: v for k, v in os.environ.items()
                     if not k.startswith("AICHEMIST_GATE")}
+        self.env["AICHEMIST_GATE"] = "1"
+        # Isolate from the developer's own git config (aichemist.gate etc.).
+        self.env["GIT_CONFIG_GLOBAL"] = os.devnull
+        self.env["GIT_CONFIG_NOSYSTEM"] = "1"
 
     def tearDown(self):
         shutil.rmtree(self.repo, ignore_errors=True)
 
-    def gate(self, command, extra_env=None):
+    def gate(self, command, extra_env=None, cwd=None, drop_env=()):
         env = dict(self.env)
         env.update(extra_env or {})
-        payload = json.dumps({"cwd": self.repo, "tool_input": {"command": command}})
+        for k in drop_env:
+            env.pop(k, None)
+        payload = json.dumps({"cwd": cwd or self.repo, "tool_input": {"command": command}})
         return subprocess.run(["bash", GATE], input=payload, stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE, universal_newlines=True, env=env)
 
@@ -105,6 +111,98 @@ class CommitGateTest(unittest.TestCase):
             self.assertEqual(r.returncode, 0)
         finally:
             shutil.rmtree(d, ignore_errors=True)
+
+    # --- review feedback ---------------------------------------------------
+
+    def test_opt_in_required(self):
+        self.write("Makefile", "test:\n\tfalse\n")
+        r = self.gate("git commit -m x", drop_env=["AICHEMIST_GATE"])
+        self.assertEqual(r.returncode, 0, "gate must be off by default")
+        run(["git", "config", "aichemist.gate", "true"], self.repo, env=self.env)
+        r = self.gate("git commit -m x", drop_env=["AICHEMIST_GATE"])
+        self.assertEqual(r.returncode, 2, "git config aichemist.gate enables it")
+
+    def test_repo_marker_file_does_not_enable(self):
+        self.write("Makefile", "test:\n\tfalse\n")
+        for name in (".aichemist-gate", ".aichemist.json"):
+            self.write(name, "true")
+        r = self.gate("git commit -m x", drop_env=["AICHEMIST_GATE"])
+        self.assertEqual(r.returncode, 0)
+
+    def test_dry_run_only_exempts_its_own_command(self):
+        self.write("Makefile", "test:\n\tfalse\n")
+        self.assertEqual(self.gate("git commit --dry-run").returncode, 0)
+        self.assertEqual(self.gate("git push -n origin main").returncode, 0)
+        self.assertEqual(self.gate("npm pack --dry-run && git push").returncode, 2)
+        self.assertEqual(self.gate("git push --dry-run; git commit -m x").returncode, 2)
+
+    def test_dash_C_gates_the_target_repo(self):
+        other = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, other, True)
+        run(["git", "init", "-q"], other)
+        # cwd repo is broken, target repo is fine -> allowed.
+        self.write("Makefile", "test:\n\tfalse\n")
+        with open(os.path.join(other, "Makefile"), "w") as f:
+            f.write("test:\n\ttrue\n")
+        self.assertEqual(self.gate("git -C %s commit -m x" % other).returncode, 0)
+        # target repo is broken, cwd repo is fine -> blocked.
+        with open(os.path.join(other, "Makefile"), "w") as f:
+            f.write("test:\n\tfalse\n")
+        self.write("Makefile", "test:\n\ttrue\n")
+        r = self.gate("git -C %s commit -m x" % other)
+        self.assertEqual(r.returncode, 2, r.stderr)
+
+    def test_dash_C_relative_path(self):
+        sub = os.path.join(self.repo, "sub")
+        os.mkdir(sub)
+        run(["git", "init", "-q"], sub)
+        with open(os.path.join(sub, "Makefile"), "w") as f:
+            f.write("test:\n\tfalse\n")
+        self.write("Makefile", "test:\n\ttrue\n")
+        self.assertEqual(self.gate("git -C sub commit -m x").returncode, 2)
+
+    def test_cache_respects_overrides(self):
+        self.write("Makefile", "test:\n\tfalse\n")
+        self.assertEqual(self.gate("git commit -m x", {"AICHEMIST_GATE_TEST": ""}).returncode, 0)
+        # Same tree, no override: must run the tests (not reuse the cached pass).
+        self.assertEqual(self.gate("git commit -m x").returncode, 2)
+
+    def test_python_without_tests_or_config_is_not_blocked(self):
+        if not shutil.which("pytest"):
+            self.skipTest("pytest not installed")
+        self.write("requirements.txt", "requests\n")
+        self.write("app.py", "print('hi')\n")
+        self.assertEqual(self.gate("git commit -m x").returncode, 0)
+
+    def test_pytest_collecting_nothing_passes(self):
+        if not shutil.which("pytest"):
+            self.skipTest("pytest not installed")
+        self.write("pytest.ini", "[pytest]\n")
+        self.write("app.py", "print('hi')\n")
+        r = self.gate("git commit -m x", {"AICHEMIST_GATE_FORMAT": ""})
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+    def test_pytest_failure_still_blocks(self):
+        if not shutil.which("pytest"):
+            self.skipTest("pytest not installed")
+        self.write("pytest.ini", "[pytest]\n")
+        self.write("test_x.py", "def test_x():\n    assert False\n")
+        r = self.gate("git commit -m x", {"AICHEMIST_GATE_FORMAT": ""})
+        self.assertEqual(r.returncode, 2)
+
+    def test_formatters_only_run_when_configured(self):
+        fake = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, fake, True)
+        for tool in ("ruff", "black"):
+            path = os.path.join(fake, tool)
+            with open(path, "w") as f:
+                f.write("#!/bin/sh\nexit 1\n")
+            os.chmod(path, 0o755)
+        env = {"PATH": fake + os.pathsep + os.environ["PATH"]}
+        self.write("requirements.txt", "requests\n")
+        self.assertEqual(self.gate("git commit -m x", env).returncode, 0)
+        self.write("pyproject.toml", "[tool.ruff]\nline-length = 88\n")
+        self.assertEqual(self.gate("git commit -m x", env).returncode, 2)
 
 
 if __name__ == "__main__":
