@@ -68,6 +68,8 @@ tools/bootstrap/bootstrap-machine.ps1 doctor
 
 ## Post-Installation
 
+To have Claude diagnose and configure the optional pieces (env vars, calendar, Postgres, Obsidian vault, commit gate), ask it to "set up aichemist" — see the [Setup skill](skills.md#setup-skill). It asks before changing anything.
+
 The plugin works out of the box. User-specific configuration (like Atlassian account info) is auto-fetched on first use.
 
 **(Optional)** Configure the MCP servers for additional capabilities. See [configuration.md](configuration.md) for details.
