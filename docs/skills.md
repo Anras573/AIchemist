@@ -980,3 +980,35 @@ Rendered as a card with the agent's pick highlighted and two answer buttons. You
 - **The log is append-only** — page edits can never lose feedback
 
 Inspired by Nick Tune's post [Moving to HTML-based collaboration with agents](https://nick-tune.me/blog/2026-11-21-moving-to-html-based-collaboration-with-agents/). Design ideas only; this implementation is independent.
+
+---
+
+## Setup Skill
+
+**Source:** [`skills/setup/SKILL.md`](../skills/setup/SKILL.md)
+
+Gets the plugin working on a machine. Diagnoses missing tools, environment variables and MCP servers, then installs and configures them **after confirmation**. It builds on [`tools/bootstrap/bootstrap-machine.sh doctor`](../tools/bootstrap/bootstrap-machine.sh) for dependencies and adds the per-user configuration the bootstrap does not cover (database URL, calendar credentials, Obsidian vault, commit gate).
+
+**Trigger phrases:** "set up aichemist", "setup aichemist", "configure aichemist", "configure the plugin", "set up this plugin", "aichemist doctor", "check my aichemist setup", "what do I need to install", "what environment variables does aichemist need", "why isn't the calendar working", "fix my plugin setup".
+
+### Operations
+
+| Request | Action |
+|---------|--------|
+| "check my aichemist setup" | Read-only diagnosis of tools, variables and MCP servers |
+| "set up aichemist" | Pick integrations, diagnose, then fix each gap with confirmation |
+| "set up the calendar" | Same flow for one integration |
+
+### Behavior
+
+| Type | Operations | Behavior |
+|------|------------|----------|
+| **Read** | `doctor`, `command -v`, check whether a variable is set (never its value), read settings | Automatic — no confirmation needed |
+| **Write** | Install tools, `docker pull`, `mempalace init` | Requires explicit user confirmation |
+| **Write** | Set `env` entries in `settings.json`, edit a shell profile, `git config`, write `obsidian.preferredVault` | Requires explicit user confirmation, with the exact change shown first |
+
+Secrets are never written to `settings.json` or printed; the skill uses commands that print them (e.g. `CALDAV_PASSWORD_CMD`) instead.
+
+### Requirements
+
+- macOS for `bootstrap-machine.sh doctor`; Windows uses `bootstrap-machine.ps1`. On Linux the skill checks each tool by hand.

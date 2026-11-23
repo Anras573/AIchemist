@@ -49,6 +49,7 @@ See [docs/installation.md](docs/installation.md) for alternative installation me
 - **Calendar** — Calendar queries and meeting prep briefings for Microsoft 365 (via `m365` CLI) and iCloud/CalDAV
 - **Markitdown** — Convert remote URLs and local files to clean markdown
 - **MemPalace** — Persistent local memory (vector + knowledge graph) across sessions
+- **Setup** — Diagnose and configure the plugin's tools, environment variables and MCP servers, with confirmation
 - **Tool Preferences** — Consistent tool selection patterns
 
 **Mods** — Optional Claude Code-only add-ons, installed separately; they add to the skills above and never replace them:
