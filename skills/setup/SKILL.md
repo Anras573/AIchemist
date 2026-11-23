@@ -87,12 +87,12 @@ List what was changed (files edited, variables set, tools installed), what still
 | Integration | Skills | Tools needed | Variables / config | Verify |
 |-------------|--------|--------------|--------------------|--------|
 | **Core** | all | `jq`, `python3` (3.7+), `node`, `uv` | – | `command -v jq python3 node uv` |
-| **Obsidian** | `obsidian`, `daily-note`, `capture`, `research` | Obsidian desktop app v1.5.0+ (running) | Vault saved as `obsidian.preferredVault` in `config.json`; `OBSIDIAN_VAULT` is the env fallback used by the skill-suggester hook | `obsidian vaults` |
+| **Obsidian** | `obsidian`, `daily-note`, `capture`, `research` | Obsidian desktop app v1.5.0+ (running) | Vault saved as `obsidian.preferredVault` in `config.json`; `OBSIDIAN_VAULT` is read only by the skill-suggester hook — exporting it alone does **not** configure the Obsidian skills, so always save the vault to `config.json` | `obsidian vaults` |
 | **Calendar — Microsoft 365** | `calendar` | `python3`, `m365` (`npm i -g @pnp/cli-microsoft365`) | `MSGRAPH_APP_ID`, `MSGRAPH_TENANT_ID`; one-time `calendar.sh login` | `tools/calendar/calendar.sh provider` |
 | **Calendar — iCloud/CalDAV** | `calendar` | `python3` | `CALDAV_USERNAME`; `CALDAV_PASSWORD_CMD` (preferred) or `CALDAV_PASSWORD`; `CALDAV_URL` for non-iCloud servers | `tools/calendar/calendar.sh check` |
 | **PostgreSQL** | `postgresql` | `psql` | `POSTGRES_URL` | `psql "$POSTGRES_URL" --no-password -c 'SELECT 1'` |
 | **Beads** | `beads` | `bd` (`brew install beads`) | optional `AICHEMIST_BEADS_HOME` | `bd --version` |
-| **MemPalace** | `mempalace` | `uv`, `mempalace` (`uv tool install mempalace`) | optional `MEMPALACE_HOME` (default `~/.mempalace`); `mempalace init` once | `mempalace status` |
+| **MemPalace** | `mempalace` | `uv`, `mempalace` (`uv tool install mempalace`) | optional `MEMPALACE_HOME` (default `~/.mempalace`); `mempalace init` once | `mempalace status` (as in `docs/configuration.md`), or the `mempalace_status` MCP tool |
 | **Markitdown** | `markitdown` | Docker (daemon running), pinned `mcp/markitdown` image | – | `tools/markitdown/markitdown.sh <file>` |
 | **Jira** | `jira`, `ticket-flow`, `code-review` | Atlassian MCP server (official integration, via `/mcp`) | – (user info is auto-fetched into `config.json`) | ask Claude to run `atlassian/atlassianUserInfo` |
 | **Hotspot** | `hotspot`, `code-review` | `lizard` | – | `lizard --version` |
@@ -107,7 +107,7 @@ Source of truth for details: each skill's `SKILL.md`, [`docs/configuration.md`](
 
 | Kind of setting | Put it in | Why |
 |-----------------|-----------|-----|
-| Variable Claude Code and its hooks need (`AICHEMIST_GATE*`, `POSTGRES_URL`, `CALDAV_*`, `MSGRAPH_*`, `BD_*`) | `env` in `~/.claude/settings.json` (all projects) or `.claude/settings.local.json` (one project, not committed) | Reaches the agent's shell and hooks without a shell profile; takes effect after a restart |
+| Variable Claude Code and its hooks need (`AICHEMIST_GATE*`, `POSTGRES_URL`, `CALDAV_*`, `MSGRAPH_*`, `AICHEMIST_BEADS_HOME`) | `env` in `~/.claude/settings.json` (all projects) or `.claude/settings.local.json` (one project, not committed) | Reaches the agent's shell and hooks without a shell profile; takes effect after a restart |
 | Variable also needed outside Claude Code (shell, Copilot CLI) | Shell profile (`~/.zshrc`, `~/.bash_profile`) | Shared with every terminal |
 | Obsidian vault choice | `${CLAUDE_PLUGIN_ROOT}/config.json` (`obsidian.preferredVault`) | Where the Obsidian skills already read it; the file is git-ignored |
 | Per-repo opt-in (commit gate) | `git config aichemist.gate true` | Never a marker file in the repo — an untrusted clone could ship one |
