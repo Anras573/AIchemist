@@ -12,6 +12,21 @@
         "-i",
         "mcp/markitdown@sha256:9cb5f26d30b609a1d5560a090371cb9dba84fc32e7df10e5496aa22aa7b52658"
       ]
+    },
+    "excalidraw": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--network",
+        "aichemist-excalidraw",
+        "-e",
+        "EXPRESS_SERVER_URL=http://aichemist-excalidraw-canvas:3000",
+        "-e",
+        "ENABLE_CANVAS_SYNC=true",
+        "ghcr.io/yctimlin/mcp_excalidraw@sha256:942d00cf1cd64bac75f77ccd1471d98180b7f5cea3ce742e198e61e4d464a133"
+      ]
     }
   }
 }
