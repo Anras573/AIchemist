@@ -22,7 +22,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $PluginName = 'aichemist'
-$MarkitdownImage = 'mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb'
+$MarkitdownImage = 'mcp/markitdown@sha256:9cb5f26d30b609a1d5560a090371cb9dba84fc32e7df10e5496aa22aa7b52658'
 $MempalaceHome = Join-Path $HOME '.mempalace'
 $RepoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $script:MissingCount = 0

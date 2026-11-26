@@ -725,7 +725,7 @@ Convert remote web pages, documents, and local files to clean, structured markdo
 ### Prerequisites
 
 1. **Docker** installed and running
-2. **markitdown image** pulled: `docker pull mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb`
+2. **markitdown image** pulled: `docker pull mcp/markitdown@sha256:9cb5f26d30b609a1d5560a090371cb9dba84fc32e7df10e5496aa22aa7b52658`
 
 ### Operations
 

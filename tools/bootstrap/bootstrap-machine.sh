@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PLUGIN_NAME="aichemist"
-MARKITDOWN_IMAGE="mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb"
+MARKITDOWN_IMAGE="mcp/markitdown@sha256:9cb5f26d30b609a1d5560a090371cb9dba84fc32e7df10e5496aa22aa7b52658"
 MEMPALACE_HOME="${HOME}/.mempalace"
 OBSIDIAN_MAC_PATH="/Applications/Obsidian.app/Contents/MacOS/obsidian"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

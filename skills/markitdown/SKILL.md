@@ -119,7 +119,7 @@ After a successful conversion, suggest relevant next steps based on context:
 
 The markitdown MCP server requires Docker. Please ensure:
 1. Docker Desktop is running
-2. The image is available: `docker pull mcp/markitdown@sha256:1cef3bf502503310ed0884441874ccf6cdaac20136dc1179797fa048269dc4cb`
+2. The image is available: `docker pull mcp/markitdown@sha256:9cb5f26d30b609a1d5560a090371cb9dba84fc32e7df10e5496aa22aa7b52658`
 3. Restart Claude Code to reconnect the MCP server
 ```
 
