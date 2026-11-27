@@ -139,7 +139,7 @@ Draws diagrams on a live Excalidraw canvas through the `excalidraw` MCP server. 
 
 ### Requirements
 
-- The `excalidraw` MCP server connected to a running canvas server — see [Configuration](configuration.md#excalidraw)
+- Docker, with the canvas container started via `tools/excalidraw/canvas.sh start` so the bundled `excalidraw` MCP server can connect — see [Configuration](configuration.md#excalidraw)
 
 Integrates with the Brainstorming skill and hands off to the Mermaid skill when a text-based diagram is the better fit.
 

@@ -20,7 +20,7 @@ If the user needs the diagram as diffable text inside Markdown, they can ask for
 
 ## Prerequisites
 
-The `excalidraw` MCP server (e.g. `mcp-excalidraw-server`) must be configured **and** connected to a running canvas server. It is not bundled in the plugin's `.mcp.json` because it needs a canvas to talk to — see `docs/configuration.md`.
+The `excalidraw` MCP server (a Docker container declared in the plugin's `.mcp.json`) must be connected to a running canvas container. Start the canvas with `${CLAUDE_PLUGIN_ROOT}/tools/excalidraw/canvas.sh start` (check with `${CLAUDE_PLUGIN_ROOT}/tools/excalidraw/canvas.sh status`) — see `docs/configuration.md`.
 
 Before drawing, check that the `mcp__excalidraw__*` tools are available (load them via ToolSearch if deferred). If they are not, or the canvas is unreachable, say so in one line and fall back to the **mermaid** skill, mentioning `docs/configuration.md` for setup. Do not invent `.excalidraw` JSON by hand unless the user asks for a file and accepts that it is unverified.
 

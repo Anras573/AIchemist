@@ -97,7 +97,7 @@ List what was changed (files edited, variables set, tools installed), what still
 | **Jira** | `jira`, `ticket-flow`, `code-review` | Atlassian MCP server (official integration, via `/mcp`) | – (user info is auto-fetched into `config.json`) | ask Claude to run `atlassian/atlassianUserInfo` |
 | **Hotspot** | `hotspot`, `code-review` | `lizard` | – | `lizard --version` |
 | **Playwright** | `playwright` | `playwright-cli` (`npm i -g @playwright/cli`) | – | `playwright-cli --version` |
-| **Excalidraw** | `excalidraw` | A running canvas server, MCP server added by the user | `EXPRESS_SERVER_URL` on the MCP server entry | `/mcp` shows `excalidraw` connected |
+| **Excalidraw** | `excalidraw` | `docker`; canvas container started with `${CLAUDE_PLUGIN_ROOT}/tools/excalidraw/canvas.sh start` | optional `EXCALIDRAW_PORT` (default 3000) | `${CLAUDE_PLUGIN_ROOT}/tools/excalidraw/canvas.sh status`; `/mcp` shows `excalidraw` connected |
 | **Commit gate** | hook | `python3` | `AICHEMIST_GATE=1` (or `git config aichemist.gate true`); optional `AICHEMIST_GATE_BUILD/_TEST/_FORMAT`, `AICHEMIST_GATE_SKIP` | `git config --get aichemist.gate` |
 | **Scratchpad** | `scratchpad` | `python3` | optional `SCRATCHPAD_HOME` (default `~/scratchpads`) | `tools/scratchpad/scratchpad.sh status` |
 

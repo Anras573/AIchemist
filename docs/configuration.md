@@ -105,19 +105,24 @@ PDF, DOCX, PPTX, XLSX, HTML, CSV, JSON, XML, images (OCR), and plain text.
 
 ### Excalidraw
 
-The Excalidraw skill draws on a live canvas through an Excalidraw MCP server. The server is **not** bundled in `.mcp.json` because it needs a canvas server to connect to; configure it yourself.
+The Excalidraw skill draws on a live canvas through an Excalidraw MCP server. Both pieces run in Docker: the `excalidraw` MCP server is bundled in `.mcp.json` (a stdio container), and the canvas it draws on is a separate long-running container you start with a helper script.
 
 ### Requirements
 
-1. A running Excalidraw canvas server reachable over HTTP
-2. The `excalidraw` MCP server added to your Claude Code config, pointing at that canvas, e.g.:
+1. Docker installed and running
+2. The canvas container started before you use the skill:
    ```bash
-   claude mcp add excalidraw -e EXPRESS_SERVER_URL=http://localhost:3000 -e ENABLE_CANVAS_SYNC=true -- npx -y mcp-excalidraw-server
+   tools/excalidraw/canvas.sh start     # also: stop | status
    ```
+   The canvas UI is then at <http://127.0.0.1:3000> (override the host port with `EXCALIDRAW_PORT`; it is bound to `127.0.0.1` only).
+
+The MCP container and the canvas container talk over a shared Docker network (`aichemist-excalidraw`) that `canvas.sh start` creates, so no `host.docker.internal` setup is needed. If the canvas is not running, the `excalidraw` MCP entry fails to start and the skill falls back to Mermaid.
+
+Images are pinned by digest: `ghcr.io/yctimlin/mcp_excalidraw` (MCP server, in `.mcp.json`) and `ghcr.io/yctimlin/mcp_excalidraw-canvas` (canvas, in `tools/excalidraw/canvas.sh`). Bump both together.
 
 ### Verify the server is working
 
-Run `/mcp` inside Claude Code and confirm `excalidraw` is connected, then ask Claude to "draw a box in excalidraw" and check the canvas.
+Run `tools/excalidraw/canvas.sh status`, restart Claude Code, run `/mcp` and confirm `excalidraw` is connected, then ask Claude to "draw a box in excalidraw" and check the canvas.
 
 ---
 
