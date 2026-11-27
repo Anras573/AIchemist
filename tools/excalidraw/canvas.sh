@@ -28,12 +28,17 @@ if ! command -v docker &>/dev/null; then
   exit 1
 fi
 
+if ! command -v curl &>/dev/null; then
+  echo "Error: curl is not installed or not in PATH (required for the canvas health check)" >&2
+  exit 1
+fi
+
 is_running() {
   [[ "$(docker inspect -f '{{.State.Running}}' "$CONTAINER" 2>/dev/null || true)" == "true" ]]
 }
 
 healthy() {
-  command -v curl &>/dev/null && curl -fsS -m 3 "${URL}/health" &>/dev/null
+  curl -fsS -m 3 "${URL}/health" &>/dev/null
 }
 
 case "$1" in
