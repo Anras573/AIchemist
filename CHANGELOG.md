@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.14.0](https://github.com/Anras573/AIchemist/compare/v3.13.0...v3.14.0) (2026-11-28)
+
+
+### Features
+
+* **skills:** add setup skill for diagnosing and configuring the plugin ([#144](https://github.com/Anras573/AIchemist/issues/144)) ([aeb5a93](https://github.com/Anras573/AIchemist/commit/aeb5a93701d67cd22c1c8f504fcd64d71bbeda9b))
+* **tools:** add sidebar nav and comment margin to scratchpad UI ([#148](https://github.com/Anras573/AIchemist/issues/148)) ([6b5a4dc](https://github.com/Anras573/AIchemist/commit/6b5a4dc9cb60b949db77786170421623a27e1fb2))
+* **tools:** run excalidraw MCP and canvas in docker ([#147](https://github.com/Anras573/AIchemist/issues/147)) ([bafb126](https://github.com/Anras573/AIchemist/commit/bafb1260101297dd756c99e97c29b0348bbd9b60))
+
 ## [3.13.0](https://github.com/Anras573/AIchemist/compare/v3.12.0...v3.13.0) (2026-11-22)
 
 
