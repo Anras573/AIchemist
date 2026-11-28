@@ -1,6 +1,6 @@
 {
   "name": "aichemist-lizard-band",
-  "version": "3.13.0",
+  "version": "3.14.0",
   "description": "Claude Code mod: flags functions above a cyclomatic-complexity threshold (via lizard, the tool the hotspot skill uses) in your uncommitted changes, in a band above the prompt",
   "author": {
     "name": "Anders Bo Rasmussen",
