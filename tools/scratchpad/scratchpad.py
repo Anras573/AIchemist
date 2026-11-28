@@ -608,7 +608,18 @@ CSS = """
 body { background:var(--bg); color:var(--fg); font:16px/1.6 system-ui,sans-serif; margin:0; }
 main { max-width:50rem; margin:0 auto; padding:1rem 16px 4rem; }
 nav { border-bottom:1px solid var(--line); padding:.6rem 16px; display:flex; flex-wrap:wrap; gap:.4rem 1rem; font-size:.9rem; }
-nav a { color:var(--accent); text-decoration:none; } nav a.current { font-weight:700; color:var(--fg); }
+nav a { color:var(--accent); text-decoration:none; overflow-wrap:anywhere; } nav a.current { font-weight:700; color:var(--fg); }
+.sp-notes { margin:.2rem 0 .6rem; }
+.sp-pad { color:var(--muted); font-size:.75rem; font-weight:700; overflow-wrap:anywhere; }
+@media (min-width: 800px) {
+  .sp-shell { display:grid; grid-template-columns:14rem minmax(0,1fr); align-items:start; }
+  nav { position:sticky; top:0; height:100vh; box-sizing:border-box; overflow-y:auto; flex-direction:column;
+    flex-wrap:nowrap; gap:.5rem; border-bottom:0; border-right:1px solid var(--line); padding:1rem; }
+}
+@media (min-width: 1200px) {
+  main { box-sizing:border-box; max-width:68rem; padding:1rem 22rem 4rem 2rem; }
+  .sp-notes { float:right; clear:right; width:19rem; margin:.2rem -21rem .6rem 0; }
+}
 a { color:var(--accent); }
 code, pre { background:var(--soft); border-radius:4px; font-size:.9em; } code { padding:.1em .3em; }
 pre { padding:.8rem; overflow-x:auto; } pre code { padding:0; }
@@ -616,12 +627,12 @@ table { border-collapse:collapse; display:block; overflow-x:auto; } td, th { bor
 blockquote { border-left:3px solid var(--line); margin:1rem 0; padding:0 1rem; color:var(--muted); }
 .sp-toggle, .sp-answer, .sp-send { font:inherit; font-size:.8rem; cursor:pointer; border:1px solid var(--line);
   background:var(--soft); color:var(--fg); border-radius:4px; padding:.15rem .6rem; }
-.sp-toggle { margin-left:.6rem; vertical-align:middle; opacity:.7; }
+.sp-toggle { opacity:.7; }
 .sp-form { display:none; margin:.4rem 0 1rem; } .sp-form.open { display:block; }
 .sp-form textarea { width:100%; box-sizing:border-box; min-height:5rem; font:inherit; background:var(--bg); color:var(--fg);
   border:1px solid var(--line); border-radius:4px; padding:.5rem; }
 .sp-msg { color:var(--warn); font-size:.85rem; margin-left:.5rem; }
-.sp-thread { border-left:3px solid var(--accent); margin:.4rem 0 1rem; padding:.1rem .8rem; font-size:.92rem; }
+.sp-thread { border-left:3px solid var(--accent); margin:.4rem 0 .8rem; padding:.1rem .8rem; font-size:.92rem; }
 .sp-thread.sp-done { opacity:.55; border-left-color:var(--line); }
 .sp-meta { color:var(--muted); font-size:.78rem; } .sp-agent { color:var(--accent); }
 .sp-decision { border:1px solid var(--line); border-radius:8px; padding:.8rem 1rem; margin:1rem 0; }
@@ -702,7 +713,7 @@ def page_shell(title, pad, page, nav, body):
     return ("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
             "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
             "<title>%s</title><style>%s</style></head>"
-            "<body data-pad=\"%s\" data-page=\"%s\"><nav>%s</nav><main>%s</main>"
+            "<body data-pad=\"%s\" data-page=\"%s\"><div class=\"sp-shell\"><nav>%s</nav><main>%s</main></div>"
             "<script>%s</script></body></html>" % (
                 html.escape(title), CSS, html.escape(pad or ""), html.escape(page or ""),
                 nav, body, JS))
@@ -719,7 +730,7 @@ def render_page(pad, page, source, state, pages):
         counter["n"] += 1
         form_id = "form-%d" % counter["n"]
         threads = "".join(thread_html(c) for c in by_anchor.get(slug, []))
-        return ('<button class="sp-toggle" data-form="%s" type="button">Comment</button>%s%s' % (
+        return ('<div class="sp-notes"><button class="sp-toggle" data-form="%s" type="button">Comment</button>%s%s</div>' % (
             form_id, threads, _comment_form(form_id, slug, text)))
 
     def on_decision(decision):
@@ -741,6 +752,8 @@ def render_page(pad, page, source, state, pages):
 
 def nav_html(pad, pages, current=None):
     links = ['<a href="/">All pads</a>']
+    if pad:
+        links.append('<span class="sp-pad">%s</span>' % html.escape(pad))
     for name in pages:
         css = ' class="current"' if name == current else ""
         links.append('<a%s href="/%s/%s">%s</a>' % (css, html.escape(pad), html.escape(name), html.escape(name)))
